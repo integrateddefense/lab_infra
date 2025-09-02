@@ -4,7 +4,7 @@
 - name: Get Current Users
   become: true
   ansible.utils.cli_parse:
-    command: pvesh get /access/users --output-format json
+    command: pveum user list --output-format json
     parser:
       name: ansible.utils.json
   register: users_list
@@ -55,7 +55,7 @@
       content: |
         proxmox_api_token_id: "{{ token.parsed['full-tokenid'] }}"
         proxmox_api_token_secret: "{{ token.parsed.value }}"
-      group_vars_path: "{{ group_vars_dir }}/{{ tmpfs_token_filename }}"
+      group_vars_path: "{{ inventory_dir }}/group_vars/{{ tmpfs_token_filename }}"
 
   - name: Create Token File
     delegate_to: localhost
@@ -86,11 +86,16 @@
 # ansible localhost -m uri -a url=https://10.0.99.11:8006/api2/json/version validate_certs=no return_content=yes headers={Authorization:PVEAPIToken {{ proxmox_api_token_id }}={{ proxmox_api_token_secret }}} -e @group_vars/bootstrap_steady_vault.yml --ask-vault-pass
 
 ## Bind ACLs for access
+- name: Bind user to ACLs
+  become: true
+  ansible.builtin.shell:
+    cmd: "pveum acl modify / -users '{{ api_username }}' -role PVEAdmin"
+  changed_when: false
 
 - name: Bind token to ACLs
   become: true
   ansible.builtin.shell:
-    cmd: "pveum acl modify / -tokens '{{ api_username }}!{{ api_token_name }}' -role PVEVMAdmin"
+    cmd: "pveum acl modify / -tokens '{{ api_username }}!{{ api_token_name }}' -role PVEAdmin"
   changed_when: false
 ## TODO: implement least privilege
 ### Notes: Should bind on more restrictive paths with more restrictive roles for GitOps targets; potentially restrict to VM level (i.e., can't do GitOps for DCs to avoid breaking them)

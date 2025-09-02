@@ -1,0 +1,36 @@
+- hosts: bootstrap
+  gather_facts: false
+
+  tasks:
+
+# Baseline
+  - name: Configure SSH
+    ansible.builtin.import_role:
+      name: portable/ssh
+      tasks_from: proxmox.yml
+    tags: ["baseline","ssh"]
+
+# Identity Services
+  - name: Create RWDC VM
+    ansible.builtin.import_role:
+      name: portable/vm
+    vars:
+      vm_name: "{{ ad.vm.name }}"
+      vm_id: "{{ ad.vm.id }}"
+      vm_description: "{{ ad.vm.description }}"
+      vm_storage: "{{ ad.vm.storage }}"
+      vm_storage_size: "{{ ad.vm.size }}"
+      vm_vlan_id: "{{ ad.vm.vlan }}"
+      template_name: "{{ templates.win22.name }}"
+      template_id: "{{ templates.win22.id }}"
+      template_storage: "{{ templates.win22.storage.type }}"
+      template_storage_size: "{{ templates.win22.storage.size }}"
+      vm_sockets: "{{ ad.vm.sockets }}"
+      vm_cores: "{{ ad.vm.cores }}"
+      vm_mem: "{{ ad.vm.mem }}"
+    tags: ["services","ad"]
+
+#  - name: Configure RWDC
+#    ansible.builtin.include_role:
+#      name:
+#    vars:

@@ -2,9 +2,11 @@
 ## Each collection will include a reference to the role or playbook that requires it
 
 collections:
-# Added by the bootstrap_ansible role
+# Added by the portable/ssh role
 - name: ansible.posix
-# Added by the switch configuration task
+# Added by the core site core switch
 - name: junipernetworks.junos
-# Added by the bootstrap_ansible role
+# Added by the portable/ssh role
 - name: ansible.utils
+# Added by the portable/vm role
+- name: community.proxmox

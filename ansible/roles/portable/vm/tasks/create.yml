@@ -1,0 +1,19 @@
+# Creates a VM that doesn't exist
+
+- name: create vm
+  delegate_to: localhost
+  vars:
+    ansible_python_interpreter: "{{ mgmt_pi_ansible_python }}"
+  community.proxmox.proxmox_kvm:
+    api_host: "{{ ansible_host }}"
+    api_user: "{{ api_username }}"
+    api_token_id: "{{ api_token_name }}"
+    api_token_secret: "{{ proxmox_api_token_secret }}"
+    node: bootstrap
+    clone: "{{ template_name }}"
+    name: "{{ vm_name }}"
+    newid: "{{ vm_id }}"
+    full: true
+    storage: "{{ vm_storage }}"
+    state: present
+    timeout: 600
