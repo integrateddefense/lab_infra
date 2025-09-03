@@ -19,13 +19,8 @@
     memory: "{{ vm_mem }}"
     balloon: 0
     scsihw: virtio-scsi-pci
-#    scsi:
-#      scsi0: "{{ template_storage }}:{{ template_storage_size }}"
-#      scsi1: "{{ vm_storage }}:{{ vm_storage_size }}"
-#    net:
-#      net0: "virtio,bridge=vmbr{{vm_vlan_id}},tag={{vm_vlan_id}}"
     update: true
-    changed_when: false
+  changed_when: false
 
 - name: configure os disk
   delegate_to: localhost
@@ -69,4 +64,4 @@
     vmid: "{{ vm_id }}"
     interface: net0
     bridge: "vmbr{{ vm_vlan_id }}"
-    tag: "{{ vm_vlan_id }}"
+
