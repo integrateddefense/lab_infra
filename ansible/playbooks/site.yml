@@ -1,0 +1,8 @@
+- import_playbook: mgmt-pi.yml
+  tags: ["infrastructure","mgmt-pi"]
+- import_playbook: core_switch.yml
+  tags: ["infrastructure","switch"]
+- import_playbook: bootstrap.yml
+  tags: ["infrastructure","bootstrap"]
+- import_playbook: identity.yml
+  tags: ["services","ad"]

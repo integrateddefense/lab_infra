@@ -1,0 +1,10 @@
+# Assumes 'rwdc' inventory group only includes a single host
+- hosts: rwdc
+  gather_facts: false
+
+  tasks:
+  - name: Configure RWDC
+    ansible.builtin.import_role:
+      name: services/identity
+      tasks_from: ad.yml
+#    vars:
