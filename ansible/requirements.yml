@@ -10,3 +10,5 @@ collections:
 - name: ansible.utils
 # Added by the portable/vm role
 - name: community.proxmox
+# Added by the infrastructure/ad role
+- name: ansible.windows

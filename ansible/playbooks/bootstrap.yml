@@ -10,6 +10,13 @@
       tasks_from: proxmox.yml
     tags: ["baseline","ssh"]
 
+  - name: Configure Networking
+    become: true
+    ansible.builtin.import_role:
+      name: portable/baseline
+      tasks_from: bootstrap_network.yml
+    tags: ["baseline","net"]
+
 # Identity Services
   - name: Create RWDC VM
     ansible.builtin.import_role:

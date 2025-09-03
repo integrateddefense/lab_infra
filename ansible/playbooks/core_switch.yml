@@ -36,23 +36,25 @@
 
 ## Portable Roles
   - name: ssh
-    ansible.builtin.include_role:
+    ansible.builtin.import_role:
       name: portable/ssh
       tasks_from: junos.yml
     tags: [portable,ssh]
 
 ## Function Roles
   - name: base
-    ansible.builtin.include_role:
+    ansible.builtin.import_role:
       name: infrastructure/switch
       tasks_from: base.yml
     tags: [base]
 
   - name: ports
+    tags: [ports]
     ansible.builtin.include_role:
       name: infrastructure/switch
       tasks_from: ports.yml
-    tags: [port]
+      apply:
+        tags: [ports]
     loop: "{{ ports }}"
     loop_control:
       index_var: port_number
