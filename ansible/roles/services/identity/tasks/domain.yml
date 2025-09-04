@@ -1,0 +1,17 @@
+- name: create sites
+  microsoft.ad.site:
+
+- name: associate subnets
+  microsoft.ad.subnet:
+
+- name: create site links
+  microsoft.ad.site_link:
+
+- name: create OU structure
+  microsoft.ad.organizational_unit:
+
+- name: create groups
+  microsoft.ad.group:
+
+- name: create user
+  microsoft.ad.user:

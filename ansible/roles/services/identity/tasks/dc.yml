@@ -1,0 +1,2 @@
+- name: promote to DC
+  microsoft.ad.domain_controller:

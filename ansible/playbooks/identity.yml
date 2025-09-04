@@ -3,6 +3,11 @@
   gather_facts: false
 
   tasks:
+  - name: apply windows baseline
+    ansible.builtin.import_role:
+      name: portable/baseline
+      tasks_from: windows.yml
+
   - name: Configure RWDC
     ansible.builtin.import_role:
       name: services/identity
