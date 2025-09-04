@@ -1,3 +1,45 @@
-- name: create forest
+- name: create domain
   microsoft.ad.domain:
-    dns_domain_name: "{{ subdomain_name }}.{{  }}"
+    dns_domain_name: "{{ domain.sub }}.{{ domain.root }}"
+    safe_mode_password: "{{ dsrm_password }}"
+    database_path: "{{ data_drive.letter }}:\\AD\\NTDS"
+    sysvol_path: "{{ data_drive.letter }}:\\AD\\SYSVOL"
+    domain_mode: Default
+    forest_mode: Default
+    reboot: true
+  no_log: true
+
+- name: set new connection vars
+  ansible.builtin.set_fact:
+    old_password: "{{ ansible_password }}"
+    old_user: "{{ ansible_user }}"
+    ansible_user: "{{ default_admin_user }}"
+    ansible_password: "{{ default_admin_password }}"
+
+- name: test connection
+  ansible.windows.win_ping:
+
+- name: configure ansible domain admin
+  microsoft.ad.user:
+    name: ansible
+    password: "{{ old_password }}"
+    update_password: when_changed
+    password_never_expires: true
+    protect_from_deletion: true
+    state: present
+    groups:
+      set:
+      - Domain Users
+      - Domain Admins
+      - Enterprise Admins
+      - Schema Admins
+      - Administrators
+      - Group Policy Creator Owners
+
+- name: reset connection vars
+  ansible.builtin.set_fact:
+    ansible_user: "{{ old_user }}"
+    ansible_password: "{{ old_password }}"
+
+- name: test connection
+  ansible.windows.win_ping:
