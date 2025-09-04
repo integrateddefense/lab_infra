@@ -1,0 +1,41 @@
+# Assumes 'rwdc' inventory group only includes a single host
+- hosts: domain_controllers
+  gather_facts: false
+  serial: 1
+
+  pre_tasks:
+  - name: assert 1 rwdc
+    assert:
+      that:
+        - groups.rwdc is defined
+        - groups.rwdc | length == 1
+      fail_msg: "Exactly one RWDC must be defined in [rwdc]"
+
+  tasks:
+  - name: apply windows baseline
+    tags: ["os"]
+    ansible.builtin.import_role:
+      name: portable/baseline
+      tasks_from: windows.yml
+
+  - name: apply dc baseline
+    tags: ["baseline","non-os"]
+    ansible.builtin.import_role:
+      name: infrastructure/dcs
+      tasks_from: baseline.yml
+
+  - name: apply rwdc baseline
+    tags: ["rwdc","non-os"]
+    ansible.builtin.import_role:
+      name: infrastructure/dcs
+      tasks_from: rwdc.yml
+    when: inventory_hostname == groups.rwdc[0]
+    run_once: true
+    delegate_to: "{{ groups.rwdc[0] }}"
+
+  - name: apply rodc baseline
+    tags: ["rodc","non-os"]
+    ansible.builtin.import_role:
+      name: infrastructure/dcs
+      tasks_from: rodc.yml
+    when: "'rodc' in group_names"

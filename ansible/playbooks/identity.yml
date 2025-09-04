@@ -1,15 +1,11 @@
-# Assumes 'rwdc' inventory group only includes a single host
-- hosts: rwdc
+# Configures the centralized identity manager
+- name: configure domain
+  hosts: identity_authority
   gather_facts: false
 
   tasks:
-  - name: apply windows baseline
-    ansible.builtin.import_role:
-      name: portable/baseline
-      tasks_from: windows.yml
-
-  - name: Configure RWDC
+  - name: configure domain
     ansible.builtin.import_role:
       name: services/identity
       tasks_from: ad.yml
-#    vars:
+

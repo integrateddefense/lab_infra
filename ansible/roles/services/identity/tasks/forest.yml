@@ -1,2 +1,0 @@
-- name: create forest
-  microsoft.ad.domain:

@@ -1,0 +1,11 @@
+- name: install AD DS and DNS
+  ansible.windows.win_feature:
+    name:
+    - AD-Domain-Services
+    - DNS
+    state: present
+    include_management_tools: true
+  register: status
+
+- ansible.windows.win_reboot:
+  when: status.reboot_required

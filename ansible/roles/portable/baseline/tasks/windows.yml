@@ -28,7 +28,7 @@
   - name: create cert
     ansible.windows.win_powershell:
       script: |
-        $fqdn = '{{ hostname }}.{{ subdomain_name }}.{{ domain_name }}'
+        $fqdn = '{{ hostname }}.{{ domain.sub }}.{{ domain.root }}'
         $cert = Get-ChildItem Cert:\LocalMachine\My |
                 Where-Object { $_.Subject -like "CN=$fqdn" } |
                 Sort-Object NotAfter -Descending | Select-Object -First 1
@@ -131,10 +131,10 @@
       community.windows.win_partition:
         partition_size: -1
         disk_number: "{{ disk_num.output[0] }}"
-        drive_letter: "M"
+        drive_letter: "{{ data_drive.letter }}"
 
     - name: format volume
       community.windows.win_format:
-        drive_letter: "M"
+        drive_letter: "{{ data_drive.letter }}"
         file_system: NTFS
 

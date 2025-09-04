@@ -1,0 +1,4 @@
+- debug:
+    msg: "Not Implemented Yet"
+#- name: promote to DC
+#  microsoft.ad.domain_controller:
