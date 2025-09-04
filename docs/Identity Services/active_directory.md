@@ -14,6 +14,14 @@ Set DNS to itself (10.0.21.10) plus an external fallback resolver.
 
 Verified with Get-NetIPAddress and Resolve-DnsName.
 
+```
+Get-NetAdapter
+Remove-NetIPAddress -InterfaceAlias "Ethernet" -Confirm:$false
+New-NetIPAddress -InterfaceAlias "Ethernet" -IPAddress 10.0.21.10 -PrefixLength 24 -DefaultGateway 10.0.21.1
+Set-DnsClientServerAddress -InterfaceAlias "Ethernet" -ServerAddresses ("10.0.21.10","1.1.1.1")
+Get-NetIPAddress -InterfaceAlias "Ethernet"
+```
+
 ## WinRM HTTPS listener
 
 Created a self-signed cert for the host FQDN.
