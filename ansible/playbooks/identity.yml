@@ -4,8 +4,17 @@
   gather_facts: false
 
   tasks:
+  - name: load site vault
+    ansible.builtin.include_vars:
+      file: "../inventories/{{ inventory_type }}/{{ site }}/group_vars/rwdc_vault.yml"
+    no_log: true
+    run_once: true
+
+  - name: check connection
+    ansible.builtin.win_ping:
+
   - name: configure domain
     ansible.builtin.import_role:
       name: services/identity
-      tasks_from: ad.yml
+      tasks_from: domain.yml
 

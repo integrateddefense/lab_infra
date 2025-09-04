@@ -1,17 +1,20 @@
-- name: create sites
-  microsoft.ad.site:
+- debug:
+    msg: "Not Implemented Yet"
 
-- name: associate subnets
-  microsoft.ad.subnet:
+#- name: create sites
+#  microsoft.ad.site:
 
-- name: create site links
-  microsoft.ad.site_link:
+#- name: associate subnets
+#  microsoft.ad.subnet:
 
-- name: create OU structure
-  microsoft.ad.organizational_unit:
+#- name: create site links
+#  microsoft.ad.site_link:
 
-- name: create groups
-  microsoft.ad.group:
+#- name: create OU structure
+#  microsoft.ad.organizational_unit:
 
-- name: create user
-  microsoft.ad.user:
+#- name: create groups
+#  microsoft.ad.group:
+
+#- name: create user
+#  microsoft.ad.user:
