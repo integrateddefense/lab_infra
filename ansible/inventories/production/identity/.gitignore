@@ -1,0 +1,9 @@
+# Exclude YAML files
+
+*.yml
+*.yaml
+
+# Include example files
+
+!*,yml.example
+!*.yaml.example
