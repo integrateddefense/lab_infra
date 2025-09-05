@@ -3,18 +3,27 @@
   hosts: identity_authority
   gather_facts: false
 
-  tasks:
+  pre_tasks:
   - name: load site vault
     ansible.builtin.include_vars:
       file: "../inventories/{{ inventory_type }}/{{ site }}/group_vars/rwdc_vault.yml"
     no_log: true
     run_once: true
+    tags: ["always"]
 
   - name: check connection
     ansible.builtin.win_ping:
+    tags: ["always"]
 
-  - name: configure domain
+  tasks:
+  - name: configure ou tree
     ansible.builtin.import_role:
       name: services/identity
-      tasks_from: domain.yml
+      tasks_from: ou.yml
+    tags: ["ou"]
 
+  - name: configure sites and subnets
+    ansible.builtin.import_role:
+      name: services/identity
+      tasks_from: sites_subnets.yml
+    tags: ["sites"]

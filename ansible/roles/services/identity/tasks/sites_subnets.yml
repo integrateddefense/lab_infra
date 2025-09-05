@@ -1,0 +1,97 @@
+- name: create sites
+  ansible.windows.win_powershell:
+    script: |
+      $exists = Get-ADReplicationSite -Filter "Name -eq '{{ item.name }}'"
+      if (-not $exists){
+        New-ADReplicationSite -Name "{{ item.name }}" -Description "{{ item.description }}"
+        $changed = $true
+      }
+      else {
+        Set-ADReplicationSite -Identity "{{ item.name }}" -Description "{{ item.description }}"
+        $changed = $false
+      }
+      @{ changed = $changed }
+  register: result
+  changed_when: result.output[0].changed
+  loop: "{{ sites }}"
+
+#      $sites = $Ansible.Args.arg_sites
+
+
+- name: enforce sites for each dc
+  ansible.windows.win_powershell:
+    script: |
+      $json = '{{ sites | to_json }}'
+      $sites = ConvertFrom-Json $json
+      $dcs = Get-ADDomainController -Filter * | Select-Object Name, Site
+      $changed = $false
+      $changes = @()
+      foreach ($dc in $dcs) {
+        $site_code = ($dcs.Name[1..2] -join "").ToLower()
+        $type = ($dcs.Name[5..8] -join "").ToLower()
+        $site = $sites | Where-Object { $_.code -eq $site_code }
+        if ($type -eq "rwdc"){
+          $name = $site.name + "-Protected"
+        } else { $name = $site.name }
+
+        if ($name -ne $dc.Site){
+          Move-ADDirectoryServer -Identity $dc.Name -Site $name
+          $changed = $true
+          $changes += "$($dc.Name): $($dc.Site) -> $name"
+        }
+      }
+      @{ changed = $changed; changes = $changes }
+#    arguments:
+#      arg_sites: "{{ sites }}"
+  register: result
+  changed_when: result.output[0].changed
+
+- name: show changes
+  debug:
+    var: result.output.changes
+  when: result.output[0].changed
+
+- name: check default site
+  ansible.windows.win_powershell:
+    script: |
+      $default = Get-ADReplicationSite -Filter "Name -eq 'Default-First-Site-Name'" -Properties *
+      $dcs = Get-ADDomainController -Filter "Site -eq 'Default-First-Site-Name'" | Select-Object Hostname
+      @{ subnets = $default.Subnets; dcs = $dcs}
+  register: default_site
+  changed_when: false
+
+- name: assert no subnets on default site
+  ansible.builtin.assert:
+    that:
+    - default_site.output[0].subnets | length == 0
+    fail_msg: "WARNING - Default site includes subnet(s) {{ default_site.output[0].subnets | join(', ') }}"
+
+- name: assert no dcs on default site
+  ansible.builtin.assert:
+    that:
+    - default_site.output[0].dcs is defined
+    fail_msg: "Default site includes Domain Controller(s): {{ (default_site.output[0].dcs | default([],true)) | list | join(', ') }}"
+
+- name: associate subnets
+  ansible.windows.win_powershell:
+    script: |
+      $exists = Get-ADReplicationSubnet -Identity "{{ item.cidr }}"
+      if (-not $exists){
+        New-ADReplicationSubnet -Name "{{ item.cidr }}" -Site "{{ item.site }}" -Description "{{ item.description }}"
+        $changed = $true
+      }
+      else {
+        Set-ADReplicationSubnet -Identity "{{ item.cidr }}" -Site "{{ item.site }}" -Description "{{ item.description }}"
+        $changed = $false
+      }
+      @{ changed = $changed }
+  register: result
+  changed_when: result.output[0].changed
+  loop: "{{ subnets }}"
+
+- name: create site links
+  ansible.windows.win_powershell:
+    script: |
+      @{ changed = $false }
+  register: result
+  changed_when: result.output[0].changed
