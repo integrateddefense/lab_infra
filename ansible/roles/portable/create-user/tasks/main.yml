@@ -1,0 +1,3 @@
+# Role to create a user with an initial seed password or user-provided password
+## If no user-provided password, random password is printed to the output ONCE and user must change password at next login
+
