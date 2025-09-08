@@ -6,9 +6,3 @@
     description: "ANSIBLE MANAGED: {{ item.description }}"
     state: present
   loop: "{{ ou_tree }}"
-
-#- name: create groups
-#  microsoft.ad.group:
-
-#- name: create user
-#  microsoft.ad.user:
