@@ -27,3 +27,9 @@
       name: services/identity
       tasks_from: sites_subnets.yml
     tags: ["sites"]
+
+  - name: configure groups
+    ansible.builtin.import_role:
+      name: services/identity
+      tasks_from: groups.yml
+    tags: ["groups"]
