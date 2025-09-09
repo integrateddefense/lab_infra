@@ -1,7 +1,0 @@
-# Example group vars file for the switch
-
-# This option allows ansible's SSH client to support deprecated and default-disabled algorithms
-## It's necessary on older hardware that doesn't support modern encryption tools and okay for a home lab, but you should NEVER do this in production or public-facing devices
-ansible_ssh_common_args: >
-  -o KexAlgorithms=+diffie-hellman-group1-sha1
-  -o HostKeyAlgorithms=+ssh-rsa

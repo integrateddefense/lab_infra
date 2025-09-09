@@ -1,7 +1,0 @@
-# Exclude inventory files
-
-*.ini
-
-# Include example files
-
-!*,ini.example

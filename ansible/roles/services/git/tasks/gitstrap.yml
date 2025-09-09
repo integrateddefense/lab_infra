@@ -3,7 +3,7 @@
 
 # Overall Approach:
 ## Download and/or update the git package
-## Configure git user
+## Configure git user and git-shell
 ## Configure data disk
 ## Configure pre-receive hook for git
 ## Create bare IaC repo (if nonexistent)
@@ -25,6 +25,14 @@
   ansible.builtin.user:
     name: git
     shell: /usr/bin/git-shell
+    state: present
+
+# Configure git-shell
+- name: add to shells
+  become: true
+  ansible.builtin.lineinfile:
+    path: /etc/shells
+    line: "/usr/bin/git-shell"
     state: present
 
 # Configure data disk
