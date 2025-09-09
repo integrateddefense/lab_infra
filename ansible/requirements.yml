@@ -15,3 +15,5 @@ collections:
 - name: community.windows
 # Added by the services/identity role
 - name: microsoft.ad
+# Added by the services/git role
+- name: community.general
