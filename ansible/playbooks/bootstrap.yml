@@ -5,19 +5,17 @@
 
 # Hardware Baseline
   - name: Configure SSH
+    tags: ["baseline","ssh"]
     ansible.builtin.import_role:
       name: portable/ssh
       tasks_from: proxmox.yml
-    tags: ["baseline","ssh"]
 
   - name: Configure Networking
     become: true
+    tags: ["baseline","net"]
     ansible.builtin.import_role:
       name: portable/baseline
       tasks_from: bootstrap_network.yml
-    tags: ["baseline","net"]
-
-
 
 # Identity Services
   - name: Create RWDC VM
@@ -25,16 +23,40 @@
     ansible.builtin.import_role:
       name: portable/vm
     vars:
+      template_name: "{{ templates.win22.name }}"
+      template_id: "{{ templates.win22.id }}"
+      template_storage: "{{ templates.win22.storage.type }}"
+      template_storage_size: "{{ templates.win22.storage.size }}"
       vm_name: "{{ ad.vm.name }}"
       vm_id: "{{ ad.vm.id }}"
       vm_description: "{{ ad.vm.description }}"
       vm_storage: "{{ ad.vm.storage }}"
       vm_storage_size: "{{ ad.vm.size }}"
       vm_vlan_id: "{{ ad.vm.vlan }}"
-      template_name: "{{ templates.win22.name }}"
-      template_id: "{{ templates.win22.id }}"
-      template_storage: "{{ templates.win22.storage.type }}"
-      template_storage_size: "{{ templates.win22.storage.size }}"
       vm_sockets: "{{ ad.vm.sockets }}"
       vm_cores: "{{ ad.vm.cores }}"
       vm_mem: "{{ ad.vm.mem }}"
+
+## To configure the service, see playbooks/identity.yml
+
+# Git Services
+  - name: create git VM
+    tags: ["infrastructure","code","git","git/infrastructure"]
+    ansible.builtin.import_role:
+      name: portable/vm
+    vars:
+      template_name: "{{ templates.alma9.name }}"
+      template_id: "{{ templates.alma9.id }}"
+      template_storage: "{{ templates.alma9.storage.type }}"
+      template_storage_size: "{{ templates.alma9.storage.size }}"
+      vm_name: "{{ git.vm.name }}"
+      vm_id: "{{ git.vm.id }}"
+      vm_description: "{{ git.vm.description }}"
+      vm_storage: "{{ git.vm.storage }}"
+      vm_storage_size: "{{ git.vm.size }}"
+      vm_vlan_id: "{{ git.vm.vlan }}"
+      vm_sockets: "{{ git.vm.sockets }}"
+      vm_cores: "{{ git.vm.cores }}"
+      vm_mem: "{{ git.vm.mem }}"
+
+## To configure the service, see playbooks/git.yml
