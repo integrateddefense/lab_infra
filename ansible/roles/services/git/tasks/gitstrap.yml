@@ -1,0 +1,108 @@
+# Configures the gitstrap service on the bootstrap node
+## A lightweight, Git-Over-SSH implementation as a hot-backup to the primary GitLab instance
+
+# Overall Approach:
+## Configure git user
+## Configure data disk
+## Download and/or update the git package
+## Configure pre-receive hook for git
+## Create bare IaC repo (if nonexistent)
+
+# Configure git user
+- name: download git
+  become: true
+  ansible.builtin.package:
+    name: git
+    state: present
+
+- name: create git user
+  become: true
+  ansible.builtin.user:
+    name: git
+    shell: /usr/bin/git-shell
+    state: present
+
+# Configure Data Disk
+- name: check for git mount
+  ansible.builtin.command: "mountpoint -q {{ mountpoint }}"
+  register: mnt_src
+  changed_when: false
+
+- name: set mounted flag
+  ansible.builtin.set_fact:
+    git_mounted: "{{ mnt_src.rc == 0 }}"
+
+- name: find disk by label
+  become: true
+  ansible.builtin.command: blkid -L gitdata
+  register: dev_labeled
+  failed_when: false
+  changed_when: false
+  when: not git_mounted
+
+- name: discover data disk
+  when: (not git_mounted) and (dev_labeled.rc != 0)
+  block:
+  - name: identify data disk
+    ansible.builtin.shell:
+      cmd: lsblk -J
+    register: disk_raw
+    changed_when: false
+
+  - name: parse output
+    ansible.builtin.set_fact:
+      disks: "{{ disk_raw.stdout | from_json }}"
+
+  - name: select data disk candidates
+    ansible.builtin.set_fact:
+      data_candidates: >-
+        {{ disks
+            | json_query("blockdevices[?type=='disk' && (!contains(keys(@),'children'))]")
+        }}
+
+  - name: choose data disk
+    ansible.builtin.set_fact:
+      data_disk: "/dev/{{ data_candidates[0].name }}"
+    when: data_candidates | length > 0
+
+- name: set device facts (existing disk)
+  ansible.builtin.set_fact:
+    data_disk: "{{ data_disk | default(dev_labeled.stdout) }}"
+  when: not git_mounted
+
+- name: partition the disk
+  become: true
+  community.general.parted:
+    device: "{{ data_disk }}"
+    label: gpt
+    number: 1
+    fs_type: xfs
+    state: present
+  when: not git_mounted
+
+- name: make filesystem
+  become: true
+  community.general.filesystem:
+    fstype: xfs
+    dev: "{{ data_disk }}1"
+    opts: "-L gitdata"
+  when: not git_mounted
+
+- name: create mountpoint
+  become: true
+  ansible.builtin.file:
+    path: "{{ mountpoint }}"
+    state: directory
+    owner: git
+    group: git
+    mode: "0755"
+    recurse: true
+
+- name: mount and persist
+  become: true
+  ansible.posix.mount:
+    path: "{{ mountpoint }}"
+    src: "LABEL=gitdata"
+    fstype: xfs
+    opts: "defaults,relatime,x-systemd.automount,nofail"
+    state: mounted

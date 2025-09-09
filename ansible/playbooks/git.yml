@@ -1,0 +1,11 @@
+- hosts: git
+  gather_facts: false
+
+  tasks:
+
+## Configure gitstrap service
+  - name: configure gitstrap
+    tags: ["gitstrap","git"]
+    ansible.builtin.import_role:
+      name: services/git
+      tasks_from: gitstrap.yml
