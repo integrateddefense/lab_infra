@@ -128,8 +128,6 @@ qm set <vm id> --bios ovmf
 # Mounts the OS ISO
 qm set <vm id> --cdrom local:iso/AlmaLinux-9.6-x86_64-minimal.iso
 
-# Configure text-based install
-qm set <vm id> --args "console=ttyS0,115200n8 inst.text"
 # Powers on the VM
 qm start <vm id>
 ```
