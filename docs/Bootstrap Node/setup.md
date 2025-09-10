@@ -88,7 +88,7 @@ Note on the Windows Server images: the ISO linked above comes pre-built with an 
 Note on AlmaLinux images: there are three options.
 - Boot is the bare minimum needed to install the OS, and requires internet access to get the rest of the necessary packages.
 - DVD is the full set of packages and repositories; great for offline installs or air-gapped environments, but may introduce unnecessary packages.
-- Minimal (the version used in this environment) is just enough to get the OS running and functioning correctly, with the assumptrion that anything more detailed will be downloaded separately via `dnf`.
+- Minimal (the version used in this environment) is just enough to get the OS running and functioning correctly, with the assumption that anything more detailed will be downloaded separately via `dnf`.
 
 Once you've got all of the ISOs on your bootstrap node, move them to /var/lib/vs/template/iso - this will make sure your ISOs are available through the UI as well.
 - If you want to use a different path, go to /etc/pve/storage.cfg and change the `path` variable under the `dir: local` block.
@@ -231,7 +231,7 @@ When selecting your version, you'll see 4 options - Standard, Standard Desktop E
 
 When you get to the step that asks "Where do you want to install the operating system?", select "Load Driver" on the bottom left, and then select the VirtIO driver (Red Hat VirtIO SCSI pass-through controller (D:\amd64\2k22\vioscsi.inf)).
 
-After the system loads the drivers, you'll be returned to the "Where do you want to isntall the operating system?" page and should now see a Drive 0 as an option. Select it and then press Next, and let it start installing.
+After the system loads the drivers, you'll be returned to the "Where do you want to install the operating system?" page and should now see a Drive 0 as an option. Select it and then press Next, and let it start installing.
 
 Once complete, it will restart and then present you with a command line to complete the rest of the setup, including setting the Administrator password, and then it will dump you into the Server Configuration Tool - a GUI-like application to manage typical settings like hostname, networking, updates, etc. Type `15` and hit enter to exit the tool and transition to a regular PowerShell prompt.
 
