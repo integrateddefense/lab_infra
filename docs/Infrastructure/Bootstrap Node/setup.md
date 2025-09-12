@@ -1,18 +1,19 @@
 # Bootstrap Node Setup
 
-This document details the manual setup steps for the bootstrap node. You can find the playbook that enforces idempotency (good for post-install maintenance) [here](..\..\ansible\tasks\bootstrap\init.yml).
+This document details the manual setup steps for the bootstrap node. You can also check the [playbook](..\..\ansible\tasks\bootstrap\init.yml) that enforces idempotency (good for post-install maintenance).
 
 We'll follow the below steps:
+
 1) Install ProxMox
 2) Configure Networking
 3) Create Initial Templates
 4) Deploy & Configure Services
 
-# Step 1) Install ProxMox
+## Step 1) Install ProxMox
 
 This step is self-explanatory - just follow the prompts and you're good to go.
 
-# Step 2) Configure Networking
+## Step 2) Configure Networking
 
 Self-explanatory here is configure your switch and make sure your bootstrap node is cabled correctly.
 
@@ -23,7 +24,8 @@ On the switch end, your port should trunk both your services and management VLAN
 On the node end, you need to configure two bridge interfaces anchored by the same physical interface. You'll need to go into /etc/network/interfaces to configure them.
 
 If you did your install correctly, you'll see something that looks like this:
-```
+
+``` .conf
 auto lo
 iface lo inet loopback
 
@@ -43,7 +45,8 @@ source /etc/network/interfaces.d/*
 Each paragraph specifies the configuration for an interface - lo for loopback, vmbr0 for the default bridge interface that proxmox created when it was installed. You'll want to refactor the existing vmbr0 entry into a bridge that works for a specific VLAN, and add a new entry for any additional VLANs that you want to accept traffic on.
 
 Your management VLAN bridge should look like this:
-```
+
+``` .conf
 auto vmbr<vlan id>
 iface vmbr<Vlan id> inet static
   address <the address for the proxmox management interface on this node>
@@ -54,7 +57,8 @@ iface vmbr<Vlan id> inet static
 ```
 
 Any additional VLANs you want should look like this:
-```
+
+``` .conf
 auto vmbr<vlan id>
 iface vmbr<vlan id> inet static
   bridge-ports <interface ID>.<vlan id>
@@ -64,9 +68,9 @@ iface vmbr<vlan id> inet static
 
 The two specifications need to be different, so that the management interface isn't exposed on the wrong VLAN, breaking the environment's out-of-band management.
 
-# Step 3) Create Initial Templates
+## Step 3) Create Initial Templates
 
-## Step 3.1) Download Images
+### Step 3.1) Download Images
 
 This will vary based on your setup: you may download them directly to your bootstrap node, or sneakernet them via a mounted USB drive or a disk if your bootstrap node has an optical drive.
 
@@ -77,6 +81,7 @@ You'll also want to download a copy of the virtio drivers for windows. Virtio is
 AlmaLinux includes the virtio drivers by default, so we only need to get the windows drivers.
 
 You can find the most recent ISOs for each at the following links:
+
 - [Windows Server](https://www.microsoft.com/en-us/evalcenter/download-windows-server-2022)
 - [AlmaLinux](https://almalinux.org/get-almalinux/)
 - [VirtIO Windows Drivers](github.com/virtio-win/kvm-guest-drivers-windows/wiki/Driver-installation)
@@ -85,11 +90,13 @@ You can find the most recent ISOs for each at the following links:
 Note on the Windows Server images: the ISO linked above comes pre-built with an evaluation license good for 180 days. After 180 days, that image will start asking for a full license. Buying from Microsoft directly is the safest, but also most expensive. You can generally find spare licenses on resellers or other marketplaces like eBay for significantly cheaper.
 
 Note on AlmaLinux images: there are three options.
+
 - Boot is the bare minimum needed to install the OS, and requires internet access to get the rest of the necessary packages.
 - DVD is the full set of packages and repositories; great for offline installs or air-gapped environments, but may introduce unnecessary packages.
 - Minimal (the version used in this environment) is just enough to get the OS running and functioning correctly, with the assumption that anything more detailed will be downloaded separately via `dnf`.
 
 Once you've got all of the ISOs on your bootstrap node, move them to /var/lib/vs/template/iso - this will make sure your ISOs are available through the UI as well.
+
 - If you want to use a different path, go to /etc/pve/storage.cfg and change the `path` variable under the `dir: local` block.
 
 ## Step 3.2) Create the Linux image
@@ -99,6 +106,7 @@ Since we're focusing on Infrastructure as Code, these instructions will focus on
 The main binary we'll be using here is `qm` - Proxmox's native CLI for managing QEMU/KVM virtual machines.
 
 To create the image, follow the below general steps:
+
 1) Create the VM Shell
 2) Attach devices and prepare for boot
 3) Start
@@ -106,6 +114,7 @@ To create the image, follow the below general steps:
 5) Seal as a template
 
 Use the following command to create the VM shell: `qm create <vm id> -- name <vm name> --memory 4096 --cores 2 --sockets 1 --cpu host --machine q35 --scsihw virtio-scsi-pci --net0 virtio,bridge=<management bridge interface> --serial0 socket --vga serial0`
+
 - `<vm id>` - a quick numeric reference; must be unique across all VMs in the cluster
 - `<vm name>` - the human-readable name for this VM
 - `--cpu host` - configures the set of CPU features to offer to the guest OS; can significant impact image portability and efficiency. `kvm64` is a generic option that favors portability within CPU architectures (i.e, x86 to x86) at the cost of some speed; alternatively, the `host` option offers all features of the proxmox host's CPU to the guest, favoring speed at the cost of portability. As of 11 August 2025, Alma requires x86-64-v2 processors to install, but kvm64's preference on portability only supports up to -v1.
@@ -115,7 +124,7 @@ Use the following command to create the VM shell: `qm create <vm id> -- name <vm
 
 You'll notice the shell is missing a few things, like storage specifications or the ISO that we want to install into the template. You'll set those using the commands below.
 
-```
+``` .sh
 # Creates a new thin-provisioned logical volume at the specified size; 32GB is fine, but size based on your availability
 qm set <vm id> --scsi0 local-lvm:32
 # Sets the new volume at the start of the boot order
@@ -132,11 +141,12 @@ qm start <vm id>
 ```
 
 Alma includes a graphical installer, so you'll need to go to into the Proxmox management interface and access the console on the VM to finish the install. The prompts are pretty self-explanatory; I recommend leaving most everything at the default, setting a root password, and creating a new user for your post-installation activities.
+
 - Note on IaC Considerations: even though we're executing this manually, there are tools available to automate this process in the future. Specifically, Packer includes the ability to pass arguments to the Alma installer to automate image builds from source ISOs.
 
-
 Once inside the VM, we need to enable a few things before templating it.
-```
+
+``` .sh
 # Update packages - skip if you don't have external networking setup yet
 sudo dnf -y update
 sudo dnf -y install qemu-guest-agent cloud-init
@@ -190,7 +200,8 @@ sudo shutdown -h now
 ```
 
 Once back on the proxmox prompt, do some cleanup and seal the VM as a template
-```
+
+``` .sh
 # Unmount the OS installation media
 qm set <vm id> --cdrom none
 # Seal the VM
@@ -202,11 +213,13 @@ qm template <vm id>
 Creating the windows image is pretty much the exact same - a few of the commands and options differ, but that's pretty much it.
 
 Start by creating the VM shell like so: `qm create <vm id> --name <vm name> --memory 8192 --cores 4 --sockets 1 --cpu host --machine q35 --scsihw virtio-scsi-pci --net0 virtio,bridge=<bridge interface>`
+
 - The resources on this shell go up; Windows is a heavier OS than Linux
 - Still using `--cpu host` to avoid build issues; we'll generate mobile images with packer later.
 
 Prep the VM for first boot:
-```
+
+``` .sh
 # Create a drive volume and set it in the boot order
 qm set <vm id> --scsi0 local-lvm:64
 qm set <vm id> --boot order=scsi0
@@ -224,6 +237,7 @@ qm start <vm id>
 Transition to the GUI interface and access the console. Follow the prompts and complete the install.
 
 When selecting your version, you'll see 4 options - Standard, Standard Desktop Experience, Datacenter, and Datacenter Desktop Experience - that generally discuss two major feature sets.
+
 - Standard vs Datacenter: Functionally, these are the same, but the licensing requirements can vary. Datacenter is generally the better option if you're going to run more than two VMs per physical host.
   - Licensing vs Activation: Licensing is the legal right to run the software, whereas Activation is the process of each instance of the software validating that it's associated with a license. Licensing isn't validated automatically, while Activation provides a mitigation against unregistered software. More to come on this process once we install the license validation components.
 - Desktop Experience: The Desktop Experience installs GUI components - that's really it. Microsoft recommends the non-desktop version, aka "headless", and that's what we'll use for the majority of this environment. It still provides all of the same services, but with a reduced attack and patch surface.
@@ -242,7 +256,8 @@ To confirm the driver install worked, run `Get-NetAdapter` and you should see an
 Last, we need to prep the image for templating.
 
 From the guest:
-```
+
+``` .ps1
 # Run the virtio installer which will make sure you have all the right drivers and the QEMU guest agent
 <drive letter>:\virtio-win-guest-tools.exe
 
@@ -266,14 +281,16 @@ C:\Windows\System32\Sysprep\Sysprep.exe /oobe /generalize /shutdown
 ```
 
 Back on the Proxmox node:
-```
+
+``` .sh
 # Seal the VM
 qm set <vm id> --ide2 none --sata0 none
 qm template <vm id>
 ```
 
-# Step 4) Deploy & Configure Services
+## Step 4) Deploy & Configure Services
 
 There are 3 main services on the bootstrap node. You can find their in depth documentation at the links below:
+
 - [Git](../../Services/Code/gitstrap.md)
 - [Identity Services](../../Services/Identity Services/rwdc.md)
