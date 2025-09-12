@@ -1,15 +1,17 @@
-# IN PROGRESS
+# Software Delivery (Code) Ecosystem Design
+
+IN PROGRESS
 
 [Diagram](../../../diagrams/Subsystems/Code.pdf)
 
-# Components
+## Components
 
 - Git (public and private repositories)
 - TBD
 
-## Git
+### Git
 
-### Purpose and Scope
+#### Purpose and Scope
 
 - Provide a minimal, reliable, policy-enforcing source of truth for automation content during early bring-up:
 - A place the Management Pi can push to and pull from, before workstations and larger tools exist.
@@ -17,23 +19,19 @@
 - A controlled path to publish a sanitized subset of content to the public repository.
 - A clean hand-off to GitLab later without rearchitecting Source Code Management (SCM).
 
-### Target Architecture (Ideal End State)
+#### Target Architecture (Ideal End State)
 
-#### Center of gravity
-GitLab is the primary hub where contributors push their work. GitLab runs over HTTPS (443) for both UI and Git operations (SSH optional). GitLab’s CI publishes public-safe content to GitHub over HTTPS (443) using an org-scoped token or GitHub App.
-
-#### Hot backup & local ops
-The Bootstrap Git service remains online in parallel as a bare Git over SSH (22) endpoint. GitLab push-mirrors (or CI-pushes) to this internal repo so that the Management Pi can continue to operate and recover against a local, low-dependency remote even if GitLab is unavailable.
-
-#### Policy at boundaries
-- Inbound to Bootstrap: a pre-receive hook rejects pushes that introduce sensitive paths or key material.
-- Outbound to GitHub: GitLab CI applies an allow-list (playbooks/roles/docs only). Inventories, group/host vars, vaults, and keys are never published.
+- Center of gravity: GitLab is the primary hub where contributors push their work. GitLab runs over HTTPS (443) for both UI and Git operations (SSH optional). GitLab’s CI publishes public-safe content to GitHub over HTTPS (443) using an org-scoped token or GitHub App.
+- Hot backup & local ops: the Bootstrap Git service remains online in parallel as a bare Git over SSH (22) endpoint. GitLab push-mirrors (or CI-pushes) to this internal repo so that the Management Pi can continue to operate and recover against a local, low-dependency remote even if GitLab is unavailable.
+- Policy at boundaries
+  - Inbound to Bootstrap: a pre-receive hook rejects pushes that introduce sensitive paths or key material.
+  - Outbound to GitHub: GitLab CI applies an allow-list (playbooks/roles/docs only). Inventories, group/host vars, vaults, and keys are never published.
 
 Most teams point everything at GitLab and call it a day. Here, we're specifically implementing a two-tiered approach to SCM: GitLab for collaboration + an internal, lightweight Git remote that is always present for operations and recovery. It trades a little complexity for resilience and a clearer separation between authoring (GitLab) and operating (Bootstrap + Pi).
 
-### Service Shape
+#### Service Shape
 
-#### Bootstrap Git (aka gitstrap)
+##### Bootstrap Git (aka gitstrap)
 
 - Transport: SSH only; no web UI, no HTTP backend. The attack surface is limited to sshd + git.
 - Account model: a dedicated git service user with git-shell as the login shell (permits Git upload/receive, denies interactive shells).
@@ -42,13 +40,14 @@ Most teams point everything at GitLab and call it a day. Here, we're specificall
 
 This “no-frills” shape aligns with the intent for the internal git remote: authoritative, small, and predictable.
 
-#### GitLab
+##### GitLab
 
 TBD
 
 ### Use Cases
 
 Who can push where (steady state):
+
 - Developers → GitLab (HTTPS/SSH): normal day-to-day.
 - GitLab → Bootstrap (SSH): one-way mirror so Bootstrap stays current.
 - Management Pi → Bootstrap (SSH): operations and recovery continue to work locally.
@@ -66,7 +65,8 @@ Default branch: main. New clones from either remote land on main by default.
 History safety: non-fast-forward updates to protected branches are discouraged (and can be disallowed) on the internal service; formal branch protections are applied in GitLab.
 
 “No secrets in Git” (always on): the Bootstrap service’s pre-receive hook rejects pushes that add any of the following:
-- group_vars/** and host_vars/**
+
+- `group_vars/**` and `host_vars/**`
 - files or paths containing vaulted artifacts
 - private key material (.key, .pem, .pfx, etc.)
 

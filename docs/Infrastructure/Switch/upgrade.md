@@ -17,6 +17,7 @@ Step 5) Reboot and confirm the upgrade
 Optional) Clean up old images
 
 ## Note
+
 This process focuses on transferring the image via the serial connection. It is slow - about 7-10KB/s. There are other, faster, options out there, but this was the most secure approach as a solo-developer. It allows me to continue to deny access to these kinds of functions over the network - reducing the switch's attack surface.
 
 ## TBD
