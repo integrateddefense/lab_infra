@@ -33,3 +33,291 @@
     mode: '0644'
   notify: Update apt cache
 
+# Cluster Create/Join
+- name: create cluster
+  when: ansible_host == proxmox_cluster.founder.ip
+  become: true
+  ansible.builtin.command: "pvecm create {{ site.segment }}-{{ site.name }} --link0 address={{ proxmox_cluster.founder.ip }}"
+  args:
+    creates: /etc/pve/corosync.conf
+
+- name: join cluster
+  when: ansible_host != proxmox_cluster.founder.ip
+  become: true
+  block:
+  - name: generate ephemeral ssh key
+    ansible.builtin.command: ssh-keygen -t ed25519 -N '' -f /root/.ssh/pve-join-temp
+    args:
+      creates: /root/.ssh/pve-join-temp
+
+  - name: grab public key
+    ansible.builtin.command: cat /root/.ssh/pve-join-temp.pub
+    register: public_key
+
+  - name: add key to founder
+    delegate_to: proxmox_cluster.founder.ip
+    become: true
+    ansible.builtin.lineinfile:
+      path: /root/.ssh/authorized_keys
+      regexp: '^from="{{ ansible_host }}"'
+      line: 'from="{{ ansible_host }}",no-agent-forwarding,no-port-forwarding,no-X11-forwarding,no-pty {{ public_key.stdout }}'
+      state: present
+
+  - name: join cluster
+    become: true
+    ansible.builtin.command: "pvecm add {{ founder.ip }} -link0 address={{ ansible_host }} -sshkey /root/.ssh/pve-join-temp"
+    args:
+      creates: /etc/pve/corosync.conf
+
+  - name: remove key from founder
+    delegate_to: proxmox_cluster.founder.ip
+    ansible.builtin.lineinfile:
+      path: /root/.ssh/authorized_keys
+      regexp: '^from="{{ ansible_host }}"'
+      line: 'from="{{ ansible_host }}",no-agent-forwarding,no-port-forwarding,no-X11-forwarding,no-pty {{ public_key.stdout }}'
+      state: absent
+
+  - name: delete joiner keypair
+    ansible.builtin.command: shred -u /root/.ssh/pve-join-temp /root/.ssh/pve-join-temp.pub
+
+# Configure Storage
+## Per Node
+- name: validate volume group name
+  block:
+  - name: get vg name
+    become: true
+    ansible.builtin.shell: vgs --noheadings -o vg_name | xargs
+    register: volume_group
+    changed_when: false
+
+  - name: evaluate vg name
+    ansible.builtin.set_fact:
+      rename_vg: "{{ volume_group.stdout != 'pve'}}"
+
+- name: rename vg
+  when: rename_vg
+  become: true
+  ansible.builtin.command: "vgrename {{ volume_group.stdout }} pve"
+
+- name: validation logical volume name
+  block:
+  - name: check lv name
+    become: true
+    ansible.builtin.shell: lvs --noheadings -o lv_name,vg_name,segtype | awk '$1 =="data" && $2=="pve" && $3=="thin-pool"{found=1} END{exit(found?0:1)}'
+    register: lvs
+    changed_when: false
+
+  - name: evaluate lv name
+    ansible.builtin.set_fact:
+      create_lv: "{{ lvs.rc != 0 }}"
+
+- name: create thin pool
+  when: create_lv
+  become: true
+  ansible.builtin.shell: lvcreate -L 100%FREE -T pve/data
+
+- name: prep cluster-wide directories
+  become: true
+  loop: "{{ cluster_storage }}"
+  when: "'path' in item"
+  ansible.builtin.file:
+    state: directory
+    path: "{{ item.path }}"
+
+## Cluster-Wide
+- name: configure cluster-wide storage
+  run_once: true
+  remote_user: "{{ hostvars[inventory_hostname].ansible_user | default(omit) }}"
+  vars:
+    ansible_ssh_private_key_file: "{{ hostvars[inventory_hostname].ansible_ssh_private_key_file | default(omit) }}"
+  delegate_to: "{{ proxmox_cluster.founder.ip }}"
+  block:
+  - name: get current status
+    become: true
+    ansible.builtin.command: pvesh get /storage --output-format json
+    changed_when: false
+    register: raw
+
+  - name: process output
+    ansible.builtin.set_fact:
+      storages: "{{ raw.stdout | ansible.builtin.from_json }}"
+      fix_dir: []
+      fix_lvmthin: []
+
+  - name: compare dir configs
+    loop: "{{ cluster_storage | selectattr('type','equalto','dir') | list }}"
+    ansible.builtin.set_fact:
+      fix_dir: >-
+        {{ fix_dir +
+          [(
+            { "name": item.name,
+              "status": (
+                (storages
+                | selectattr('type','equalto',item.type)
+                | selectattr('path','equalto',item.path)
+                | selectattr('storage','equalto',item.name)
+                | map(attribute='content') | first | split(",") | map('trim') | sort
+                | list) != (item.content | split(",") | map('trim') | sort)
+              )
+            }
+          )]
+        }}
+
+  - name: compare lvmthin configs
+    loop: "{{ cluster_storage | selectattr('type','equalto','lvmthin') | list }}"
+    ansible.builtin.set_fact:
+      fix_lvmthin: >-
+        {{ fix_lvmthin +
+          ([
+            { "name": item.name,
+              "status": (
+                storages
+                | selectattr('type','equalto',item.type)
+                | selectattr('storage','equalto',item.name)
+                | selectattr('thinpool','equalto',item.thinpool)
+                | selectattr('vgname','equalto',item.vgname)
+                | list | length == 0
+              )
+            }
+          ])
+        }}
+
+  - name: fail if storage needs fixing
+    ansible.builtin.fail:
+      msg: |
+            Cluster Storage is misconfigured; fix manually before continuing ansible configuration.
+            Directory Storage:
+            {{ fix_dir | selectattr('status','equalto',true) }}
+            LVMThin Storage:
+            {{ fix_lvmthin | selectattr('status','equalto',true) }}
+    when: ((fix_lvmthin + fix_dir) | selectattr('status','equalto',true) | list | length) != 0
+
+# Cluster-wide Roles and Groups
+- name: configure cluster-wide roles
+  run_once: true
+  remote_user: "{{ hostvars[inventory_hostname].ansible_user | default(omit) }}"
+  vars:
+    ansible_ssh_private_key_file: "{{ hostvars[inventory_hostname].ansible_ssh_private_key_file | default(omit) }}"
+  delegate_to: "{{ proxmox_cluster.founder.ip }}"
+  block:
+  - name: get current roles
+    become: true
+    ansible.builtin.shell: pveum role list --output-format json
+    register: raw_roles
+    changed_when: false
+
+  - name: process current roles
+    ansible.builtin.set_fact:
+      current_roles: "{{ raw_roles.stdout | ansible.builtin.from_json }}"
+      fix_roles: []
+
+  - name: compare role configs
+    loop: "{{ cluster_roles }}"
+    ansible.builtin.set_fact:
+      fix_roles: >-
+        {{ fix_roles +
+          ([
+            {
+              "name": item.name,
+              "status": (
+                current_roles
+                | selectattr('roleid','equalto',item.name)
+                | selectattr('privs','equalto',item.privileges)
+                | list | length != 1
+              ),
+              "privs": item.privileges
+            }
+          ])
+        }}
+
+  - name: fix roles
+    become: true
+    when: (fix_roles | selectattr('status','equalto',true) | list | length) != 0
+    loop: "{{ fix_roles | selectattr('status','equalto',true) | list }}"
+    ansible.builtin.shell: "pveum role add {{ item.name }} || pveum role modify {{ item.name }} -privs {{ item.privs }}"
+
+- name: configure cluster-wide groups
+  run_once: true
+  remote_user: "{{ hostvars[inventory_hostname].ansible_user | default(omit) }}"
+  vars:
+    ansible_ssh_private_key_file: "{{ hostvars[inventory_hostname].ansible_ssh_private_key_file | default(omit) }}"
+  delegate_to: "{{ proxmox_cluster.founder.ip }}"
+  block:
+  - name: get current groups
+    become: true
+    ansible.builtin.shell: pveum group list --output-format json
+    register: raw_groups
+    changed_when: false
+
+  - name: process current groups
+    ansible.builtin.set_fact:
+      current_groups: "{{ raw_groups.stdout | ansible.builtin.from_json }}"
+      fix_groups: []
+
+  - name: compare group configs
+    loop: "{{ proxmox_cluster_groups }}"
+    ansible.builtin.set_fact:
+      fix_groups: >-
+        {{ fix_groups +
+          ([
+            {
+              "name": item.name,
+              "status": (
+                current_groups
+                | selectattr('groupid','equalto',item.name)
+                | selectattr('comment','defined')
+                | selectattr('comment','equalto',item.comment)
+                | list | length != 1
+              ),
+              "comment": item.comment
+            }
+          ])
+        }}
+
+  - name: fix groups
+    become: true
+    when: (fix_groups | selectattr('status','equalto',true) | list | length) != 0
+    loop: "{{ fix_groups | selectattr('status','equalto',true) | list }}"
+    ansible.builtin.shell: "pveum group add {{ item.name }} || pveum group modify {{ item.name }} -comment '{{ item.comment }}'"
+
+# Setup pveproxy TLS
+## TODO: swap to central CA
+
+- name: generate self-signed key and cert
+  become: true
+  ansible.builtin.shell: openssl req -x509 -newkey rsa:4096 -nodes -days 825 -keyout /etc/pve/local/pveproxy-ssl.key -out /etc/pve/local/pveproxy-ssl.pem -subj "/CN=$(hostname -f)"
+  args:
+    creates: /etc/pve/local/pveproxy-ssl.pem
+  notify: restart pveproxy
+
+# Scaffold Quorom and HA groups
+
+- name: check quorum status
+  become: true
+  ansible.builtin.shell: pvecm status | grep -E "^Quorate:\s+Yes$" | wc -l
+  register: has_quorum
+  changed_when: false
+
+- name: configure ha groups
+  when: (has_quorum.stdout | int) | bool
+  block:
+  - name: get current groups
+    become: true
+    ansible.builtin.shell: pvesh get /cluster/ha/groups --output-format json
+    changed_when: false
+    register: raw_groups
+
+  - set_fact:
+      ha_groups: "{{ raw_groups.stdout | from_json }}"
+       fix_group: []
+       delete_group: []
+
+  - debug:
+      var: ha_groups
+
+  - name: check group configs
+    ansible.builtin.set_fact:
+      fix_group:
+
+#  loop: ha_groups
+#  ansible.builtin.command:

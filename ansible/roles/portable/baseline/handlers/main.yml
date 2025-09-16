@@ -10,5 +10,26 @@
     update_cache: true
 
 - name: Reload interface configurations
+  become: true
   ansible.builtin.shell:
     cmd: ifreload -a
+
+- name: restart chronyd
+  become: true
+  ansible.builtin.systemd_service:
+    state: restarted
+    name: chronyd
+
+- name: reload chronyd sources
+  become: true
+  ansible.builtin.command: chronyc reload sources
+
+- name: apply sysctl
+  become: true
+  ansible.builtin.command: sysctl --system
+
+- name: restart pveproxy
+  become: true
+  ansible.builtin.systemd_service:
+    state: restarted
+    name: pveproxy

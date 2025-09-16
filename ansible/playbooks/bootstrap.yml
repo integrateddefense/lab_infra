@@ -1,21 +1,39 @@
-- hosts: bootstrap
+- hosts: bootstrap_node
   gather_facts: false
 
   tasks:
 
-# Hardware Baseline
+# Baseline
   - name: Configure SSH
     tags: ["baseline","ssh"]
     ansible.builtin.import_role:
       name: portable/ssh
+      tasks_from: linux.yml
+
+  - name: Configure proxmox API
+    tags: ["baseline","api"]
+    ansible.builtin.import_role:
+      name: portable/apis
       tasks_from: proxmox.yml
 
-  - name: Configure Networking
+  - name: apply linux baseline
+    tags: ["baseline","host"]
+    ansible.builtin.import_role:
+      name: portable/baseline
+      tasks_from: linux.yml
+
+  - name: Configure host networking
     become: true
     tags: ["baseline","net"]
     ansible.builtin.import_role:
       name: portable/baseline
-      tasks_from: bootstrap_network.yml
+      tasks_from: proxmox_network.yml
+
+  - name: configure proxmox host
+    tags: ["baseline","proxmox"]
+    ansible.builtin.import_role:
+      name: portable/baseline
+      tasks_from: proxmox.yml
 
 # Identity Services
   - name: Create RWDC VM

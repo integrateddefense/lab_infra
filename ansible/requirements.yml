@@ -8,7 +8,7 @@ collections:
 - name: junipernetworks.junos
 # Added by the portable/ssh role
 - name: ansible.utils
-# Added by the portable/vm role
+# Added by the portable/vm role and the portable/baseline/proxmox tasks
 - name: community.proxmox
 # Added by the portable/bootstrap/windows tasks
 - name: ansible.windows
