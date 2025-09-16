@@ -1,0 +1,31 @@
+- hosts: compute_nodes
+  gather_facts: false
+
+  tasks:
+
+# Baseline
+  - name: Configure SSH
+    tags: ["baseline","ssh"]
+    ansible.builtin.import_role:
+      name: portable/ssh
+      tasks_from: linux.yml
+
+  - name: apply linux baseline
+    tags: ["baseline","host"]
+    ansible.builtin.import_role:
+      name: portable/baseline
+      tasks_from: linux.yml
+
+  - name: Configure host networking
+    become: true
+    tags: ["baseline","net"]
+    ansible.builtin.import_role:
+      name: portable/baseline
+      tasks_from: proxmox_network.yml
+
+  - name: configure proxmox host
+    tags: ["baseline","proxmox"]
+    ansible.builtin.import_role:
+      name: portable/baseline
+      tasks_from: proxmox.yml
+

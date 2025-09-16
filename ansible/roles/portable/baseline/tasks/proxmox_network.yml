@@ -6,15 +6,14 @@
   changed_when: false
 
 - name: set bridges with IPs
-  loop: "{{ bridges }}"
-  when: "'ip' in item"
+  loop: "{{ bridges | selectattr('ip','defined') }}"
   ansible.builtin.blockinfile:
     marker: "# {mark} ANSIBLE MANAGED: portable > baseline > proxmox_network > {{ item.name }}"
     path: /etc/network/interfaces
     block: |
       auto vmbr{{ item.vlan.id }}
       iface vmbr{{ item.vlan.id }} inet static
-        address {{ item.ip }}
+        address {{ ansible_host }}/24
         gateway {{ item.gateway }}
         bridge-ports {{ physical_iface_name.stdout }}.{{ item.vlan.id }}
         bridge-stp off
@@ -22,8 +21,7 @@
   notify: Reload interface configurations
 
 - name: set bridges without IPs
-  loop: "{{ bridges }}"
-  when: "'ip' not in item"
+  loop: "{{ bridges | selectattr('ip','undefined') }}"
   ansible.builtin.blockinfile:
     path: /etc/network/interfaces
     marker: "# {mark} ANSIBLE MANAGED: portable > baseline > proxmox_network > {{ item.name }}"

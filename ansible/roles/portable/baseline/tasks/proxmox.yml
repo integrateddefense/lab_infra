@@ -309,15 +309,57 @@
 
   - set_fact:
       ha_groups: "{{ raw_groups.stdout | from_json }}"
-       fix_group: []
-       delete_group: []
-
-  - debug:
-      var: ha_groups
+      fix_group: []
+      delete_group: []
 
   - name: check group configs
+    loop: "{{ cluster_ha_groups }}"
     ansible.builtin.set_fact:
-      fix_group:
+      fix_group: >-
+        {{ fix_group +
+          ([
+            {
+              "name": item.name,
+              "status": (
+                ha_groups
+                | selectattr('group','equalto',item.name)
+                | selectattr('nofailback','defined')
+                | selectattr('nofailback','equalto',item.nofailback)
+                | map(attribute='nodes') | sort
+                == item.nodes
+                | length == 0
+              ),
+              "nodes": item.nodes,
+              "nofailback": item.nofailback
+            }
+          ])
+        }}
 
-#  loop: ha_groups
-#  ansible.builtin.command:
+  - name: fix groups
+    when: (fix_group | selectattr('status','equalto',true) | list | length) != 0
+    loop: "{{ fix_group | selectattr('status','equalto',true) | list }}"
+    become: true
+    ansible.builtin.shell: ha-manager groupadd "{{ item.name }}" --nodes "{{ item.nodes | join(',') }}" --nofailback "{{ item.nofailback }}" || ha-manager groupconfig "{{ item.name }}" --nodes "{{ item.nodes | join(',') }}" --nofailback "{{ item.nofailback }}"
+
+  - name: check for extra groups
+    loop: "{{ ha_groups }}"
+    ansible.builtin.set_fact:
+      delete_group: >-
+        {{ delete_group +
+          ([
+            {
+              "name": item.group,
+              "status": (
+                cluster_ha_groups
+                | selectattr('name','equalto', item.group)
+                | list | length == 0
+              )
+            }
+          ])
+        }}
+
+  - name: delete extra groups
+    when: (delete_group | selectattr('status','equalto',true) | list | length) != 0
+    loop: "{{ delete_group | selectattr('status','equalto',true) | list }}"
+    become: true
+    ansible.builtin.shell: ha-manager groupremove "{{ item.name }}"
