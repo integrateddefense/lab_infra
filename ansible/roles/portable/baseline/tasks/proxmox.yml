@@ -41,21 +41,31 @@
   args:
     creates: /etc/pve/corosync.conf
 
+- name: check cluster status
+  become: true
+  ansible.builtin.shell: "ls /etc/pve/corosync.conf; echo $?"
+  register: is_cluster_member
+  changed_when: false
+
 - name: join cluster
-  when: ansible_host != proxmox_cluster.founder.ip
+  when: ansible_host != proxmox_cluster.founder.ip and not is_cluster_member
   become: true
   block:
   - name: generate ephemeral ssh key
-    ansible.builtin.command: ssh-keygen -t ed25519 -N '' -f /root/.ssh/pve-join-temp
+    ansible.builtin.command: ssh-keygen -t ed25519 -N '' -f /root/.ssh/id_ed25519
     args:
-      creates: /root/.ssh/pve-join-temp
+      creates: /root/.ssh/id_ed25519
 
   - name: grab public key
-    ansible.builtin.command: cat /root/.ssh/pve-join-temp.pub
+    ansible.builtin.command: cat /root/.ssh/id_ed25519.pub
     register: public_key
+    changed_when: false
 
   - name: add key to founder
-    delegate_to: proxmox_cluster.founder.ip
+    remote_user: "{{ hostvars[inventory_hostname].ansible_user | default(omit) }}"
+    vars:
+      ansible_ssh_private_key_file: "{{ hostvars[inventory_hostname].ansible_ssh_private_key_file | default(omit) }}"
+    delegate_to: "{{ proxmox_cluster.founder.ip }}"
     become: true
     ansible.builtin.lineinfile:
       path: /root/.ssh/authorized_keys
@@ -65,12 +75,15 @@
 
   - name: join cluster
     become: true
-    ansible.builtin.command: "pvecm add {{ founder.ip }} -link0 address={{ ansible_host }} -sshkey /root/.ssh/pve-join-temp"
+    ansible.builtin.command: "pvecm add {{ proxmox_cluster.founder.ip }} -link0 address={{ ansible_host }} --use_ssh true"
     args:
       creates: /etc/pve/corosync.conf
 
   - name: remove key from founder
-    delegate_to: proxmox_cluster.founder.ip
+    remote_user: "{{ hostvars[inventory_hostname].ansible_user | default(omit) }}"
+    vars:
+      ansible_ssh_private_key_file: "{{ hostvars[inventory_hostname].ansible_ssh_private_key_file | default(omit) }}"
+    delegate_to: "{{ proxmox_cluster.founder.ip }}"
     ansible.builtin.lineinfile:
       path: /root/.ssh/authorized_keys
       regexp: '^from="{{ ansible_host }}"'
@@ -78,7 +91,7 @@
       state: absent
 
   - name: delete joiner keypair
-    ansible.builtin.command: shred -u /root/.ssh/pve-join-temp /root/.ssh/pve-join-temp.pub
+    ansible.builtin.command: shred -u /root/.ssh/id_ed25519 /root/.ssh/id_ed25519.pub
 
 # Configure Storage
 ## Per Node
@@ -291,75 +304,81 @@
   notify: restart pveproxy
 
 # Scaffold Quorom and HA groups
-
-- name: check quorum status
-  become: true
-  ansible.builtin.shell: pvecm status | grep -E "^Quorate:\s+Yes$" | wc -l
-  register: has_quorum
-  changed_when: false
-
-- name: configure ha groups
-  when: (has_quorum.stdout | int) | bool
+- name: setup cluster-wide quorum and HA groups
+  remote_user: "{{ hostvars[inventory_hostname].ansible_user | default(omit) }}"
+  vars:
+    ansible_ssh_private_key_file: "{{ hostvars[inventory_hostname].ansible_ssh_private_key_file | default(omit) }}"
+  run_once: true
+  delegate_to: "{{ proxmox_cluster.founder.ip }}"
   block:
-  - name: get current groups
+  - name: check quorum status
     become: true
-    ansible.builtin.shell: pvesh get /cluster/ha/groups --output-format json
+    ansible.builtin.shell: pvecm status | grep -E "^Quorate:\s+Yes$" | wc -l
+    register: has_quorum
     changed_when: false
-    register: raw_groups
 
-  - set_fact:
-      ha_groups: "{{ raw_groups.stdout | from_json }}"
-      fix_group: []
-      delete_group: []
+  - name: configure ha groups
+    when: (has_quorum.stdout | int) | bool
+    block:
+    - name: get current groups
+      become: true
+      ansible.builtin.shell: pvesh get /cluster/ha/groups --output-format json
+      changed_when: false
+      register: raw_groups
 
-  - name: check group configs
-    loop: "{{ cluster_ha_groups }}"
-    ansible.builtin.set_fact:
-      fix_group: >-
-        {{ fix_group +
-          ([
-            {
-              "name": item.name,
-              "status": (
-                ha_groups
-                | selectattr('group','equalto',item.name)
-                | selectattr('nofailback','defined')
-                | selectattr('nofailback','equalto',item.nofailback)
-                | map(attribute='nodes') | sort
-                == item.nodes
-                | length == 0
-              ),
-              "nodes": item.nodes,
-              "nofailback": item.nofailback
-            }
-          ])
-        }}
+    - set_fact:
+        ha_groups: "{{ raw_groups.stdout | from_json }}"
+        fix_group: []
+        delete_group: []
 
-  - name: fix groups
-    when: (fix_group | selectattr('status','equalto',true) | list | length) != 0
-    loop: "{{ fix_group | selectattr('status','equalto',true) | list }}"
-    become: true
-    ansible.builtin.shell: ha-manager groupadd "{{ item.name }}" --nodes "{{ item.nodes | join(',') }}" --nofailback "{{ item.nofailback }}" || ha-manager groupconfig "{{ item.name }}" --nodes "{{ item.nodes | join(',') }}" --nofailback "{{ item.nofailback }}"
+    - name: check group configs
+      loop: "{{ cluster_ha_groups }}"
+      ansible.builtin.set_fact:
+        fix_group: >-
+          {{ fix_group +
+            ([
+              {
+                "name": item.name,
+                "status": (
+                  ha_groups
+                  | selectattr('group','equalto',item.name)
+                  | selectattr('nofailback','defined')
+                  | selectattr('nofailback','equalto',item.nofailback)
+                  | map(attribute='nodes') | sort
+                  == item.nodes
+                  | length == 0
+                ),
+                "nodes": item.nodes,
+                "nofailback": item.nofailback
+              }
+            ])
+          }}
 
-  - name: check for extra groups
-    loop: "{{ ha_groups }}"
-    ansible.builtin.set_fact:
-      delete_group: >-
-        {{ delete_group +
-          ([
-            {
-              "name": item.group,
-              "status": (
-                cluster_ha_groups
-                | selectattr('name','equalto', item.group)
-                | list | length == 0
-              )
-            }
-          ])
-        }}
+    - name: fix groups
+      when: (fix_group | selectattr('status','equalto',true) | list | length) != 0
+      loop: "{{ fix_group | selectattr('status','equalto',true) | list }}"
+      become: true
+      ansible.builtin.shell: ha-manager groupadd "{{ item.name }}" --nodes "{{ item.nodes | join(',') }}" --nofailback "{{ item.nofailback }}" || ha-manager groupconfig "{{ item.name }}" --nodes "{{ item.nodes | join(',') }}" --nofailback "{{ item.nofailback }}"
 
-  - name: delete extra groups
-    when: (delete_group | selectattr('status','equalto',true) | list | length) != 0
-    loop: "{{ delete_group | selectattr('status','equalto',true) | list }}"
-    become: true
-    ansible.builtin.shell: ha-manager groupremove "{{ item.name }}"
+    - name: check for extra groups
+      loop: "{{ ha_groups }}"
+      ansible.builtin.set_fact:
+        delete_group: >-
+          {{ delete_group +
+            ([
+              {
+                "name": item.group,
+                "status": (
+                  cluster_ha_groups
+                  | selectattr('name','equalto', item.group)
+                  | list | length == 0
+                )
+              }
+            ])
+          }}
+
+    - name: delete extra groups
+      when: (delete_group | selectattr('status','equalto',true) | list | length) != 0
+      loop: "{{ delete_group | selectattr('status','equalto',true) | list }}"
+      become: true
+      ansible.builtin.shell: ha-manager groupremove "{{ item.name }}"

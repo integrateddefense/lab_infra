@@ -1,12 +1,13 @@
 # Called from the baseline role to configure the network settings on the bootstrap node
 
 - name: Grab Interface Name
+  when: (bridges | selectattr('iface','undefined')) == bridges
   ansible.builtin.shell: find /sys/class/net -type l -not -lname "*virtual*" -printf "%f"
   register: physical_iface_name
   changed_when: false
 
 - name: set bridges with IPs
-  loop: "{{ bridges | selectattr('ip','defined') }}"
+  loop: "{{ bridges | selectattr('name','equalto','mgmt') }}"
   ansible.builtin.blockinfile:
     marker: "# {mark} ANSIBLE MANAGED: portable > baseline > proxmox_network > {{ item.name }}"
     path: /etc/network/interfaces
@@ -15,20 +16,20 @@
       iface vmbr{{ item.vlan.id }} inet static
         address {{ ansible_host }}/24
         gateway {{ item.gateway }}
-        bridge-ports {{ physical_iface_name.stdout }}.{{ item.vlan.id }}
+        bridge-ports {{ (physical_iface_name.stdout).item.vlan.id if ('stdout' in physical_iface_name) else (item.iface | map('regex_replace','^(.*)$',iface_prefix ~ '\1.' ~ item.vlan.id) | join(' ')) }}
         bridge-stp off
         bridge-fd 0
   notify: Reload interface configurations
 
 - name: set bridges without IPs
-  loop: "{{ bridges | selectattr('ip','undefined') }}"
+  loop: "{{ bridges | selectattr('name','ne','mgmt') }}"
   ansible.builtin.blockinfile:
     path: /etc/network/interfaces
     marker: "# {mark} ANSIBLE MANAGED: portable > baseline > proxmox_network > {{ item.name }}"
     block: |
       auto vmbr{{ item.vlan.id }}
       iface vmbr{{ item.vlan.id }} inet manual
-        bridge-ports {{ physical_iface_name.stdout }}.{{ item.vlan.id }}
+        bridge-ports {{ (physical_iface_name.stdout).item.vlan.id if ('stdout' in physical_iface_name) else (item.iface | map('regex_replace','^(.*)$',iface_prefix ~ '\1.' ~ item.vlan.id) | join(' ')) }}
         bridge-stp off
         bridge-fd 0
   notify: Reload interface configurations

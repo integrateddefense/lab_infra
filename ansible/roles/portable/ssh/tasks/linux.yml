@@ -22,14 +22,14 @@
 
 - name: Create default user
   ansible.builtin.user:
-    name: "{{ bootstrap_user }}"
-    shell: "{{ bootstrap_user_shell }}"
+    name: "{{ ansible_user }}"
+    shell: "/bin/bash"
     state: present
 
 - name: Deploy public key
   ansible.posix.authorized_key:
     user: ansible
-    key: "{{ lookup('file', bootstrap_user_pub_key_path) }}"
+    key: "{{ lookup('file', ansible_user_pub_key_file) }}"
     state: present
 
 - name: Install sudo
@@ -43,23 +43,23 @@
 - name: Add to sudoers group
   become: true
   ansible.builtin.lineinfile:
-    path: /etc/sudoers.d/{{ bootstrap_user }}
-    line: "{{ bootstrap_user }} ALL=(ALL) NOPASSWD:ALL"
+    path: /etc/sudoers.d/{{ ansible_user }}
+    line: "{{ ansible_user }} ALL=(ALL) NOPASSWD:ALL"
     mode: "0440"
     create: yes
 
 - name: Require Terminal Access
   become: true
   ansible.builtin.lineinfile:
-    path: /etc/sudoers.d/{{ bootstrap_user }}
-    line: "Defaults:{{ bootstrap_user }} !requiretty"
+    path: /etc/sudoers.d/{{ ansible_user }}
+    line: "Defaults:{{ ansible_user }} !requiretty"
     mode: "0440"
     create: yes
 
 - name: Prepare for Key-Based Auth Test
   ansible.builtin.set_fact:
     ansible_user: ansible
-    ansible_private_key_file: "{{ bootstrap_user_private_key_path }}"
+    ansible_private_key_file: "{{ ansible_ssh_private_key_file }}"
     ansible_ssh_common_args: "-o PreferredAuthentications=publickey -o PasswordAuthentication=no"
   when: not ssh_key_verified
 
@@ -100,7 +100,7 @@
     mode: '0644'
     marker: "# {mark} ANSIBLE MANAGED: portable > ssh"
     block: |
-      PermitRootLogin no
+      PermitRootLogin prohibit-password
       PasswordAuthentication no
       PubkeyAuthentication yes
   notify: reload sshd (linux)
