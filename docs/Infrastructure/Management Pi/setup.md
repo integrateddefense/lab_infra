@@ -89,7 +89,6 @@ pipx inject ansible-core ncclient lxml jxmlease
 
 ### Step 5) Create Initial Ansible Resources
 
-
 - TODO - update to match new structure
 
 Specifically, a folder structure, initialization play for the management node, and inventory. In this environment, we went with the wrapper playbook model
