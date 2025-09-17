@@ -45,6 +45,14 @@ This step is self-explanatory - just follow the prompts and you're good to go.
 
 Make sure you select the right interface for your management interface as well; this is different from the iDRAC interface, but important for making sure you can access the management interface.
 
-## Step 5) Ansible Configuration
+## Step 5) Manual configuration
+
+This step covers all of the things you have to do so you can configure your node remotely via Ansible.
+
+- Create a user for ansible (`adduser` to ensure the home directory gets created)
+- Install sudo (`apt install sudo` - may need to run `apt update`; ignore any errors you see about a subscription, that gets fixed later)
+- Add your ansible user to the sudoers group (`/etc/group` and add your ansible user to the line for `sudo`)
+
+## Step 6) Ansible Configuration
 
 Now that you have proxmox installed and you can access it via SSH, everything else can be done via ansible.
