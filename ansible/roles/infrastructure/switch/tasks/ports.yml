@@ -2,6 +2,11 @@
   junipernetworks.junos.junos_config:
     lines:
     - set interfaces {{ port_prefix }}{{ port_number }} description "{{ item.description }}"
+- name: set storm control
+  junipernetworks.junos.junos_config:
+    lines:
+    - set ethernet-switching-options storm-control interface {{ port_prefix }}{{ port_number }} level 1
+    - set ethernet-switching-options storm-control interface {{ port_prefix }}{{ port_number }} multicast
 - name: Set Trunk Configs
   junipernetworks.junos.junos_config:
     lines:
@@ -11,6 +16,8 @@
   junipernetworks.junos.junos_config:
     lines:
     - set interfaces {{ port_prefix }}{{ port_number }} unit 0 family ethernet-switching port-mode access vlan members {{ item.access }}
+    - set protocols rstp interface {{ port_prefix }}{{ port_number }} edge
+    - set ethernet-switching-options bpdu-block interface {{ port_prefix }}{{ port_number }}
   when:
   - item.trunk is not defined
   - item.access is defined

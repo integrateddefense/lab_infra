@@ -24,6 +24,7 @@
   - vm_sockets
   - vm_cores
   - vm_mem
+  - vm_vid
   when: vars[item] is undefined
 
 # Step 1) Discover Current State
@@ -39,11 +40,11 @@
     api_token_secret: "{{ proxmox_api_token_secret }}"
     node: bootstrap
     vmid: "{{ vm_id }}"
-  register: rwdc_info
+  register: vm_info
 
 - name: create vm
   ansible.builtin.include_tasks: "create.yml"
-  when: rwdc_info.virtual_machines[0] is undefined
+  when: vm_info.virtual_machines[0] is undefined
 
 - name: enforce hardware configuration
   ansible.builtin.include_tasks: "configure.yml"

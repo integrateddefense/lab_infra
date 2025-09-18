@@ -1,59 +1,27 @@
-# Pre-Flight - make sure there aren't any uncommitted changes
-- name: Compare configuration
-  junipernetworks.junos.junos_rpc:
-    rpc: get-configuration
-    attrs:
-      compare: rollback
-      rollback: "0"
-      database: candidate
-      format: text
-  register: pending_changes
-
-- name: Check for pending changes
-  ansible.builtin.fail:
-    msg: "Uncommitted changes detected: {{ pending_changes.output[1:-1] }}"
-  when: pending_changes.output[1:-1] | length > 1
-
-- name: Grab a backup
-  junipernetworks.junos.junos_config:
-    backup: true
-    backup_options: {
-      filename: {{ site.code }}_{{ hostname }}_backup.conf,
-      dir_path: .
-    }
-
-- name: Set hostname and domain
+- name: configure spanning tree
   junipernetworks.junos.junos_config:
     lines:
-    - set system host-name {{ hostname }}
-    - set system domain-name {{ subdomain_name }}.{{ domain_name }}
+    - set protocols rstp
+    - set protocols rstp interface all
 
 - name: Configure root authentication
   junipernetworks.junos.junos_config:
     lines:
     - set system root-authentication no-public-keys
 
-- name: Configure SSH
-  junipernetworks.junos.junos_config:
-    lines:
-    - set system services ssh
-    - set system services ssh protocol-version v2
-    - set system services ssh root-login deny
-    - set system services netconf ssh
-
 # Create the VLANs and interfaces
 - name: Create VLANs
   junipernetworks.junos.junos_config:
     lines:
-    - set vlans {{ item.key }} vlan-id {{ item.value.id }}
-    - set vlans {{ item.key }} description {{ item.value.description }}
-  loop: "{{ vlans }}"
+    - set vlans {{ item }} vlan-id {{ vlans[item].id }}
+    - set vlans {{ item }} description "{{ vlans[item].description }}"
+  loop: "{{ vlans | list }}"
 
 - name: Set MGMT Interface
   junipernetworks.junos.junos_config:
     lines:
     - set vlans {{ vlans.mgmt.name }} l3-interface vlan.{{ vlans.mgmt.id }}
-    - set interfaces vlan unit {{ vlans.mgmt.id }} family inet address {{ vlans.mgmt.cidr }}
+    - set interfaces vlan unit {{ vlans.mgmt.id }} family inet address {{ ansible_host }}/24
 
 # Restrict access to the management terminal
 - name: Create Firewall Filter for the management interface
@@ -69,37 +37,3 @@
     - set firewall family inet filter mgmt_only term allow_icmp from icmp-type echo-request
     - set firewall family inet filter mgmt_only term allow_icmp then accept
     - set firewall family inet filter mgmt_only term default_deny then discard
-
-# Configure access and trunk ports
-- name: Configure Ports
-  block:
-  - name: Set Description
-    junipernetworks.junos.junos_config:
-      lines:
-      - set interfaces {{ port_prefix }}{{ port_number }} description {{ item.description }}
-  - name: Set Trunk Configs
-    junipernetworks.junos.junos_config:
-      lines:
-      - set interfaces {{ port_prefix }}{{ port_number }} unit 0 family ethernet-switching port-mode trunk vlan members {{ item.trunk }}
-    when: "item.trunk is defined"
-  - name: Set Access Configs
-    junipernetworks.junos.junos_config:
-      lines:
-      - set interfaces {{ port_prefix }}{{ port_number }} unit 0 family ethernet-switching port-mode access vlan members {{ item.access }}
-    when:
-    - item.trunk is not defined
-    - item.access is defined
-  - name: Disable Port
-    junipernetworks.junos.junos_configs:
-      lines:
-      - set interfaces {{ port_prefix }}{{ port_number }} disable
-    when:
-    - item.trunk is not defined
-    - item.access is not defined
-  loop: "{{ ports }}"
-  loop_control:
-    index_var: port_number
-
-- name: save config
-  junipernetworks.junos.junos_config:
-    confirm_commit: true

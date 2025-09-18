@@ -1,6 +1,13 @@
 - hosts: bootstrap_node
   gather_facts: false
 
+  pre_tasks:
+  - name: probe for connection status
+    tags: ['always']
+    ansible.builtin.import_role:
+      name: portable/ssh
+      tasks_from: linux_check.yml
+
   tasks:
 
 # Baseline
@@ -54,6 +61,7 @@
       vm_sockets: "{{ ad.vm.sockets }}"
       vm_cores: "{{ ad.vm.cores }}"
       vm_mem: "{{ ad.vm.mem }}"
+      vm_vid: "{{ ad.vm.vid }}"
 
 ## To configure the service, see playbooks/identity.yml
 
@@ -76,5 +84,6 @@
       vm_sockets: "{{ git.vm.sockets }}"
       vm_cores: "{{ git.vm.cores }}"
       vm_mem: "{{ git.vm.mem }}"
+      vm_vid: "{{ git.vm.vid }}"
 
 ## To configure the service, see playbooks/git.yml

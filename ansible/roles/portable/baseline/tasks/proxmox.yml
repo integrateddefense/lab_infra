@@ -45,11 +45,15 @@
   args:
     creates: /etc/pve/corosync.conf
 
-- name: check cluster status
+- name: get cluster status
   become: true
-  ansible.builtin.shell: "ls /etc/pve/corosync.conf; echo $?"
-  register: is_cluster_member
+  ansible.builtin.shell: "ls /etc/pve/corosync.conf > /dev/null; echo $?"
+  register: raw_cluster_status
   changed_when: false
+
+- name: eval cluster status
+  ansible.builtin.set_fact:
+    is_cluster_member: "{{ raw_cluster_status.stdout == '0' }}"
 
 - name: join cluster
   when: ansible_host != proxmox_cluster.founder.ip and not is_cluster_member

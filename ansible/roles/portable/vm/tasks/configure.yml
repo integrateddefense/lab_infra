@@ -63,5 +63,6 @@
     api_token_secret: "{{ proxmox_api_token_secret }}"
     vmid: "{{ vm_id }}"
     interface: net0
-    bridge: "vmbr{{ vm_vlan_id }}"
+    bridge: "vmbr{{ bridges.data_bridge }}"
+    tag: "{{ vm_vid }}"
 
