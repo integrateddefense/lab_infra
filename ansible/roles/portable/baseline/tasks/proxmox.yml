@@ -81,6 +81,18 @@
       line: 'from="{{ ansible_host }}",no-agent-forwarding,no-port-forwarding,no-X11-forwarding,no-pty {{ public_key.stdout }}'
       state: present
 
+  - name: get founder's host key
+    ansible.builtin.set_fact:
+      founder_hostkey: "{{ lookup('pipe','ssh-keyscan -T 5 -H -t ed25519 ' ~ proxmox_cluster.founder.ip }}"
+
+  - name: add founder to known_hosts
+    become: true
+    ansible.builtin.known_hosts:
+      path: /root/.ssh/known_hosts
+      name: "{{ proxmox_cluster.founder.ip }}"
+      key: "{{ founder_hostkey }}"
+      state: present
+
   - name: join cluster
     become: true
     ansible.builtin.command: "pvecm add {{ proxmox_cluster.founder.ip }} -link0 address={{ ansible_host }} --use_ssh true"

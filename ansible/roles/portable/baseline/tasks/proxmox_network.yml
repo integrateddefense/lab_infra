@@ -79,7 +79,6 @@
           address {{ ansible_host }}/24
           gateway {{ vlans.mgmt.gateway }}
           bridge-ports eno2
-          bridge-stp on
-          bridge-vlan-aware yes
-          bridge-vids {{ vlans.mgmt.id }}
+          bridge-stp off
+          bridge-fd 0
     notify: Reload interface configurations

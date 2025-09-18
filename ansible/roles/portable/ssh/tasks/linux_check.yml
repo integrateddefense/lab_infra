@@ -25,7 +25,7 @@
       ansible_ssh_pass: "{{ raw_input.user_input }}"
       ansible_become_pass: "{{ raw_input.user_input }}"
 
-  - name: check for ssh_password
+  - name: check for ssh password
     ansible.builtin.ping:
 
   - name: check for become password
