@@ -48,6 +48,7 @@
     ansible.builtin.import_role:
       name: portable/vm
     vars:
+      hypervisor_target: "bootstrap"
       template_name: "{{ templates.win22.name }}"
       template_id: "{{ templates.win22.id }}"
       template_storage: "{{ templates.win22.storage.type }}"
@@ -71,6 +72,7 @@
     ansible.builtin.import_role:
       name: portable/vm
     vars:
+      hypervisor_target: "bootstrap"
       template_name: "{{ templates.alma9.name }}"
       template_id: "{{ templates.alma9.id }}"
       template_storage: "{{ templates.alma9.storage.type }}"

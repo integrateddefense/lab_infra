@@ -1,0 +1,24 @@
+- hosts: vfws
+  gather_facts: false
+
+  pre_tasks:
+  - name: probe for connection status
+    tags: ['always']
+    ansible.builtin.import_role:
+      name: portable/ssh
+      tasks_from: linux_check.yml
+
+  tasks:
+
+# Baseline
+  - name: Configure SSH
+    tags: ["baseline","ssh"]
+    ansible.builtin.import_role:
+      name: portable/ssh
+      tasks_from: linux.yml
+
+  - name: apply linux baseline
+    tags: ["baseline","host"]
+    ansible.builtin.import_role:
+      name: portable/baseline
+      tasks_from: linux.yml

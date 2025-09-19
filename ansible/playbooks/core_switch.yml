@@ -6,6 +6,7 @@
   pre_tasks:
   ## TODO: Add pre_tasks to check for key variables prior to execution
   - name: Compare configuration
+    tags: ["always"]
     junipernetworks.junos.junos_rpc:
       rpc: get-configuration
       attrs:
@@ -16,11 +17,13 @@
     register: pending_changes
 
   - name: Check for pending changes
+    tags: ["always"]
     ansible.builtin.fail:
       msg: "Uncommitted changes detected: {{ pending_changes.output[1:-1] }}"
     when: pending_changes.output[1:-1] | length > 1
 
   - name: Grab a backup
+    tags: ["always"]
     junipernetworks.junos.junos_config:
       backup: true
       backup_options: {
@@ -56,15 +59,9 @@
 
   - name: ports
     tags: [ports]
-    ansible.builtin.include_role:
+    ansible.builtin.import_role:
       name: infrastructure/switch
       tasks_from: ports.yml
-      apply:
-        tags: [ports]
-    loop: "{{ ports }}"
-    loop_control:
-      index_var: port_number
-      label: "Port {{ port_prefix }}{{ port_number }}"
 
 ## Save by default
 

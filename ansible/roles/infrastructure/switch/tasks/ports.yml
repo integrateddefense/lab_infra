@@ -1,30 +1,46 @@
-- name: Set Description
+- name: set description and storm control
+  loop: "{{ ports }}"
+  loop_control:
+    index_var: port_number
+    label: "{{ port_prefix }}{{ port_number }}"
   junipernetworks.junos.junos_config:
     lines:
     - set interfaces {{ port_prefix }}{{ port_number }} description "{{ item.description }}"
-- name: set storm control
-  junipernetworks.junos.junos_config:
-    lines:
     - set ethernet-switching-options storm-control interface {{ port_prefix }}{{ port_number }} level 1
     - set ethernet-switching-options storm-control interface {{ port_prefix }}{{ port_number }} multicast
-- name: Set Trunk Configs
+
+- name: set trunk config
+  loop: "{{ ports }}"
+  loop_control:
+    index_var: port_number
+    label: "{{ port_prefix }}{{ port_number }}"
+  when: "'trunk' in item"
   junipernetworks.junos.junos_config:
     lines:
     - set interfaces {{ port_prefix }}{{ port_number }} unit 0 family ethernet-switching port-mode trunk vlan members {{ item.trunk }}
-  when: "item.trunk is defined"
-- name: Set Access Configs
+
+- name: set access config
+  loop: "{{ ports }}"
+  loop_control:
+    index_var: port_number
+    label: "{{ port_prefix }}{{ port_number }}"
+  when:
+  - "'trunk' not in item"
+  - "'access' in item"
   junipernetworks.junos.junos_config:
     lines:
     - set interfaces {{ port_prefix }}{{ port_number }} unit 0 family ethernet-switching port-mode access vlan members {{ item.access }}
     - set protocols rstp interface {{ port_prefix }}{{ port_number }} edge
     - set ethernet-switching-options bpdu-block interface {{ port_prefix }}{{ port_number }}
+
+- name: disable port
+  loop: "{{ ports }}"
+  loop_control:
+    index_var: port_number
+    label: "{{ port_prefix }}{{ port_number }}"
   when:
-  - item.trunk is not defined
-  - item.access is defined
-- name: Disable Port
+  - "'trunk' not in item"
+  - "'access' not in item"
   junipernetworks.junos.junos_config:
     lines:
     - set interfaces {{ port_prefix }}{{ port_number }} disable
-  when:
-  - item.trunk is not defined
-  - item.access is not defined

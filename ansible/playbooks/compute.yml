@@ -39,3 +39,34 @@
     ansible.builtin.import_role:
       name: portable/ssh
       tasks_from: linux.yml
+
+# Infrastructure VMs
+  - name: create vFW VMs
+    tags: ["vms","network","vfw","vfw/network"]
+    run_once: true
+    ansible.builtin.include_role:
+      name: portable/vm
+      apply:
+        tags: ["vms","network","vfw","vfw/network"]
+    loop: "{{ groups['compute_nodes'] | sort | slice(2) | first }}"
+    loop_control:
+      loop_var: server
+      index_var: iteration
+      label: "Creating vFW on {{ server }}"
+    vars:
+      hypervisor_target: "{{ server }}"
+      template_name: "{{ templates.alma9.name }}"
+      template_id: "{{ templates.alma9.id }}"
+      template_storage: "{{ templates.alma9.storage.type }}"
+      template_storage_size: "{{ templates.alma9.storage.size }}"
+      vm_name: "{{ vfw.vm.name[iteration] }}"
+      vm_id: "{{ vfw.vm.id[iteration] }}"
+      vm_description: "{{ vfw.vm.description[iteration] }}"
+      vm_storage: "{{ vfw.vm.storage }}"
+      vm_storage_size: "{{ vfw.vm.size }}"
+      vm_sockets: "{{ vfw.vm.sockets }}"
+      vm_cores: "{{ vfw.vm.cores }}"
+      vm_mem: "{{ vfw.vm.mem }}"
+      vm_vid: "{{ vfw.vm.vid }}"
+
+## To configure the service, see playbooks/vfw.yml

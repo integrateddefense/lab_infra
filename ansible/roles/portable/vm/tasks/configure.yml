@@ -9,7 +9,7 @@
     api_user: "{{ api_username }}"
     api_token_id: "{{ api_token_name }}"
     api_token_secret: "{{ proxmox_api_token_secret }}"
-    node: bootstrap
+    node: "{{ hypervisor_target }}"
     vmid: "{{ vm_id }}"
     name: "{{ vm_name }}"
     description: "{{ vm_description }}"
@@ -38,6 +38,7 @@
     size: "{{ template_storage_size }}"
 
 - name: configure data disk
+  when: "'vm_storage_size'is defined"
   delegate_to: localhost
   vars:
     ansible_python_interpreter: "{{ mgmt_pi_ansible_python }}"
@@ -64,5 +65,19 @@
     vmid: "{{ vm_id }}"
     interface: net0
     bridge: "vmbr{{ bridges.data_bridge }}"
-    tag: "{{ vm_vid }}"
+    tag: "{{ vm_vid | default(omit) }}"
 
+- name: configure dedicated mgmt vlan nic
+  when: "'vm_vid' is undefined"
+  delegate_to: localhost
+  vars:
+    ansible_python_interpreter: "{{ mgmt_pi_ansible_python }}"
+  community.proxmox.proxmox_nic:
+    api_host: "{{ ansible_host }}"
+    api_user: "{{ api_username }}"
+    api_token_id: "{{ api_token_name }}"
+    api_token_secret: "{{ proxmox_api_token_secret }}"
+    vmid: "{{ vm_id }}"
+    interface: net1
+    bridge: "vmbr{{ bridges.mgmt_bridge }}"
+    tag: "{{ vlans.mgmt.id }}"
