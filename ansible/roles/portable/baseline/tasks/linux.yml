@@ -1,19 +1,24 @@
 # Install packages
 - name: install env-wide packages
   become: true
-  ansible.builtin.apt:
+  ansible.builtin.package:
     name: "{{ linux_packages }}"
     state: present
     update_cache: true
 
 - name: install system-specific packages
   become: true
-  ansible.builtin.apt:
+  ansible.builtin.package:
     name: "{{ packages }}"
     state: present
     update_cache: false
 
 # Configure time sync
+- name: prep chrony config directory
+  become: true
+  ansible.builtin.file:
+    state: directory
+    path: /etc/chrony/conf.d/
 
 - name: configure chronyd
   become: true
@@ -21,6 +26,12 @@
     src: files/chronyd.conf
     dest: /etc/chrony/conf.d/99-ansible.conf
   notify: restart chronyd
+
+- name: prep chrony sources directory
+  become: true
+  ansible.builtin.file:
+    state: directory
+    path: /etc/chrony/sources.d/
 
 - name: configure chrony sources
   become: true
@@ -49,6 +60,14 @@
   ansible.builtin.copy:
     src: files/sysctl-proxmox.conf
     dest: /etc/sysctl.d/99-ansible-proxmox.conf
+  notify: apply sysctl
+
+- name: configure vfw sysctl
+  become: true
+  when: sub_platform == "vfw"
+  ansible.builtin.copy:
+    src: files/sysctl-vfw.conf
+    dest: /etc/sysctl.d/99-ansible-vfw.conf
   notify: apply sysctl
 
 # TODO: add log forwarding and default services

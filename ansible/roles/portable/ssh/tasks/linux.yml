@@ -12,14 +12,6 @@
     key: "{{ lookup('file', ansible_user_pub_key_file) }}"
     state: present
 
-- name: Install sudo
-  become: true
-  ansible.builtin.apt:
-    name:
-    - sudo
-    update_cache: true
-    state: present
-
 - name: Add to sudoers group
   become: true
   ansible.builtin.lineinfile:

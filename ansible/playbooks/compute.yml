@@ -40,21 +40,33 @@
       name: portable/ssh
       tasks_from: linux.yml
 
+#  - debug:
+#      var: hostvars[server[0]].ansible_host
+#    tags: vms
+#    loop: "{{ groups['compute_nodes'] | sort | slice(2) }}"
+#    loop_control:
+#      loop_var: server
+#      index_var: iteration
+#      label: "Creating vFW on {{ server }}"
+
+#  - meta: end_host
+#    tags: vms
+
 # Infrastructure VMs
   - name: create vFW VMs
-    tags: ["vms","network","vfw","vfw/network"]
+    tags: ["vms","network","vfw","network/vfw"]
     run_once: true
     ansible.builtin.include_role:
       name: portable/vm
       apply:
-        tags: ["vms","network","vfw","vfw/network"]
-    loop: "{{ groups['compute_nodes'] | sort | slice(2) | first }}"
+        tags: ["vms","network","vfw","network/vfw"]
+    loop: "{{ groups['compute_nodes'] | sort | slice(2) }}"
     loop_control:
       loop_var: server
       index_var: iteration
       label: "Creating vFW on {{ server }}"
     vars:
-      hypervisor_target: "{{ server }}"
+      hypervisor_target: "{{ server[0] }}"
       template_name: "{{ templates.alma9.name }}"
       template_id: "{{ templates.alma9.id }}"
       template_storage: "{{ templates.alma9.storage.type }}"
@@ -63,7 +75,6 @@
       vm_id: "{{ vfw.vm.id[iteration] }}"
       vm_description: "{{ vfw.vm.description[iteration] }}"
       vm_storage: "{{ vfw.vm.storage }}"
-      vm_storage_size: "{{ vfw.vm.size }}"
       vm_sockets: "{{ vfw.vm.sockets }}"
       vm_cores: "{{ vfw.vm.cores }}"
       vm_mem: "{{ vfw.vm.mem }}"

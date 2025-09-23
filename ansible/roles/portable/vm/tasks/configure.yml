@@ -38,7 +38,7 @@
     size: "{{ template_storage_size }}"
 
 - name: configure data disk
-  when: "'vm_storage_size'is defined"
+  when: vm_storage_size is defined
   delegate_to: localhost
   vars:
     ansible_python_interpreter: "{{ mgmt_pi_ansible_python }}"
@@ -50,8 +50,8 @@
     vmid: "{{ vm_id }}"
     disk: scsi1
     state: present
-    storage: "{{ vm_storage }}"
-    size: "{{ vm_storage_size }}"
+    storage: "{{ vm_storage | default(omit) }}"
+    size: "{{ vm_storage_size | default(omit) }}"
 
 - name: configure nic
   delegate_to: localhost
@@ -68,7 +68,7 @@
     tag: "{{ vm_vid | default(omit) }}"
 
 - name: configure dedicated mgmt vlan nic
-  when: "'vm_vid' is undefined"
+  when: vm_vid is undefined
   delegate_to: localhost
   vars:
     ansible_python_interpreter: "{{ mgmt_pi_ansible_python }}"
@@ -80,4 +80,3 @@
     vmid: "{{ vm_id }}"
     interface: net1
     bridge: "vmbr{{ bridges.mgmt_bridge }}"
-    tag: "{{ vlans.mgmt.id }}"
