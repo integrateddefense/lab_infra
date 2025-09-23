@@ -1,0 +1,19 @@
+[connection]
+id={{ item.key }}
+type=vlan
+interface-name={{ trunk_iface }}.{{ item.value.id }}
+device-name={{ trunk_iface }}
+autoconnect=true
+
+[vlan]
+id={{ item.value.id }}
+parent={{ trunk_iface }}
+
+[ethernet]
+
+[ipv4]
+address1={{ item.value.vfw_ips[node] }}/{{ (item.value.cidr | split("/"))[1] }}
+method=manual
+
+[ipv6]
+method=ignore

@@ -1,0 +1,89 @@
+- name: enable nftables
+  become: true
+  ansible.builtin.systemd_service:
+    name: nftables
+    state: started
+    enabled: true
+
+- name: create nftables rules directory
+  become: true
+  ansible.builtin.file:
+    state: directory
+    path: /etc/nftables.d/
+
+- name: apply drop in nft configs
+  become: true
+  ansible.builtin.blockinfile:
+    marker: "# {mark} ANSIBLE MANAGED: infrastructure > vfws > nftables baseline"
+    path: /etc/sysconfig/nftables.conf
+    block: |
+      flush ruleset
+      include "/etc/nftables.d/*.nft"
+  notify: reload nftables
+
+- name: apply nft baseline
+  become: true
+  ansible.builtin.template:
+    src: templates/nft_baseline.j2
+    dest: /etc/nftables.d/00-baseline.nft
+    owner: root
+    group: root
+    mode: '0600'
+  notify:
+  - check nftables config
+  - nftables config check results
+  - reload nftables
+
+- name: apply default transit vlan rules
+  become: true
+  loop: "{{ vlans.transit | dict2items }}"
+  loop_control:
+    label: "{{ item.key }}"
+  ansible.builtin.template:
+    src: templates/nft_transit_{{ item.key }}_default.j2
+    dest: /etc/nftables.d/99-transit_{{ item.key }}_default.nft
+    owner: root
+    group: root
+    mode: '0600'
+  notify:
+  - check nftables config
+  - nftables config check results
+  - reload nftables
+
+- name: apply default vlan rules
+  become: true
+  loop: "{{ vlans | dict2items | rejectattr('value.vfw_ips','undefined') }}"
+  loop_control:
+    label: "{{ item.key }}"
+  ansible.builtin.template:
+    src: templates/nft_{{ item.key }}_default.j2
+    dest: /etc/nftables.d/99-{{ item.key }}_default.nft
+    owner: root
+    group: root
+    mode: '0600'
+  notify:
+  - check nftables config
+  - nftables config check results
+  - reload nftables
+
+#- loop: "{{ lookup('ansible.builtin.fileglob',role_path + '/templates/nft_subsystems/*',wantlist=True) }}"
+#  loop_control:
+#    label: "{{ ((item | split('_'))[-1] | split('.'))[0] }}"
+#  debug:
+#    var: item
+
+- name: apply subsystem rules
+  become: true
+  loop: "{{ lookup('ansible.builtin.fileglob',role_path + '/templates/nft_subsystems/*',wantlist=True) }}"
+  loop_control:
+    label: "{{ ((item | split('_'))[-1] | split('.'))[0] }}"
+  ansible.builtin.template:
+    src: templates/nft_subsystems/nft_{{ ((item | split('_'))[-1] | split('.'))[0] }}.j2
+    dest: /etc/nftables.d/10-{{ ((item | split('_'))[-1] | split('.'))[0] }}.nft
+    owner: root
+    group: root
+    mode: '0600'
+  notify:
+  - check nftables config
+  - nftables config check results
+  - reload nftables

@@ -1,0 +1,39 @@
+# Main role file for configuring the vfws.
+
+- name: get trunk interface
+  ansible.builtin.gather_facts:
+
+- name: set interface references
+  ansible.builtin.set_fact:
+    trunk_iface: >-
+      {{
+        ansible_interfaces
+        | map('regex_replace','^(.*)$','ansible_\1')
+        | map('extract',hostvars[inventory_hostname])
+        | rejectattr('device','equalto','lo')
+        | selectattr('ipv4','undefined')
+        | rejectattr('device','search','\.')
+        | map(attribute='device')
+        | first
+      }}
+    mgmt_iface: >-
+      {{
+        ansible_interfaces
+        | map('regex_replace','^(.*)$','ansible_\1')
+        | map('extract',hostvars[inventory_hostname])
+        | rejectattr('device','equalto','lo')
+        | selectattr('ipv4','defined')
+        | rejectattr('device','search','\.')
+        | map(attribute='device')
+        | first
+      }}
+    node: >-
+      {{
+        ((ansible_host | split('.'))[3] | int) - 2
+      }}
+
+- name: configure interfaces
+  ansible.builtin.include_tasks: "interfaces.yml"
+
+- name: configure nftables rules
+  ansible.builtin.include_tasks: "nftables.yml"

@@ -1,0 +1,28 @@
+- name: reload nmcli
+  become: true
+  ansible.builtin.shell: nmcli connection reload
+
+- name: bring up mgmt
+  become: true
+  ansible.builtin.shell: nmcli connection up mgmt
+
+- name: bring up all connections
+  become: true
+  ansible.builtin.shell: nmcli -t -f NAME connection show | tail -n +2 | while read -r conn; do nmcli connection up "$conn"; done
+
+- name: check nftables config
+  become: true
+  ansible.builtin.shell: nft -c -f /etc/sysconfig/nftables.conf
+  changed_when: false
+  register: check_result
+
+- name: nftables config check results
+  when: check_result.stdout != ''
+  debug:
+    var: check_result.stdout
+
+- name: reload nftables
+  become: true
+  ansible.builtin.systemd_service:
+    name: nftables
+    state: reloaded

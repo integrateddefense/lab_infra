@@ -22,3 +22,9 @@
     ansible.builtin.import_role:
       name: portable/baseline
       tasks_from: linux.yml
+
+# Service Config
+  - name: apply vfw service baseline
+    tags: ["service","vfw"]
+    ansible.builtin.import_role:
+      name: infrastructure/vfws
