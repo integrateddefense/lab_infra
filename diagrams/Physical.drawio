@@ -1,6 +1,6 @@
-<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/28.0.6 Chrome/138.0.7204.100 Electron/37.2.3 Safari/537.36" version="28.0.6">
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/28.1.2 Chrome/138.0.7204.243 Electron/37.4.0 Safari/537.36" version="28.1.2">
   <diagram name="Page-1" id="3a_alY-m2_s3Xfb2v9r6">
-    <mxGraphModel dx="716" dy="414" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="1228" dy="710" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <object label="" id="0">
           <mxCell />
@@ -925,16 +925,6 @@
             <mxPoint x="1285" y="553" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="9_G8QNj0EjINmIg4zatd-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.75;exitY=1;exitDx=0;exitDy=0;" parent="1" source="1WeZYifnovVVl7Edg_Gf-215" edge="1">
-          <mxGeometry relative="1" as="geometry">
-            <mxPoint x="1150" y="310" as="sourcePoint" />
-            <mxPoint x="1120" y="420" as="targetPoint" />
-            <Array as="points">
-              <mxPoint x="1150" y="365" />
-              <mxPoint x="1120" y="365" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
         <mxCell id="y8U4JyHo8gR0J9ADLJj5-1" value="* iDRAC functionality provided by NIC1 pending dedicated iDRAC licenses" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
           <mxGeometry x="1440" y="700" width="250" height="60" as="geometry" />
         </mxCell>
@@ -1012,18 +1002,6 @@
               <mxPoint x="1160" y="380" />
               <mxPoint x="1150" y="380" />
             </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="mr__7E6E5zUkvxwd_UZX-2" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.271;exitY=0.993;exitDx=0;exitDy=0;entryX=0.854;entryY=0.983;entryDx=0;entryDy=0;entryPerimeter=0;exitPerimeter=0;" parent="1" source="1WeZYifnovVVl7Edg_Gf-70" target="1WeZYifnovVVl7Edg_Gf-95" edge="1">
-          <mxGeometry relative="1" as="geometry">
-            <mxPoint x="1572" y="601" as="targetPoint" />
-            <Array as="points">
-              <mxPoint x="1121" y="470" />
-              <mxPoint x="940" y="470" />
-              <mxPoint x="940" y="610" />
-              <mxPoint x="1488" y="610" />
-            </Array>
-            <mxPoint x="1153" y="460" as="sourcePoint" />
           </mxGeometry>
         </mxCell>
       </root>
