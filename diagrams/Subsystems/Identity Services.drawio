@@ -1,10 +1,10 @@
 <mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/28.1.2 Chrome/138.0.7204.243 Electron/37.4.0 Safari/537.36" version="28.1.2" pages="2">
   <diagram name="Page-1" id="vsBYvRmTbIgRAkcGOMrb">
-    <mxGraphModel dx="2578" dy="1490" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="2148" dy="1242" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="W71XtA_5Icc1mvrdMgkB-1" value="Version/Date: v1.2 /&amp;nbsp; 10 SEP 2025&lt;div&gt;Scope: Identity Services Ecosystem Architectural Diagrams&lt;/div&gt;&lt;div&gt;https://github.com/integrateddefense/lab_infra&lt;/div&gt;" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;spacingBottom=0;" parent="1" vertex="1">
+        <mxCell id="W71XtA_5Icc1mvrdMgkB-1" value="Version/Date: v1.3 /&amp;nbsp; 24 SEP 2025&lt;div&gt;Scope: Identity Services Ecosystem Architectural Diagrams&lt;/div&gt;&lt;div&gt;https://github.com/integrateddefense/lab_infra&lt;/div&gt;" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;spacingBottom=0;" parent="1" vertex="1">
           <mxGeometry x="2200" y="990" width="330" height="100" as="geometry" />
         </mxCell>
         <mxCell id="W71XtA_5Icc1mvrdMgkB-3" value="" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
@@ -47,7 +47,7 @@
           </mxGeometry>
         </mxCell>
         <mxCell id="W71XtA_5Icc1mvrdMgkB-16" value="Data Flows" style="shape=table;startSize=30;container=1;collapsible=0;childLayout=tableLayout;strokeColor=default;fontSize=16;" parent="1" vertex="1">
-          <mxGeometry x="10" y="560" width="830" height="520" as="geometry" />
+          <mxGeometry x="10" y="540" width="830" height="550" as="geometry" />
         </mxCell>
         <mxCell id="W71XtA_5Icc1mvrdMgkB-17" value="" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;strokeColor=inherit;top=0;left=0;bottom=0;right=0;collapsible=0;dropTarget=0;fillColor=none;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=16;" parent="W71XtA_5Icc1mvrdMgkB-16" vertex="1">
           <mxGeometry y="30" width="830" height="40" as="geometry" />
@@ -73,42 +73,42 @@
           </mxGeometry>
         </mxCell>
         <mxCell id="W71XtA_5Icc1mvrdMgkB-21" value="" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;strokeColor=inherit;top=0;left=0;bottom=0;right=0;collapsible=0;dropTarget=0;fillColor=none;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=16;" parent="W71XtA_5Icc1mvrdMgkB-16" vertex="1">
-          <mxGeometry y="70" width="830" height="140" as="geometry" />
+          <mxGeometry y="70" width="830" height="170" as="geometry" />
         </mxCell>
         <mxCell id="W71XtA_5Icc1mvrdMgkB-22" value="1" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=16;" parent="W71XtA_5Icc1mvrdMgkB-21" vertex="1">
-          <mxGeometry width="60" height="140" as="geometry">
-            <mxRectangle width="60" height="140" as="alternateBounds" />
+          <mxGeometry width="60" height="170" as="geometry">
+            <mxRectangle width="60" height="170" as="alternateBounds" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="W71XtA_5Icc1mvrdMgkB-23" value="636/TCP&lt;br&gt;3269/TCP&lt;br&gt;&lt;div&gt;88/TCP-UDP&lt;/div&gt;&lt;div&gt;53/TCP-UDP&lt;/div&gt;&lt;div&gt;135/TCP&lt;/div&gt;&lt;div&gt;49152-65535/TCP&lt;/div&gt;&lt;div&gt;445/TCP&lt;/div&gt;" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=16;" parent="W71XtA_5Icc1mvrdMgkB-21" vertex="1">
-          <mxGeometry x="60" width="150" height="140" as="geometry">
-            <mxRectangle width="150" height="140" as="alternateBounds" />
+        <mxCell id="W71XtA_5Icc1mvrdMgkB-23" value="636/TCP&lt;br&gt;3269/TCP&lt;br&gt;&lt;div&gt;88/TCP-UDP&lt;/div&gt;&lt;div&gt;53/TCP-UDP&lt;/div&gt;&lt;div&gt;135/TCP&lt;/div&gt;&lt;div&gt;49152-65535/TCP&lt;/div&gt;&lt;div&gt;445/TCP&lt;/div&gt;&lt;div&gt;123/UDP&lt;/div&gt;" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=16;" parent="W71XtA_5Icc1mvrdMgkB-21" vertex="1">
+          <mxGeometry x="60" width="150" height="170" as="geometry">
+            <mxRectangle width="150" height="170" as="alternateBounds" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="W71XtA_5Icc1mvrdMgkB-24" value="Domain Controller Replication, including LDAPS, Global Catalog, Kerberos, DNS, and RPC control and data, and SMB." style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=16;" parent="W71XtA_5Icc1mvrdMgkB-21" vertex="1">
-          <mxGeometry x="210" width="250" height="140" as="geometry">
-            <mxRectangle width="250" height="140" as="alternateBounds" />
+        <mxCell id="W71XtA_5Icc1mvrdMgkB-24" value="Domain Controller Replication, including LDAPS, Global Catalog, Kerberos, DNS, and RPC control and data, SMB, and NTP." style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=16;" parent="W71XtA_5Icc1mvrdMgkB-21" vertex="1">
+          <mxGeometry x="210" width="250" height="170" as="geometry">
+            <mxRectangle width="250" height="170" as="alternateBounds" />
           </mxGeometry>
         </mxCell>
         <mxCell id="W71XtA_5Icc1mvrdMgkB-50" value="Inter-VLAN traffic will be evaluated at the core firewall level, and restricted with Proxmox VM-level firewalls." style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=16;" parent="W71XtA_5Icc1mvrdMgkB-21" vertex="1">
-          <mxGeometry x="460" width="370" height="140" as="geometry">
-            <mxRectangle width="370" height="140" as="alternateBounds" />
+          <mxGeometry x="460" width="370" height="170" as="geometry">
+            <mxRectangle width="370" height="170" as="alternateBounds" />
           </mxGeometry>
         </mxCell>
         <mxCell id="W71XtA_5Icc1mvrdMgkB-25" value="" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;strokeColor=inherit;top=0;left=0;bottom=0;right=0;collapsible=0;dropTarget=0;fillColor=none;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=16;" parent="W71XtA_5Icc1mvrdMgkB-16" vertex="1">
-          <mxGeometry y="210" width="830" height="160" as="geometry" />
+          <mxGeometry y="240" width="830" height="160" as="geometry" />
         </mxCell>
         <mxCell id="W71XtA_5Icc1mvrdMgkB-26" value="2" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=16;" parent="W71XtA_5Icc1mvrdMgkB-25" vertex="1">
           <mxGeometry width="60" height="160" as="geometry">
             <mxRectangle width="60" height="160" as="alternateBounds" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="W71XtA_5Icc1mvrdMgkB-27" value="88/TCP-UDP&lt;div&gt;53/UDP&lt;/div&gt;&lt;div&gt;445/TCP&lt;/div&gt;" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=16;" parent="W71XtA_5Icc1mvrdMgkB-25" vertex="1">
+        <mxCell id="W71XtA_5Icc1mvrdMgkB-27" value="88/TCP-UDP&lt;div&gt;53/UDP&lt;/div&gt;&lt;div&gt;445/TCP&lt;/div&gt;&lt;div&gt;123/UDP&lt;/div&gt;" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=16;" parent="W71XtA_5Icc1mvrdMgkB-25" vertex="1">
           <mxGeometry x="60" width="150" height="160" as="geometry">
             <mxRectangle width="150" height="160" as="alternateBounds" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="W71XtA_5Icc1mvrdMgkB-28" value="Read-Only operations, including Kerberos, DNS lookups, and GPO downloads." style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=16;" parent="W71XtA_5Icc1mvrdMgkB-25" vertex="1">
+        <mxCell id="W71XtA_5Icc1mvrdMgkB-28" value="Read-Only operations, including Kerberos, DNS lookups, GPO downloads, and NTP queries." style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=16;" parent="W71XtA_5Icc1mvrdMgkB-25" vertex="1">
           <mxGeometry x="210" width="250" height="160" as="geometry">
             <mxRectangle width="250" height="160" as="alternateBounds" />
           </mxGeometry>
@@ -119,14 +119,14 @@
           </mxGeometry>
         </mxCell>
         <mxCell id="W71XtA_5Icc1mvrdMgkB-29" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;strokeColor=inherit;top=0;left=0;bottom=0;right=0;collapsible=0;dropTarget=0;fillColor=none;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=16;" parent="W71XtA_5Icc1mvrdMgkB-16" vertex="1">
-          <mxGeometry y="370" width="830" height="150" as="geometry" />
+          <mxGeometry y="400" width="830" height="150" as="geometry" />
         </mxCell>
         <mxCell id="W71XtA_5Icc1mvrdMgkB-30" value="3" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=16;" parent="W71XtA_5Icc1mvrdMgkB-29" vertex="1">
           <mxGeometry width="60" height="150" as="geometry">
             <mxRectangle width="60" height="150" as="alternateBounds" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="W71XtA_5Icc1mvrdMgkB-31" value="88/TCP-UDP&lt;div&gt;53/UDP&lt;/div&gt;&lt;div&gt;445/TCP&lt;/div&gt;&lt;div&gt;5986/TCP&lt;/div&gt;" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=16;" parent="W71XtA_5Icc1mvrdMgkB-29" vertex="1">
+        <mxCell id="W71XtA_5Icc1mvrdMgkB-31" value="88/TCP-UDP&lt;div&gt;53/UDP&lt;/div&gt;&lt;div&gt;445/TCP&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;464/TCP&lt;/span&gt;&lt;/div&gt;" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=16;" parent="W71XtA_5Icc1mvrdMgkB-29" vertex="1">
           <mxGeometry x="60" width="150" height="150" as="geometry">
             <mxRectangle width="150" height="150" as="alternateBounds" />
           </mxGeometry>
@@ -257,22 +257,22 @@
             <mxRectangle width="40" height="130" as="alternateBounds" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="W71XtA_5Icc1mvrdMgkB-90" value="DMZ-Core" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=16;" parent="W71XtA_5Icc1mvrdMgkB-88" vertex="1">
+        <mxCell id="W71XtA_5Icc1mvrdMgkB-90" value="" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=16;" parent="W71XtA_5Icc1mvrdMgkB-88" vertex="1">
           <mxGeometry x="40" width="150" height="130" as="geometry">
             <mxRectangle width="150" height="130" as="alternateBounds" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="W71XtA_5Icc1mvrdMgkB-91" value="10.0.30.0/24" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=16;" parent="W71XtA_5Icc1mvrdMgkB-88" vertex="1">
+        <mxCell id="W71XtA_5Icc1mvrdMgkB-91" value="" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=16;" parent="W71XtA_5Icc1mvrdMgkB-88" vertex="1">
           <mxGeometry x="190" width="180" height="130" as="geometry">
             <mxRectangle width="180" height="130" as="alternateBounds" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="W71XtA_5Icc1mvrdMgkB-96" value="RO" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=16;" parent="W71XtA_5Icc1mvrdMgkB-88" vertex="1">
+        <mxCell id="W71XtA_5Icc1mvrdMgkB-96" value="" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=16;" parent="W71XtA_5Icc1mvrdMgkB-88" vertex="1">
           <mxGeometry x="370" width="80" height="130" as="geometry">
             <mxRectangle width="80" height="130" as="alternateBounds" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="W71XtA_5Icc1mvrdMgkB-92" value="The DMZ at the Core physical site." style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=16;" parent="W71XtA_5Icc1mvrdMgkB-88" vertex="1">
+        <mxCell id="W71XtA_5Icc1mvrdMgkB-92" value="" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=16;" parent="W71XtA_5Icc1mvrdMgkB-88" vertex="1">
           <mxGeometry x="450" width="350" height="130" as="geometry">
             <mxRectangle width="350" height="130" as="alternateBounds" />
           </mxGeometry>
@@ -674,7 +674,7 @@
             <mxRectangle width="310" height="70" as="alternateBounds" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="AYWx39LGqTnjk9E6-i7u-1" value="RWDC" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+        <mxCell id="AYWx39LGqTnjk9E6-i7u-1" value="RWDC" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="580" y="260" width="120" height="60" as="geometry" />
         </mxCell>
         <mxCell id="zZ8oq68cj5SXe_fZ_nNa-1" value="Identity Services Ecosystem" style="shape=table;startSize=30;container=1;collapsible=0;childLayout=tableLayout;strokeColor=default;fontSize=16;" parent="1" vertex="1">
@@ -706,7 +706,7 @@
         <mxCell id="W71XtA_5Icc1mvrdMgkB-9" value="RWDC" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="565" y="280" width="120" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="AYWx39LGqTnjk9E6-i7u-2" value="1x RWDC on bootstrap node&lt;br&gt;1x RWDC on compute node&lt;br&gt;per site" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+        <mxCell id="AYWx39LGqTnjk9E6-i7u-2" value="1x RWDC on bootstrap node&lt;br&gt;1x RWDC on compute node&lt;br&gt;per site" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
           <mxGeometry x="630" y="365" width="200" height="40" as="geometry" />
         </mxCell>
       </root>
