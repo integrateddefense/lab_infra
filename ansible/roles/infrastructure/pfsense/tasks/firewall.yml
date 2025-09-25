@@ -1,0 +1,46 @@
+
+# Firewall configurations
+
+- name: create upper separators
+  loop: "{{ ifaces }}"
+  loop_control:
+    label: "{{ item.name }}"
+  become: true
+  pfsensible.core.pfsense_rule:
+    name: "MANAGED-START"
+    interface: "{{ item.name }}"
+    disabled: true
+    source: any
+    destination: any
+
+- name: create lower separators
+  loop: "{{ ifaces }}"
+  loop_control:
+    label: "{{ item.name }}"
+  become: true
+  pfsensible.core.pfsense_rule:
+    name: "MANAGED-END"
+    interface: "{{ item.name }}"
+    disabled: true
+    source: any
+    destination: any
+
+- name: create rules
+  become: true
+  loop: "{{ ifaces | selectattr('rules','defined') | subelements('rules') }}"
+  vars:
+    iface: "{{ item.0.name }}"
+    rule: "{{ item.1 }}"
+  pfsensible.core.pfsense_rule:
+    interface: "{{ iface }}"
+    before: "MANAGED-END"
+    disabled: "{{ rule.disabled | default(false) | bool }}"
+    floating: false
+    name: "{{ rule.name }}"
+    action: "{{ rule.action }}"
+    ipprotocol: inet
+    protocol: "{{ rule.protocol }}"
+    source: "{{ rule.src.ip }}"
+    source_port: "{{ rule.src.port | default(omit) }}"
+    destination: "{{ rule.dst.ip }}"
+    destination_port: "{{ rule.dst.port | default(omit) }}"

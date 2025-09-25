@@ -1,0 +1,34 @@
+- name: ensure default WAN gateway is configured
+  become: true
+  vars:
+    iface: "{{ ifaces | selectattr('name','equalto','wan') | first }}"
+  pfsensible.core.pfsense_gateway:
+    name: "{{ iface.gateway.name }}"
+    disabled: false
+    descr: "{{ iface.gateway.description }}"
+    gateway: "dynamic"
+    ipprotocol: inet
+    interface: "{{ iface.name }}"
+
+- name: configure transit gateways
+  become: true
+  loop: "{{ ifaces | rejectattr('name','equalto','wan') | selectattr('gateway','defined') }}"
+  pfsensible.core.pfsense_gateway:
+    name: "{{ item.gateway.name }}"
+    disabled: false
+    descr: "{{ item.gateway.description }}"
+    gateway: "{{ vlans.transit[(item.name | split('_'))[-1]].gateway }}"
+    ipprotocol: inet
+    interface: "{{ item.name }}"
+
+- name: configure routes
+  become: true
+  loop: "{{ routes }}"
+  pfsensible.core.pfsense_route:
+    network: "{{ item.network }}"
+    gateway: "{{ item.gateway }}"
+    descr: "{{ item.description }}"
+    state: present
+
+#  debug:
+#    msg: "{{ item }}"

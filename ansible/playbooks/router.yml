@@ -32,3 +32,18 @@
       name: infrastructure/pfsense
       tasks_from: interfaces.yml
     tags: ["service","ints"]
+
+  - ansible.builtin.import_role:
+      name: infrastructure/pfsense
+      tasks_from: routing.yml
+    tags: ["service","routes"]
+
+  - ansible.builtin.import_role:
+      name: infrastructure/pfsense
+      tasks_from: port-forward.yml
+    tags: ["service","port-forward"]
+
+  - ansible.builtin.import_role:
+      name: infrastructure/pfsense
+      tasks_from: firewall.yml
+    tags: ["service","firewall"]

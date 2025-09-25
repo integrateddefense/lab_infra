@@ -1,23 +1,81 @@
 # Configures pfSense interfaces
 
-- name: bring up dhcp interfaces
+- name: create vlans
   become: true
-  loop: "{{ ifaces | dict2items | selectattr('value.type','equalto','dhcp') }}"
-  pfsensible.core.pfsense_interface:
-    enable: true
-    interface: "{{ item.value.name }}"
-    descr: "{{ item.key }}"
-    ipv4_type: "{{ item.value.type }}"
-    ipv6_type: "none"
+  loop: "{{ ifaces | selectattr('vlan_id','defined') }}"
+  pfsensible.core.pfsense_vlan:
+    state: present
+    vlan_id: "{{ item.vlan_id }}"
+    descr: "{{ (vlans[item.name] | default(vlans.transit[(item.name | split('_'))[1]])).description }}"
+    interface: "{{ (item.iface | split('.'))[0] }}"
 
-- name: bring up static interfaces
+- name: get current interfaces
+  ansible.builtin.set_fact:
+    raw_interfaces: >-
+      {{
+        (
+          lookup('file',backups.path+'/pfsense/'+site.code+'_'+inventory_hostname+'.xml')
+          | ansible.utils.from_xml
+        ).pfsense.interfaces
+      }}
+    assignments: []
+    needed: []
+  changed_when: false
+
+- name: normalize raw interfaces
+  loop: '{{ raw_interfaces | dict2items }}'
+  ansible.builtin.set_fact:
+    assignments: >-
+      {{
+        assignments +
+          [{
+            "name": item.value.descr,
+            "iface": item.value.if
+          }]
+      }}
+
+- name: normalize iface specs
+  loop: "{{ ifaces }}"
+  ansible.builtin.set_fact:
+    needed: >-
+      {{
+        needed +
+          [{
+            'name': item.name,
+            'iface': item.iface
+          }]
+      }}
+
+- name: assign interfaces
   become: true
-  loop: "{{ ifaces | dict2items | selectattr('value.type','equalto','static') }}"
+  loop: "{{ needed | difference(assignments) }}"
   pfsensible.core.pfsense_interface:
+    interface: "{{ item.iface }}"
+    descr: "{{ item.name }}"
     enable: true
-    descr: "{{ item.key }}"
-    interface: "{{ item.value.name }}"
-    ipv6_type: "none"
 
-- debug:
-    msg: "Not Implemented Yet"
+- name: configure static interfaces
+  become: true
+  loop: "{{ ifaces | selectattr('type','equalto','static') }}"
+  pfsensible.core.pfsense_interface:
+    interface: "{{ item.iface }}"
+    descr: "{{ item.name }}"
+    enable: true
+    ipv4_type: static
+    ipv4_address: "{{ item.ip }}"
+    ipv4_prefixlen: "{{ item.cidr_len }}"
+    ipv6_type: none
+    state: present
+
+- name: configure dhcp interfaces
+  become: true
+  loop: "{{ ifaces | selectattr('type','equalto','dhcp') }}"
+  pfsensible.core.pfsense_interface:
+    interface: "{{ item.iface }}"
+    descr: "{{ item.name }}"
+    enable: true
+    ipv4_type: dhcp
+    ipv6_type: none
+    state: present
+    blockbogons: "true"
+    blockpriv: "true"

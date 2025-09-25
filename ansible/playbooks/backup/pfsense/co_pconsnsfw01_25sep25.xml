@@ -30,6 +30,13 @@
 			<priv>user-shell-access</priv>
 			<bcrypt-hash>$2y$10$gkyP9nrrvAzxlYLBBnGrtOABMcG2OPS35k8e9SDNTchG9j8qmWBQC</bcrypt-hash>
 		</user>
+		<user>
+			<name>ansible</name>
+			<descr><![CDATA[Ansible automation]]></descr>
+			<authorizedkeys>ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIADVV7Ze3ShgcfACqJYHuWfNSz91BPAFWZ3k4k07ENiU ansible@mgmt-pi</authorizedkeys>
+			<priv>user-shell-access</priv>
+			<expires></expires>
+		</user>
 		<nextuid>2000</nextuid>
 		<nextgid>2000</nextgid>
 		<timeservers>pcoadrodc01.ops.indef.space</timeservers>
@@ -65,34 +72,47 @@
 	</system>
 	<interfaces>
 		<wan>
-			<enable></enable>
 			<if>igc0</if>
-			<ipaddr>dhcp</ipaddr>
-			<mediaopt></mediaopt>
-			<dhcp6-duid></dhcp6-duid>
-			<dhcp6-ia-pd-len>0</dhcp6-ia-pd-len>
 			<descr><![CDATA[wan]]></descr>
 			<spoofmac></spoofmac>
-		</wan>
-		<opt1>
-			<descr><![CDATA[transit_dmz]]></descr>
-			<if>igc2</if>
 			<enable></enable>
-			<spoofmac></spoofmac>
-		</opt1>
+			<alias-address></alias-address>
+			<alias-subnet>32</alias-subnet>
+			<ipaddr>dhcp</ipaddr>
+			<dhcphostname></dhcphostname>
+			<dhcprejectfrom></dhcprejectfrom>
+			<adv_dhcp_pt_timeout></adv_dhcp_pt_timeout>
+			<adv_dhcp_pt_retry></adv_dhcp_pt_retry>
+			<adv_dhcp_pt_select_timeout></adv_dhcp_pt_select_timeout>
+			<adv_dhcp_pt_reboot></adv_dhcp_pt_reboot>
+			<adv_dhcp_pt_backoff_cutoff></adv_dhcp_pt_backoff_cutoff>
+			<adv_dhcp_pt_initial_interval></adv_dhcp_pt_initial_interval>
+			<adv_dhcp_pt_values>SavedCfg</adv_dhcp_pt_values>
+			<adv_dhcp_send_options></adv_dhcp_send_options>
+			<adv_dhcp_request_options></adv_dhcp_request_options>
+			<adv_dhcp_required_options></adv_dhcp_required_options>
+			<adv_dhcp_option_modifiers></adv_dhcp_option_modifiers>
+			<adv_dhcp_config_advanced></adv_dhcp_config_advanced>
+			<adv_dhcp_config_file_override></adv_dhcp_config_file_override>
+			<adv_dhcp_config_file_override_path></adv_dhcp_config_file_override_path>
+			<blockpriv></blockpriv>
+			<blockbogons></blockbogons>
+		</wan>
 		<opt2>
 			<descr><![CDATA[open]]></descr>
 			<if>igc3</if>
-			<enable></enable>
 			<spoofmac></spoofmac>
+			<enable></enable>
+			<ipaddr>10.1.0.1</ipaddr>
+			<subnet>24</subnet>
 		</opt2>
 		<opt3>
-			<descr><![CDATA[VLAN10]]></descr>
+			<descr><![CDATA[transit_dmz]]></descr>
 			<if>igc2.10</if>
 			<spoofmac></spoofmac>
-			<enable></enable>
 			<ipaddr>10.0.10.4</ipaddr>
 			<subnet>29</subnet>
+			<enable></enable>
 		</opt3>
 	</interfaces>
 	<staticroutes>
@@ -135,48 +155,179 @@
 	<syslog>
 		<filterdescriptions>1</filterdescriptions>
 	</syslog>
-	<nat>
-		<outbound>
-			<mode>automatic</mode>
-		</outbound>
-	</nat>
 	<filter>
 		<rule>
-			<id></id>
-			<tracker>1758747075</tracker>
+			<descr><![CDATA[MANAGED-START]]></descr>
+			<interface>wan</interface>
 			<type>pass</type>
-			<interface>opt3</interface>
 			<ipprotocol>inet</ipprotocol>
-			<tag></tag>
-			<tagged></tagged>
-			<max></max>
-			<max-src-nodes></max-src-nodes>
-			<max-src-conn></max-src-conn>
-			<max-src-states></max-src-states>
-			<statetimeout></statetimeout>
-			<statepolicy></statepolicy>
 			<statetype><![CDATA[keep state]]></statetype>
-			<os></os>
 			<source>
 				<any></any>
 			</source>
 			<destination>
 				<any></any>
 			</destination>
-			<descr></descr>
+			<disabled></disabled>
+			<id></id>
+			<tracker>1758832968</tracker>
 			<created>
-				<time>1758747075</time>
-				<username><![CDATA[admin@10.0.99.5 (Local Database)]]></username>
+				<time>1758832968</time>
+				<username><![CDATA[ansible]]></username>
 			</created>
 			<updated>
-				<time>1758747697</time>
-				<username><![CDATA[admin@10.0.99.5 (Local Database)]]></username>
+				<time>1758832968</time>
+				<username><![CDATA[ansible]]></username>
+			</updated>
+		</rule>
+		<rule>
+			<descr><![CDATA[MANAGED-END]]></descr>
+			<interface>wan</interface>
+			<type>pass</type>
+			<ipprotocol>inet</ipprotocol>
+			<statetype><![CDATA[keep state]]></statetype>
+			<source>
+				<any></any>
+			</source>
+			<destination>
+				<any></any>
+			</destination>
+			<disabled></disabled>
+			<id></id>
+			<tracker>1758832971</tracker>
+			<created>
+				<time>1758832971</time>
+				<username><![CDATA[ansible]]></username>
+			</created>
+			<updated>
+				<time>1758832971</time>
+				<username><![CDATA[ansible]]></username>
+			</updated>
+		</rule>
+		<rule>
+			<descr><![CDATA[MANAGED-START]]></descr>
+			<interface>opt2</interface>
+			<type>pass</type>
+			<ipprotocol>inet</ipprotocol>
+			<statetype><![CDATA[keep state]]></statetype>
+			<source>
+				<any></any>
+			</source>
+			<destination>
+				<any></any>
+			</destination>
+			<disabled></disabled>
+			<id></id>
+			<tracker>1758832970</tracker>
+			<created>
+				<time>1758832970</time>
+				<username><![CDATA[ansible]]></username>
+			</created>
+			<updated>
+				<time>1758832970</time>
+				<username><![CDATA[ansible]]></username>
+			</updated>
+		</rule>
+		<rule>
+			<descr><![CDATA[MANAGED-END]]></descr>
+			<interface>opt2</interface>
+			<type>pass</type>
+			<ipprotocol>inet</ipprotocol>
+			<statetype><![CDATA[keep state]]></statetype>
+			<source>
+				<any></any>
+			</source>
+			<destination>
+				<any></any>
+			</destination>
+			<disabled></disabled>
+			<id></id>
+			<tracker>1758832974</tracker>
+			<created>
+				<time>1758832974</time>
+				<username><![CDATA[ansible]]></username>
+			</created>
+			<updated>
+				<time>1758832974</time>
+				<username><![CDATA[ansible]]></username>
+			</updated>
+		</rule>
+		<rule>
+			<descr><![CDATA[MANAGED-START]]></descr>
+			<interface>opt3</interface>
+			<type>pass</type>
+			<ipprotocol>inet</ipprotocol>
+			<statetype><![CDATA[keep state]]></statetype>
+			<source>
+				<any></any>
+			</source>
+			<destination>
+				<any></any>
+			</destination>
+			<disabled></disabled>
+			<id></id>
+			<tracker>1758832969</tracker>
+			<created>
+				<time>1758832969</time>
+				<username><![CDATA[ansible]]></username>
+			</created>
+			<updated>
+				<time>1758832969</time>
+				<username><![CDATA[ansible]]></username>
+			</updated>
+		</rule>
+		<rule>
+			<descr><![CDATA[Default Allow]]></descr>
+			<interface>opt3</interface>
+			<type>pass</type>
+			<ipprotocol>inet</ipprotocol>
+			<statetype><![CDATA[keep state]]></statetype>
+			<source>
+				<any></any>
+			</source>
+			<destination>
+				<any></any>
+			</destination>
+			<id></id>
+			<tracker>1758833030</tracker>
+			<created>
+				<time>1758833030</time>
+				<username><![CDATA[ansible]]></username>
+			</created>
+			<updated>
+				<time>1758833030</time>
+				<username><![CDATA[ansible]]></username>
+			</updated>
+		</rule>
+		<rule>
+			<descr><![CDATA[MANAGED-END]]></descr>
+			<interface>opt3</interface>
+			<type>pass</type>
+			<ipprotocol>inet</ipprotocol>
+			<statetype><![CDATA[keep state]]></statetype>
+			<source>
+				<any></any>
+			</source>
+			<destination>
+				<any></any>
+			</destination>
+			<disabled></disabled>
+			<id></id>
+			<tracker>1758832973</tracker>
+			<created>
+				<time>1758832973</time>
+				<username><![CDATA[ansible]]></username>
+			</created>
+			<updated>
+				<time>1758832973</time>
+				<username><![CDATA[ansible]]></username>
 			</updated>
 		</rule>
 		<separator>
 			<opt1></opt1>
 			<opt2></opt2>
 			<opt3></opt3>
+			<wan></wan>
 		</separator>
 	</filter>
 	<shaper></shaper>
@@ -306,14 +457,14 @@
 			<if>igc2</if>
 			<tag>10</tag>
 			<pcp></pcp>
-			<descr><![CDATA[Transit-DMZ]]></descr>
+			<descr><![CDATA[DMZ Transit]]></descr>
 			<vlanif>igc2.10</vlanif>
 		</vlan>
 	</vlans>
 	<qinqs></qinqs>
 	<revision>
-		<time>1758770209</time>
-		<description><![CDATA[admin@10.0.99.5 (Local Database): Interface assignment deleted]]></description>
+		<time>1758833064</time>
+		<description><![CDATA[admin@10.0.99.5 (Local Database): Firewall: Rules - deleted a firewall rule.]]></description>
 		<username><![CDATA[admin@10.0.99.5 (Local Database)]]></username>
 	</revision>
 	<gateways>
@@ -332,7 +483,7 @@
 			<name>WAN_DHCP</name>
 			<weight>1</weight>
 			<ipprotocol>inet</ipprotocol>
-			<descr><![CDATA[Interface WAN_DHCP Gateway]]></descr>
+			<descr><![CDATA[WAN Gateway]]></descr>
 			<gw_down_kill_states></gw_down_kill_states>
 		</gateway_item>
 		<gateway_item>
@@ -341,7 +492,7 @@
 			<name>TransitDMZ</name>
 			<weight>1</weight>
 			<ipprotocol>inet</ipprotocol>
-			<descr></descr>
+			<descr><![CDATA[DMZ Transit Gateway]]></descr>
 			<gw_down_kill_states></gw_down_kill_states>
 		</gateway_item>
 	</gateways>
@@ -380,6 +531,39 @@
 					<username><![CDATA[group:admins]]></username>
 					<runas>user:root</runas>
 					<cmdlist>ALL</cmdlist>
+				</row>
+				<row>
+					<username><![CDATA[user:ansible]]></username>
+					<runas>user:ALL</runas>
+					<nopasswd>ON</nopasswd>
+					<cmdlist>ALL</cmdlist>
+				</row>
+				<row>
+					<username><![CDATA[user:ansible]]></username>
+					<runas>root</runas>
+					<cmdlist>ALL</cmdlist>
+					<nopasswd>ON</nopasswd>
+				</row>
+				<row>
+					<username><![CDATA[user:ansible]]></username>
+					<runas>root</runas>
+					<cmdlist>ALL</cmdlist>
+					<nopasswd>ON</nopasswd>
+				</row>
+				<row>
+					<username><![CDATA[user:ansible]]></username>
+					<runas>root</runas>
+					<cmdlist>ALL</cmdlist>
+					<nopasswd>ON</nopasswd>
+				</row>
+				<add_includedir>none</add_includedir>
+			</config>
+			<config>
+				<row>
+					<username><![CDATA[user:ansible]]></username>
+					<runas>user:root</runas>
+					<cmdlist>ALL</cmdlist>
+					<nopasswd>ON</nopasswd>
 				</row>
 			</config>
 		</sudo>
