@@ -1,3 +1,13 @@
+- block:
+  - name: check for prep tasks
+    ansible.builtin.assert:
+      that:
+      - trunk_iface is defined
+      - mgmt_iface is defined
+  rescue:
+  - name: run prep tasks
+    ansible.builtin.include_tasks: "prep.yml"
+
 - name: enable nftables
   become: true
   ansible.builtin.systemd_service:
@@ -40,8 +50,8 @@
   loop_control:
     label: "{{ item.key }}"
   ansible.builtin.template:
-    src: templates/nft_transit_{{ item.key }}_default.j2
-    dest: /etc/nftables.d/99-transit_{{ item.key }}_default.nft
+    src: templates/nft_transit_{{ item.key }}.j2
+    dest: /etc/nftables.d/10-transit_{{ item.key }}.nft
     owner: root
     group: root
     mode: '0600'
@@ -50,36 +60,14 @@
   - nftables config check results
   - reload nftables
 
-- name: apply default vlan rules
+- name: apply vlan rules
   become: true
   loop: "{{ vlans | dict2items | rejectattr('value.vfw_ips','undefined') }}"
   loop_control:
     label: "{{ item.key }}"
   ansible.builtin.template:
-    src: templates/nft_{{ item.key }}_default.j2
-    dest: /etc/nftables.d/99-{{ item.key }}_default.nft
-    owner: root
-    group: root
-    mode: '0600'
-  notify:
-  - check nftables config
-  - nftables config check results
-  - reload nftables
-
-#- loop: "{{ lookup('ansible.builtin.fileglob',role_path + '/templates/nft_subsystems/*',wantlist=True) }}"
-#  loop_control:
-#    label: "{{ ((item | split('_'))[-1] | split('.'))[0] }}"
-#  debug:
-#    var: item
-
-- name: apply subsystem rules
-  become: true
-  loop: "{{ lookup('ansible.builtin.fileglob',role_path + '/templates/nft_subsystems/*',wantlist=True) }}"
-  loop_control:
-    label: "{{ ((item | split('_'))[-1] | split('.'))[0] }}"
-  ansible.builtin.template:
-    src: templates/nft_subsystems/nft_{{ ((item | split('_'))[-1] | split('.'))[0] }}.j2
-    dest: /etc/nftables.d/10-{{ ((item | split('_'))[-1] | split('.'))[0] }}.nft
+    src: templates/nft_{{ item.key }}.j2
+    dest: /etc/nftables.d/10-{{ item.key }}.nft
     owner: root
     group: root
     mode: '0600'

@@ -24,7 +24,28 @@
       tasks_from: linux.yml
 
 # Service Config
-  - name: apply vfw service baseline
-    tags: ["service","vfw"]
+  - name: run prep tasks
+    tags: ["always","prep"]
     ansible.builtin.import_role:
       name: infrastructure/vfws
+      tasks_from: prep.yml
+
+  - name: apply interface configs
+    tags: ["service","vfw","ints"]
+    ansible.builtin.import_role:
+      name: infrastructure/vfws
+      tasks_from: interfaces.yml
+
+  - name: apply nftables configs
+    tags: ["service","vfw","nft"]
+    ansible.builtin.import_role:
+      name: infrastructure/vfws
+      tasks_from: nftables.yml
+
+  - name: apply keepalived configs
+    tags: ["service","vfw","keepalive"]
+    ansible.builtin.import_role:
+      name: infrastructure/vfws
+      tasks_from: keepalived.yml
+
+

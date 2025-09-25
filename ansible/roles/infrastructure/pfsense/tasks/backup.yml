@@ -1,0 +1,8 @@
+# Grabs a backup of the pfSense configuration
+
+- name: backup pfsense config.xml
+  ansible.builtin.fetch:
+    src: /cf/conf/config.xml
+    dest: "backups/pfsense/{{ site.code }}_{{ inventory_hostname }}.xml"
+    flat: yes
+  changed_when: false

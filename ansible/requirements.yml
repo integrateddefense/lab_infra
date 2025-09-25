@@ -17,3 +17,5 @@ collections:
 - name: microsoft.ad
 # Added by the services/git role
 - name: community.general
+# Added by the infrastructure/pfsense role
+- name: pfsensible.core

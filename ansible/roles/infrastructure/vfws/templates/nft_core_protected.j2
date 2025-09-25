@@ -1,0 +1,9 @@
+# Core_Protected -> Core
+add rule inet filter fwd_v{{ vlans.core_protected.id }} oifname "{{ trunk_iface }}.{{ vlans.core.id }}" tcp dport { 53,88,135,445,636,3269,49152-65535 } accept
+add rule inet filter fwd_v{{ vlans.core_protected.id }} oifname "{{ trunk_iface }}.{{ vlans.core.id }}" udp dport { 53,88,123 } accept
+
+# Core_Protected -> Transit DMZ
+add rule inet filter fwd_v{{ vlans.core_protected.id }} oifname "{{ trunk_iface }}.{{ vlans.transit.dmz.id }}" tcp dport { 443 }
+
+# Default rule for the Core Protected VLAN
+add rule inet filter fwd_v{{ vlans.core_protected.id }} drop

@@ -1,3 +1,13 @@
+- block:
+  - name: check for prep tasks
+    ansible.builtin.assert:
+      that:
+      - trunk_iface is defined
+      - mgmt_iface is defined
+  rescue:
+  - name: run prep tasks
+    ansible.builtin.include_tasks: "prep.yml"
+
 - name: set management interface
   become: true
   ansible.builtin.template:

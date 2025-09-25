@@ -27,7 +27,7 @@
     junipernetworks.junos.junos_config:
       backup: true
       backup_options: {
-        filename: "{{ site.code }}_{{ hostname }}_backup.conf",
+        filename: "playbooks/backups/junos/{{ site.code }}_{{ hostname }}_backup.conf",
         dir_path: .
       }
 

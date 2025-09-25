@@ -1,0 +1,16 @@
+# User -> Core
+add rule inet filter fwd_v{{ vlans.user.id }} oifname "{{ trunk_iface }}.{{ vlans.core.id }}" tcp dport { 88,443 } accept
+add rule inet filter fwd_v{{ vlans.user.id }} oifname "{{ trunk_iface }}.{{ vlans.core.id }}" udp dport { 53,88,123 } accept
+
+# User -> Core Protected
+add rule inet filter fwd_v{{ vlans.user.id }} oifname "{{ trunk_iface }}.{{ vlans.core_protected.id }}" tcp dport { 88,445,464 } accept
+add rule inet filter fwd_v{{ vlans.user.id }} oifname "{{ trunk_iface }}.{{ vlans.core_protected.id }}" udp dport { 53,88,464 } accept
+
+# User -> Transit
+add rule inet filter fwd_v{{ vlans.user.id }} oifname "{{ trunk_iface }}.{{ vlans.transit.dmz.id }}" tcp dport { 443 } accept
+
+# User -> DMZ
+add rule inet filter fwd_v{{ vlans.user.id }} oifname "{{ trunk_iface }}.{{ vlans.dmz.id }}" tcp dport { 443 } accept
+
+# Default rule for the User VLAN
+add rule inet filter fwd_v{{ vlans.user.id }} drop

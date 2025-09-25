@@ -11,10 +11,10 @@
   ansible.builtin.set_fact:
     ssh_key_verified: "{{ ssh_probe.rc == 0 }}"
 
-- name: get password from user
-  when: not ssh_key_verified
+- when: not ssh_key_verified
   block:
-  - ansible.builtin.pause:
+  - name: get password from user
+    ansible.builtin.pause:
       prompt: "Enter SSH password for {{ ansible_user }}: "
       echo: no
     register: raw_input

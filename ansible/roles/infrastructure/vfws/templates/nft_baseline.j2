@@ -13,6 +13,11 @@ table inet filter {
 		# only allow management protocols via the management interface
 		iifname {{ mgmt_iface }} tcp dport { 22 } accept
 
+		# allow incoming vrrp
+{% for item in (vlans | dict2items | rejectattr('value.vfw_ips','undefined')) %}
+		iifname {{ trunk_iface }}.{{ item.value.id}} ip protocol 112 accept
+{% endfor %}
+
 		# allow icmp for troubleshooting
 		ip protocol icmp icmp type echo-request accept
 
@@ -27,9 +32,13 @@ table inet filter {
 		ct state established,related accept
 
 		# subchains for each VLAN
-		{% for item in (vlans | dict2items | rejectattr('value.vfw_ips','undefined')) %}
+{% for item in (vlans | dict2items | rejectattr('value.vfw_ips','undefined') | rejectattr('key','equalto','mgmt')) %}
 		iifname "{{ trunk_iface }}.{{ item.value.id }}" jump fwd_v{{ item.value.id }}
-		{% endfor %}
+{% endfor %}
+{% for item in (vlans.transit | dict2items ) %}
+		iifname "{{ trunk_iface }}.{{ item.value.id }}" jump fwd_v{{ item.value.id }}
+{% endfor %}
+		iifname "{{ mgmt_iface }}" jump fwd_v{{ vlans.mgmt.id }}
 
 		log prefix "nft-fwd-drop: " counter drop
 	}
@@ -39,10 +48,10 @@ table inet filter {
 		policy accept
 	}
 
-	{% for item in (vlans | dict2items | rejectattr('value.vfw_ips','undefined')) %}
+{% for item in (vlans | dict2items | rejectattr('value.vfw_ips','undefined')) %}
 	chain fwd_v{{ item.value.id }} { }
-	{% endfor %}
-	{% for item in (vlans.transit | dict2items ) %}
+{% endfor %}
+{% for item in (vlans.transit | dict2items ) %}
 	chain fwd_v{{ item.value.id }} { }
-	{% endfor %}
+{% endfor %}
 }

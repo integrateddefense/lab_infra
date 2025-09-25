@@ -1,0 +1,90 @@
+# Tasks to bootstrap key-based auth over SSH for ansible on pfSense/FreeBSD devices
+
+- name: ensure sudo installed
+  become: true
+  ansible.builtin.package:
+    name: pfSense-pkg-sudo
+    state: present
+
+- name: create ansible user
+  become: true
+  ansible.builtin.user:
+    name: "{{ ansible_user }}"
+    group: ansible
+    groups: admins
+
+- name: ensure ansible in sudoers
+  become: true
+  ansible.builtin.lineinfile:
+    path: /usr/local/etc/sudoers
+    line: "{{ ansible_user }} ALL=(ALL) NOPASSWD: ALL"
+    state: present
+
+- name: deploy public key
+  ansible.posix.authorized_key:
+    user: ansible
+    key: "{{ lookup('file', ansible_user_pub_key_file) }}"
+    state: present
+
+- name: require terminal access
+  become: true
+  ansible.builtin.lineinfile:
+    path: /usr/local/etc/sudoers.d/{{ ansible_user }}
+    line: "Defaults:{{ ansible_user }} !requiretty"
+    mode: "0440"
+    create: yes
+
+- name: Prepare for Key-Based Auth Test
+  ansible.builtin.set_fact:
+    ansible_user: ansible
+    ansible_private_key_file: "{{ ansible_ssh_private_key_file }}"
+    ansible_ssh_common_args: "-o PreferredAuthentications=publickey -o PasswordAuthentication=no"
+  when: not ssh_key_verified
+
+- name: Reset Connection
+  ansible.builtin.meta: reset_connection
+
+- when: not ssh_key_verified
+  block:
+  - name: Test Key-Based Auth
+    ansible.builtin.setup:
+      gather_subset:
+      - network
+      - user
+    register: facts
+
+  - name: Validate Key-Based Auth Test
+    ansible.builtin.fail:
+      msg: "Host {{ facts.ansible_facts.ansible_hostname }} is running as {{facts.ansible_facts.ansible_user_id }}"
+    when:
+    - facts.ansible_facts.ansible_user_id != ansible_user
+    notify: reload sshd (linux)
+
+- name: Ensure drop-in SSH configs are supported
+  become: true
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^\s*Include\s+/etc/ssh/sshd_config\.d/\*'
+    line: 'Include /etc/ssh/ssd_config.d/*'
+    insertafter: BOF
+  notify: reload sshd (linux)
+
+- name: Enforce Key-Based Auth
+  become: true
+  ansible.builtin.blockinfile:
+    path: /etc/ssh/sshd_config.d/99-hardening.conf
+    create: yes
+    mode: '0644'
+    marker: "# {mark} ANSIBLE MANAGED: portable > ssh"
+    block: |
+      PermitRootLogin no
+      PasswordAuthentication no
+      PubkeyAuthentication yes
+      AllowUsers ansible
+  notify: reload sshd (pfsense)
+
+- name: Check SSHD Config
+  become: true
+  ansible.builtin.command: /usr/sbin/sshd -t
+  register: sshd_check
+  changed_when: false

@@ -1,0 +1,23 @@
+# Configures pfSense interfaces
+
+- name: bring up dhcp interfaces
+  become: true
+  loop: "{{ ifaces | dict2items | selectattr('value.type','equalto','dhcp') }}"
+  pfsensible.core.pfsense_interface:
+    enable: true
+    interface: "{{ item.value.name }}"
+    descr: "{{ item.key }}"
+    ipv4_type: "{{ item.value.type }}"
+    ipv6_type: "none"
+
+- name: bring up static interfaces
+  become: true
+  loop: "{{ ifaces | dict2items | selectattr('value.type','equalto','static') }}"
+  pfsensible.core.pfsense_interface:
+    enable: true
+    descr: "{{ item.key }}"
+    interface: "{{ item.value.name }}"
+    ipv6_type: "none"
+
+- debug:
+    msg: "Not Implemented Yet"
