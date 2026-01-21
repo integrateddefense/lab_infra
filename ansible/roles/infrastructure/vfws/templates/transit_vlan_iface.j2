@@ -1,5 +1,5 @@
 [connection]
-id={{ item.key }}
+id=transit-{{ item.key }}
 type=vlan
 interface-name={{ trunk_iface }}.{{ item.value.id }}
 device-name={{ trunk_iface }}
@@ -14,13 +14,9 @@ parent={{ trunk_iface }}
 [ipv4]
 address1={{ item.value.vfw_ips[node] }}/{{ (item.value.cidr | split("/"))[1] }}
 method=manual
+{% if item.value.default_route | default(false) %}
+gateway={{ item.value.other_end }}
+{% endif %}
 
 [ipv6]
 method=ignore
-{% if item.value.default_route | default(false) %}
-
-[Route]
-Destination=0.0.0.0/0
-Gateway={{ item.value.other_end }}
-Metric=10
-{% endif %}

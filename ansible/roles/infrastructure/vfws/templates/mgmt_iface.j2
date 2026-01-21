@@ -10,6 +10,7 @@ autoconnect=true
 address1={{ vlans.mgmt.vfw_ips[node] }}/24,10.0.99.1
 dns={{ dcs.rodc.ip }};{{ dcs.secondary.ip }}
 method=manual
+never-default=true
 
 [ipv6]
 method=ignore

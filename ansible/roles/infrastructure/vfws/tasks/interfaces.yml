@@ -32,13 +32,28 @@
   - reload nmcli
 
 - name: set vlan interfaces
-  loop: "{{ vlans | dict2items | selectattr('item.value.vfw_ips','defined') }}"
+  loop: "{{ vlans | dict2items | selectattr('value.vfw_ips','defined') | rejectattr('key','equalto','mgmt') }}"
   loop_control:
     label: "setting vlan {{ item.key }}"
   become: true
   ansible.builtin.template:
     src: templates/vlan_iface.j2
     dest: /etc/NetworkManager/system-connections/{{ item.key }}.nmconnection
+    owner: root
+    group: root
+    mode: '0600'
+  notify:
+  - reload nmcli
+  - bring up all connections
+
+- name: set transit vlan interfaces
+  loop: "{{ vlans.transit | dict2items | selectattr('value.vfw_ips','defined') }}"
+  loop_control:
+    label: "setting vlan transit-{{ item.key }}"
+  become: true
+  ansible.builtin.template:
+    src: templates/transit_vlan_iface.j2
+    dest: /etc/NetworkManager/system-connections/transit-{{ item.key }}.nmconnection
     owner: root
     group: root
     mode: '0600'
