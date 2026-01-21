@@ -27,7 +27,7 @@
     junipernetworks.junos.junos_config:
       backup: true
       backup_options: {
-        filename: "playbooks/backups/junos/{{ site.code }}_{{ hostname }}_backup.conf",
+        filename: "playbooks/backup/junos/{{ site.code }}_{{ hostname }}_backup.conf",
         dir_path: .
       }
 
@@ -47,20 +47,20 @@
 ## Function Roles
   - name: base
     ansible.builtin.import_role:
-      name: infrastructure/switch
+      name: infrastructure/core_switch
       tasks_from: base.yml
     tags: [base]
 
   - name: full
     tags: [full]
     ansible.builtin.import_role:
-      name: infrastructure/switch
+      name: infrastructure/core_switch
       tasks_from: full.yml
 
   - name: ports
     tags: [ports]
     ansible.builtin.import_role:
-      name: infrastructure/switch
+      name: infrastructure/core_switch
       tasks_from: ports.yml
 
 ## Save by default

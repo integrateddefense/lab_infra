@@ -1,15 +1,3 @@
-- name: ensure default WAN gateway is configured
-  become: true
-  vars:
-    iface: "{{ ifaces | selectattr('name','equalto','wan') | first }}"
-  pfsensible.core.pfsense_gateway:
-    name: "{{ iface.gateway.name }}"
-    disabled: false
-    descr: "{{ iface.gateway.description }}"
-    gateway: "dynamic"
-    ipprotocol: inet
-    interface: "{{ iface.name }}"
-
 - name: configure transit gateways
   become: true
   loop: "{{ ifaces | rejectattr('name','equalto','wan') | selectattr('gateway','defined') }}"

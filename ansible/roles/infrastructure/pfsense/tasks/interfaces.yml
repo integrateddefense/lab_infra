@@ -60,7 +60,7 @@
   pfsensible.core.pfsense_interface:
     interface: "{{ item.iface }}"
     descr: "{{ item.name }}"
-    enable: true
+    enable: "{{ item.enabled }}"
     ipv4_type: static
     ipv4_address: "{{ item.ip }}"
     ipv4_prefixlen: "{{ item.cidr_len }}"
@@ -79,3 +79,19 @@
     state: present
     blockbogons: "true"
     blockpriv: "true"
+
+- name: configure dhcp server
+  become: true
+  loop: "{{ ifaces | selectattr('dhcp','defined') }}"
+  pfsensible.core.pfsense_dhcp_server:
+    interface: "{{ item.iface }}"
+    enable: true
+    range_from: "{{ item.dhcp.start }}"
+    range_to: "{{ item.dhcp.end }}"
+    netmask: "{{ item.dhcp.netmask }}"
+    gateway: "{{ item.ip }}"
+    defaultleasetime: 86400
+    maxleasetime: 172800
+    state: present
+    ddnsclientupdates: deny
+    dnsserver: 8.8.8.8

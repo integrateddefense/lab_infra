@@ -15,7 +15,14 @@
     lines:
     - set vlans {{ item }} vlan-id {{ vlans[item].id }}
     - set vlans {{ item }} description "{{ vlans[item].description }}"
-  loop: "{{ vlans | list }}"
+  loop: "{{ vlans | dict2items | rejectattr('key','equalto','transit') | map(attribute='key') | list }}"
+
+- name: Create Transit VLANs
+  junipernetworks.junos.junos_config:
+    lines:
+    - set vlans {{ item }} vlan-id {{ vlans[item].id }}
+    - set vlans {{ item }} description "{{ vlans[item].description }}"
+  loop: "{{ vlans.transit | list }}"
 
 - name: Set MGMT Interface
   junipernetworks.junos.junos_config:

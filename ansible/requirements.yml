@@ -19,3 +19,5 @@ collections:
 - name: community.general
 # Added by the infrastructure/pfsense role
 - name: pfsensible.core
+# Added by infrastructure/access_switch and distro_switch roles
+- name: cisco.ios

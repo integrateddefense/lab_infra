@@ -1,0 +1,6 @@
+# Applies the core switch configuration for Junos devices
+
+# TODO
+## Primary Module: junipernetworks.junos.junos_config
+## Approach: Break config into sections, apply authoritative config with the `update: override` and `src` options
+##  Junos commands merge by default when using the "line" approach, so need to apply via an authoritative file
