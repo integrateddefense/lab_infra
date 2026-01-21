@@ -19,3 +19,7 @@ host_vars
 # Protected files
 IPAM.xlsx
 *IPAM.xlsx
+
+# Protected Directories
+inventories
+playbooks/backup
