@@ -1,0 +1,44 @@
+# Playbook to configure access switches
+- hosts: distro_switches
+  gather_facts: no
+
+  pre_tasks:
+  - name: connection check
+    ansible.builtin.import_role:
+      name: portable/ssh
+      tasks_from: ciscosmb_check.yml
+    tags: ["always"]
+
+  - meta: reset_connection
+
+  - name: terminal config
+    cisco.ios.ios_command:
+      commands:
+      - terminal datadump
+    tags: ["always"]
+
+  tasks:
+
+  - name: configure ssh
+    ansible.builtin.import_role:
+      name: portable/ssh
+      tasks_from: ciscosmb.yml
+    tags: ["baseline","ssh"]
+
+  - name: apply baseline configs
+    ansible.builtin.import_role:
+      name: infrastructure/ciscosmb
+      tasks_from: baseline.yml
+    tags: ["baseline","ssh"]
+
+  - name: apply vlan configs
+    ansible.builtin.import_role:
+      name: infrastructure/ciscosmb
+      tasks_from: vlans.yml
+    tags: ["service","vlans"]
+
+  - name: apply interface configs
+    ansible.builtin.import_role:
+      name: infrastructure/ciscosmb
+      tasks_from: interfaces.yml
+    tags: ["service","ints"]

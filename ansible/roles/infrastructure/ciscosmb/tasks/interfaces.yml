@@ -1,5 +1,6 @@
-
 # Configures interfaces on the Cisco SMB Switches (C1200)
+## DEV NOTE: C1200s don't present configs the same way cisco.ios.ios_config expects
+### changed_when: false is used to clean up the output to focus on end-state changes
 - name: set access ports
   become: true
   loop: "{{ ifaces }}"
@@ -14,7 +15,7 @@
     - "interface {{ iface_prefix }} {{ index+1 }}"
   when: item.access is defined
 
-- name: set trunk ports
+- name: set trunk ports (w/out native vlans)
   become: true
   loop: "{{ ifaces }}"
   loop_control:
@@ -26,7 +27,25 @@
     - "{{ item.status }}"
     parents:
     - "interface {{ iface_prefix }} {{ index+1 }}"
-  when: item.trunk is defined
+  when:
+  - item.trunk is defined
+  - item.trunk.native is not defined
+
+- name: set trunk ports (w/ native vlans)
+  become: true
+  loop: "{{ ifaces }}"
+  loop_control:
+    index_var: index
+  cisco.ios.ios_config:
+    lines:
+    - "description \"{{ item.description }}\""
+    - "switchport trunk allowed vlan {{ item.trunk.vlan_ids }}"
+    - "{{ item.status }}"
+    parents:
+    - "interface {{ iface_prefix }} {{ index+1 }}"
+  when:
+  - item.trunk is defined
+  - item.trunk.native is defined
 
 - name: shut disabled ports
   become: true

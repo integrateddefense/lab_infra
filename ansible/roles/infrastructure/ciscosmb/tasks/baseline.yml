@@ -1,5 +1,6 @@
 # Applies baseline configuration for the C1200 access switch
-
+## C1200s dont present configs the way cisco.ios.ios_config expects them, so in many cases they don't report changes correctly
+## changed_when: false is used to clean up the output on unimportant or always changing config lines
 - name: disable energy efficient ethernet
   become: true
   cisco.ios.ios_config:
@@ -29,13 +30,15 @@
     save_when: changed
 
 ## Set Clock Settings
-
+### Have to extend the timeout for these; internal recalculation will often cause a first-run fail
 - name: set standard timezone
   become: true
   cisco.ios.ios_config:
     lines:
     - "clock timezone {{ timezone.standard.acronym }} {{ timezone.standard.hrs_diff }}"
     save_when: changed
+  vars:
+    ansible_command_timeout: 120
 
 - name: set daylight savings timezone
   become: true
@@ -44,6 +47,8 @@
     lines:
     - "clock summer-time {{ timezone.daylight.acronym }} recurring usa {{ timezone.daylight.mins_diff }}"
     save_when: changed
+  vars:
+    ansible_command_timeout: 120
 
 
 - name: set clock to ntp source
