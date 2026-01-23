@@ -1,0 +1,30 @@
+# Configure VLANs for the Cisco SMB Devices (C1200)
+## DEV NOTE: These ios_config commands don't like the way the C1200 represents it's configs, so it very rarely represents changes correctly
+## Deliberately ignores transit VLANS; no need for them at this level
+- name: prep vlans
+  ansible.builtin.set_fact:
+    vlan_ids: "{{ vlans | dict2items | selectattr('value.id','defined') | map(attribute='value.id') | to_cisco_range }}"
+
+- name: configure VLANs
+  become: true
+  cisco.ios.ios_config:
+    lines:
+    - "vlan {{ vlan_ids }}"
+    parents:
+    - vlan database
+    match: exact
+    replace: block
+    diff_against: running
+    save_when: modified
+  changed_when: false
+
+- name: configure management SVI
+  become: true
+  cisco.ios.ios_config:
+    lines:
+    - "ip address {{ ansible_host }} /{{ (vlans.mgmt.cidr | split('/'))[1] }}"
+    - no shutdown
+    parents:
+    - "interface vlan {{ vlans.mgmt.id }}"
+    save_when: modified
+  changed_when: false

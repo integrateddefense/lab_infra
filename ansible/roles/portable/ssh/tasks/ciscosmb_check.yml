@@ -1,0 +1,41 @@
+# Active Probe - check if we needed a password at the command line
+- name: attempt key-based logon
+  delegate_to: localhost
+  become: false
+  ansible.builtin.command: "timeout 5s bash -lc \"printf 'exit\n' | ssh -tt -i {{ ansible_ssh_private_key_file }} -o BatchMode=yes -o PreferredAuthentications=publickey -o PasswordAuthentication=no -o KbdInteractiveAuthentication=no -o ChallengeResponseAuthentication=no -o StrictHostKeyChecking=accept-new {{ ansible_user }}@{{ ansible_host }}\""
+  register: ssh_probe
+  run_once: false
+  vars:
+    ansible_connection: local
+  changed_when: false
+  failed_when: false
+
+- name: remember result
+  ansible.builtin.set_fact:
+    ssh_key_verified: "{{ (ssh_probe.rc == 255) and (ssh_probe.stderr == \"Connection to {} closed.\".format(ansible_host)) and (ssh_probe.stdout_lines[-1] == \"{}#exit\".format(inventory_hostname)) }}"
+
+- when: not ssh_key_verified
+  block:
+  - name: get password from user
+    ansible.builtin.pause:
+      prompt: "Enter SSH password for {{ ansible_user }}: "
+      echo: no
+    register: raw_input
+    no_log: true
+
+  - name: set ssh password
+    no_log: true
+    ansible.builtin.set_fact:
+      ansible_password: "{{ raw_input.user_input }}"
+      ansible_become_password: "{{ raw_input.user_input }}"
+
+  - name: check for ssh password
+    cisco.ios.ios_command:
+      commands: show version
+    changed_when: false
+
+  - name: check for enable password
+    become: true
+    cisco.ios.ios_command:
+      commands: show privilege
+    changed_when: false

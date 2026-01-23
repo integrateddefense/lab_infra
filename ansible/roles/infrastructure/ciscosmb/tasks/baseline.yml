@@ -1,0 +1,63 @@
+# Applies baseline configuration for the C1200 access switch
+
+- name: disable energy efficient ethernet
+  become: true
+  cisco.ios.ios_config:
+    lines:
+    - no eee enable
+    save_when: changed
+
+- name: apply hostname
+  become: true
+  cisco.ios.ios_config:
+    lines:
+    - "hostname {{ inventory_hostname }}"
+    save_when: changed
+
+- name: clear domain name
+  become: true
+  cisco.ios.ios_config:
+    lines:
+    - no ip domain name
+  changed_when: false
+
+- name: apply domain name
+  become: true
+  cisco.ios.ios_config:
+    lines: # have to clear the domain name first
+    - "ip domain name {{ domain.sub }}.{{ domain.root }}"
+    save_when: changed
+
+## Set Clock Settings
+
+- name: set standard timezone
+  become: true
+  cisco.ios.ios_config:
+    lines:
+    - "clock timezone {{ timezone.standard.acronym }} {{ timezone.standard.hrs_diff }}"
+    save_when: changed
+
+- name: set daylight savings timezone
+  become: true
+  when: "timezone.daylight is defined"
+  cisco.ios.ios_config:
+    lines:
+    - "clock summer-time {{ timezone.daylight.acronym }} recurring usa {{ timezone.daylight.mins_diff }}"
+    save_when: changed
+
+
+- name: set clock to ntp source
+  become: true
+  cisco.ios.ios_config:
+    lines:
+    - clock source sntp
+    save_when: changed
+
+- name: set ntp sources
+  become: true
+  cisco.ios.ios_config:
+    lines:
+    - "sntp server {{ item.value.ip }}"
+    save_when: changed
+  loop: "{{ dcs | dict2items }}"
+

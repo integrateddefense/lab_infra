@@ -21,6 +21,7 @@
     no_log: true
 
   - name: set ssh password
+    no_log: true
     ansible.builtin.set_fact:
       ansible_ssh_pass: "{{ raw_input.user_input }}"
       ansible_become_pass: "{{ raw_input.user_input }}"
