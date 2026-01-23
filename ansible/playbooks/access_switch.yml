@@ -9,6 +9,8 @@
       tasks_from: ciscosmb_check.yml
     tags: ["always"]
 
+  - meta: reset_connection
+
   - name: terminal config
     cisco.ios.ios_command:
       commands:
