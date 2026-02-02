@@ -1,0 +1,19 @@
+- name: enforce permission
+  loop: "{{ permissions.rights }}"
+  loop_control:
+    label: "{{ group.name }} -> {{ permissions.ou }} -> {{ item }}"
+  ansible.windows.win_powershell:
+    script: "{{ lookup('file',role_path ~ '/files/powershell/Set-ADACE.ps1') }}"
+    parameters:
+      principal: "{{ group.name }}"
+      ou: "{{ permissions.ou }}"
+      right: "{{ item.right }}"
+      extendedRight: "{{ item.extended_right | default(omit) }}"
+      object_class: "{{ item.object_class | default(omit) }}"
+      access: "{{ item.access }}"
+      inheritance: "{{ item.inheritance }}"
+      inherited_object_class: "{{ item.inherited_object_class | default(omit) }}"
+  register: output
+  changed_when: output.output[0].changed
+#  debug:
+#    msg: "{{ group.name }} -> {{ permissions.ou }} -> {{ item }}"

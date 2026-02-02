@@ -1,4 +1,128 @@
-- debug:
-    msg: "Not Implemented Yet"
-#- name: promote to DC
-#  microsoft.ad.domain_controller:
+- name: load creds
+  ansible.builtin.include_vars:
+    file: "../inventories/{{ site.segment }}/identity/group_vars/all/vault.yml"
+  no_log: true
+  run_once: true
+
+- name: load accounts
+  ansible.builtin.include_vars:
+    file: "../inventories/{{ site.segment }}/identity/group_vars/identity_authority.yml"
+  run_once: true
+  no_log: true
+
+- name: point DC DNS at RWDC
+  block:
+  - name: get adapter
+    ansible.windows.win_powershell:
+      script: Get-NetAdapter
+    register: adapter
+    changed_when: false
+
+  - name: configure DNS client
+    ansible.windows.win_dns_client:
+      adapter_name: "{{ adapter.output[0].Name }}"
+      dns_servers:
+      - "{{ dcs.primary.ip }}"
+
+# Don't reboot in this task; itll hang endlessly since the creds used to promote won't work on a promoted machine
+- name: promote to RODC
+  microsoft.ad.domain_controller:
+    dns_domain_name: "{{ domain.sub }}.{{ domain.root }}"
+    domain_admin_user: "{{ accounts[2].username }}@{{ domain.sub }}.{{ domain.root }}"
+    domain_admin_password: "{{ credentials[accounts[2].username] }}"
+    safe_mode_password: "{{ ad.rodc_dsrm_password }}"
+    state: domain_controller
+    read_only: true
+    site_name: "{{ ad_site }}"
+    database_path: "{{ data_drive.letter }}:\\AD\\NTDS"
+    sysvol_path: "{{ data_drive.letter }}:\\AD\\SYSVOL"
+  no_log: true
+  register: output
+
+- name: reboot RODC without checking for return
+  ansible.windows.win_powershell:
+    script: |
+      shutdown /r /t 5 /c "DC promotion reboot via Ansible" /f
+  when: output.reboot_required | default(true)
+
+- name: set RWDC creds
+  delegate_to: "{{ (dcs.primary.hostname | split('.'))[0] }}"
+  ansible.builtin.set_fact:
+    ansible_user: "{{ accounts[2].username }}"
+    ansible_password: "{{ credentials[accounts[2].username] }}"
+  delegate_facts: true
+  no_log: true
+  run_once: true
+
+- name: get RODC object
+  delegate_to: "{{ (dcs.primary.hostname | split('.'))[0] }}"
+  ansible.windows.win_powershell:
+    script: "Get-ADComputer -Identity {{ inventory_hostname }}"
+  register: rodc
+  changed_when: false
+
+- name: move RODC to correct OU
+  delegate_to: "{{ (dcs.primary.hostname | split('.'))[0] }}"
+  microsoft.ad.object:
+    identity: "{{ rodc.output[0].ObjectGUID }}"
+    path: "OU=Read-Only,OU=Domain Controllers,{{ root_dn }}"
+    type: computer
+    state: present
+
+- name: add to RODC GPO
+  delegate_to: "{{ (dcs.primary.hostname | split('.'))[0] }}"
+  ansible.windows.win_powershell:
+    script: |
+      # Get current permission level
+      $current = Get-GPPermission -Name {{ gpos[0].name }} -TargetName {{ rodc.output[0].DistinguishedName }} -TargetType Computer -ErrorAction SilentlyContinue
+      $changed = $false
+      if ( -not $current)
+      {
+        # no permission found, create new
+        Set-GPPermission -Name {{ gpos[0].name }} -TargetName {{rodc.output[0].DistinguishedName }} -TargetType Computer -PermissionLevel GpoApply
+        $changed = $true
+      }
+      elseif ($current.Permission -ne "GpoApply")
+      {
+        # permission found but doesnt match what we want, delete and recreated
+        Set-GPPermission -Name {{ gpos[0].name }} -TargetName {{ rodc.output[0].DistinguishedName }} -TargetType Computer -PermissionLevel None
+        Set-GPPermission -Name {{ gpos[0].name }} -TargetName {{ rodc.output[0].DistinguishedName }} -TargetType Computer -PermissionLevel GpoApply
+        $changed = $true
+      }
+      # else, permission is good
+      $changed
+  register: output
+  changed_when: output.output[0].changed
+#  microsoft.ad.group:
+#    identity: "{{ ad_groups[6].name }}"
+#    scope: "{{ ad_groups[6].scope }}"
+#    members:
+#      add:
+#      - "{{ rodc_guid.output[0] }}"
+
+- name: set creds for RODC
+  ansible.builtin.set_fact:
+    ansible_user: "{{ accounts[3].username }}"
+    ansible_password: "{{ credentials[accounts[3].username] }}"
+    ansible_connection: "winrm"
+    ansible_winrm_scheme: "https"
+    ansible_winrm_transport: "kerberos"
+
+- name: test connection
+  ansible.builtin.win_ping:
+
+- name: fix DC DNS
+  ansible.windows.win_dns_client:
+    adapter_name: "{{ adapter.output[0].Name }}"
+    dns_servers:
+    - "{{ dns.primary }}"
+    - "{{ dns.alternate }}"
+
+- name: verify NTDS status
+  ansible.windows.win_powershell:
+    script: |
+      $service = Get-Service NTDS
+      $servce.Status -eq "Running"
+  register: output
+  changed_when: false
+  failed_when: not output.output[0]

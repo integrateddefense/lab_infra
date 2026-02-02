@@ -1,0 +1,10 @@
+# name of the GPO
+name:
+# WMI filtering components
+wmi:
+  filter:
+# permissions
+# extension lists
+# link targets
+links:
+- 

@@ -1,0 +1,10 @@
+# name of the GPO
+name: "Default Domain Controllers Policy"
+# WMI filtering components
+wmi:
+  filter:
+# permissions
+# extension lists
+# link targets
+links:
+- "OU=Domain Controllers,DC=ops,DC=indef,DC=space"

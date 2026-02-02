@@ -1,0 +1,15 @@
+# Installs and makes available the DHCP service
+- name: install DHCP feature
+  ansible.windows.win_feature:
+    name: DHCP
+    state: present
+    include_management_tools: yes
+  register: win_feature
+
+- name: reboot if required
+  ansible.windows.win_reboot:
+  when: win_feature.reboot_required
+
+- name: authorize DHCP in AD
+  ansible.windows.win_powershell:
+    script: "Add-DhcpServerInDC -DnsName {{ inventory_hostname }}.{{ domain.sub }}.{{ domain.root }} -IPAddress {{ ansible_host }}"

@@ -27,8 +27,8 @@
       $changed = $false
       $changes = @()
       foreach ($dc in $dcs) {
-        $site_code = ($dcs.Name[1..2] -join "").ToLower()
-        $type = ($dcs.Name[5..8] -join "").ToLower()
+        $site_code = ($dc.Name[1..2] -join "").ToLower()
+        $type = ($dc.Name[5..8] -join "").ToLower()
         $site = $sites | Where-Object { $_.code -eq $site_code }
         if ($type -eq "rwdc"){
           $name = $site.name + "-Protected"
@@ -41,14 +41,12 @@
         }
       }
       @{ changed = $changed; changes = $changes }
-#    arguments:
-#      arg_sites: "{{ sites }}"
   register: result
   changed_when: result.output[0].changed
 
 - name: show changes
   debug:
-    var: result.output.changes
+    var: result.output[0].changes
   when: result.output[0].changed
 
 - name: check default site
@@ -90,8 +88,36 @@
   loop: "{{ subnets }}"
 
 - name: create site links
+  loop: "{{ site_links }}"
+  loop_control:
+    label: "Creating link between {{ item.sites[0] }} and {{ item.sites[1] }}"
   ansible.windows.win_powershell:
     script: |
-      @{ changed = $false }
+      $link = Get-ADReplicationSiteLink -Identity {{ item.name }}
+      $sites = ConvertFrom-json @'
+      {{ item.sites | to_json }}
+      '@
+      $changed = $false
+      if ( -not $link)
+      {
+        # link doesnt exist, so recreate it
+        New-ADReplicationSiteLink -Name {{ item.name }} -SitesIncluded $sites[0],$sites[1] -Cost {{ item.cost }} -ReplicationFrequencyInMinutes {{ item.freq }}
+        $changed = $true
+      }
+      else
+      {
+        # site exists, so make sure it matches the spec
+        $spec_sites  = $sites | Sort-Object
+        $current_sites = $link.SitesIncluded | Sort-Object
+        if ( (@($spec_sites) -ceq @($current_sites)) -or ($link.ReplicationFrequencyInMinutes -ne {{ item.freq }}) -or ($link.Cost -ne {{ item.cost }}) )
+        {
+          # if anything doesnt match, we need to recreate the link
+          Remove-ADReplicationSiteLink -Identity {{ item.name }}
+          New-ADReplicationSiteLink -Name {{ item.name }} -SitesIncluded sites[0],sites[1] -Cost {{ item.cost }} -ReplicationFrequencyInMinutes {{ item.freq }}
+          $changed = $true
+        }
+        # if everything matches, we're good
+      }
+      @{ changed = $changed }
   register: result
   changed_when: result.output[0].changed

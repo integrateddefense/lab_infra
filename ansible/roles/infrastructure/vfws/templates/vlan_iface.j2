@@ -13,6 +13,9 @@ parent={{ trunk_iface }}
 
 [ipv4]
 address1={{ item.value.vfw_ips[node] }}/{{ (item.value.cidr | split("/"))[1] }}
+{% if item.key == "core" %}
+dns={{ dcs.rodc.ip }}
+{% endif %}
 method=manual
 
 [ipv6]

@@ -1,0 +1,37 @@
+# Create ansible's domain service accounts
+
+- name: create service accounts
+  loop: "{{ accounts }}"
+  loop_control:
+    label: "Creating service account {{ item.username }}"
+  microsoft.ad.user:
+    identity: "{{ item.username }}"
+    password: "{{ credentials[item.username] }}"
+    state: present
+    groups:
+      set: "{{ item.groups }}"
+  changed_when: false
+  ## groups/set will always return changed
+
+- name: move service accounts to correct OU
+  loop: "{{ accounts }}"
+  loop_control:
+    label: "Moving {{item.username }} to {{ item.path }}"
+  microsoft.ad.user:
+    identity: "{{ item.username }}"
+    state: present
+    path: "{{ item.path }}"
+    name: "{{ item.username }}"
+
+# SVC Account Specific Settings
+## Prevent any authenticated user from adding machines to the domain
+- name: check MachineAccountQuota
+  ansible.windows.win_powershell:
+    script: "Get-ADObject ((Get-ADDomain).distinguishedname) -Properties ms-DS-MachineAccountQuota"
+  register: account_quota
+  changed_when: false
+
+- name: disable MachineAccountQuota
+  when: account_quota.output[0]['ms-DS-MachineAccountQuota'] != 0
+  ansible.windows.win_powershell:
+    script: "Set-ADDomain -Identity (Get-ADDomain).DistinguishedName -Replace @{\"ms-DS-MachineAccountQuota\"=\"0\"}"

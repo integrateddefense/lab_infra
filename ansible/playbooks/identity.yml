@@ -1,12 +1,18 @@
 # Configures the centralized identity manager
-- name: configure domain
+- name: configure enterprise wide domain
   hosts: identity_authority
   gather_facts: false
 
   pre_tasks:
-  - name: load site vault
+  - name: load site vars
+    tags: ["always"]
     ansible.builtin.include_vars:
-      file: "../inventories/{{ inventory_type }}/{{ site }}/group_vars/rwdc_vault.yml"
+      file: "../inventories/{{ inventory_type }}/{{ site }}/group_vars/rwdc.yml"
+
+  - name: load creds
+    ansible.builtin.set_fact:
+      ansible_user: "{{ accounts[2].username }}"
+      ansible_password: "{{ credentials[accounts[2].username] }}"
     no_log: true
     run_once: true
     tags: ["always"]
@@ -33,3 +39,16 @@
       name: services/identity
       tasks_from: groups.yml
     tags: ["groups"]
+
+  - name: configure ansible service accounts
+    ansible.builtin.import_role:
+      name: services/identity
+      tasks_from: svc-accounts.yml
+    tags: ["svc","accounts"]
+
+
+  - name: configure GPOs
+    tags: ["gpos"]
+    ansible.builtin.import_role:
+      name: services/identity
+      tasks_from: gpos.yml

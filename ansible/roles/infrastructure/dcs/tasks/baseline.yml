@@ -9,3 +9,96 @@
 
 - ansible.windows.win_reboot:
   when: status.reboot_required
+
+- name: configure WinRM for DCs
+  ansible.windows.win_powershell:
+    script: |
+      $changed = $false
+      $changes = @()
+      # get current config
+      $service = winrm get winrm/config/service
+      $rs = winrm get winrm/config/winrs
+      # regex match and compare to desired configuration
+      ## AllowUnencrypted
+      if ('{{ winrm.allow_unencrypted | default(omit) }}' -ne "None")
+      {
+        $setting = [regex]::Match($service,"AllowUnencrypted\s+=\s+(\w+)").Groups[1].Value.Trim()
+        $desired = '{{ winrm.allow_unencrypted | default(false) }}'
+        if ($setting -ne $desired)
+        {
+          # doesnt match
+          winrm set winrm/config/service "@{ AllowUnencrypted=`"$desired`" }" | Out-Null
+          $changed = $true
+          $changes += "Set AllowUnencrypted"
+        }
+      }
+      ## Auth\Kerberos true
+      if ('{{ winrm.auth.kerberos | default(omit) }}' -ne "None")
+      {
+        $setting = [regex]::Match($service,"Kerberos\s+=\s+(\w+)").Groups[1].Value.Trim()
+        $desired = '{{ winrm.auth.kerberos | default(true) }}'
+        if ($setting -ne $desired)
+        {
+          winrm set winrm/config/service/auth "@{ Kerberos=`"$desired`" }" | Out-Null
+          $changed = $true
+          $changes += "Set Auth\Kerberos"
+        }
+      }
+      ## Auth\Basic false
+      if ('{{ winrm.auth.basic | default(omit) }}' -ne "None")
+      {
+        $setting = [regex]::Match($service,"Basic\s+=\s+(\w+)").Groups[1].Value.Trim()
+        $desired = '{{ winrm.auth.basic | default(false) }}'
+        if ($setting -ne $desired)
+        {
+          winrm set winrm/config/service/auth "@{ Basic=`"$desired`" }" | Out-Null
+          $changed = $true
+          $changes += "Set Auth\Basic"
+        }
+      }
+      ## Auth\CredSSP false
+      if ('{{ winrm.auth.credssp | default(omit) }}' -ne "None")
+      {
+        $setting = [regex]::Match($service,"CredSSP\s+=\s+(\w+)").Groups[1].Value.Trim()
+        $desired = '{{ winrm.auth.credssp | default(false) }}'
+        if ($setting -ne $desired)
+        {
+          winrm set winrm/config/service/auth "@{ CredSSP=`"$desired`" }" | Out-Null
+          $changed = $true
+          $changes += "Set Auth\CredSSP"
+        }
+      }
+      ## idle timeout
+      if ('{{ winrm.idle_timeout | default(omit) }}' -ne "None")
+      {
+        $setting = [regex]::Match($rs,"IdleTimeout\s+=\s+(\w+)").Groups[1].Value.Trim()
+        $desired = '{{ winrm.idle_timeout | default(90000) }}'
+        if ($setting -ne $desired)
+        {
+          # default = 15 mins
+          winrm set winrm/config/winrs "@{ IdleTimeout=`"$desired`" }" | Out-Null
+          $changed = $true
+          $changes += "Set IdleTimeout"
+        }
+      }
+      ## Concurrent Operations Per User
+      if ('{{ winrm.concurrent_operations_per_user | default(omit) }}' -ne "None")
+      {
+        $setting = [regex]::Match($service,"MaxConcurrentOperationsPerUser\s+=\s+(\d+)").Groups[1].Value.Trim()
+        $desired = '{{ winrm.concurrent_operations_per_user | default(2) }}'
+        if ($setting -ne $desired)
+        {
+          winrm set winrm/config/service "@{ MaxConcurrentOperationsPerUser=`"$desired`" }" | Out-Null
+          $changed = $true
+          $changes += "Set MaxConcurrentOperationsPerUser"
+        }
+      }
+
+      @{ changed = $changed; changes = $changes }
+  register: output
+  changed_when: output.output[0].changed
+
+- name: show changes
+  when: output.output[0].changed
+  debug:
+    var: output.output[0].changes

@@ -10,32 +10,68 @@
         - groups.rwdc is defined
         - groups.rwdc | length == 1
       fail_msg: "Exactly one RWDC must be defined in [rwdc]"
+    tags: ["always"]
+    run_once: true
+
+  - name: set fact
+    tags: ['always']
+    run_once: true
+    ansible.builtin.set_fact:
+      identity_authority_vars:
+      - "../inventories/{{ site.segment }}/identity/group_vars/all/vault.yml"
+      - "../inventories/{{ site.segment }}/identity/group_vars/identity_authority.yml"
+
+  - name: get identity authority vars
+    tags: ["always"]
+    loop: "{{ identity_authority_vars }}"
+    loop_control:
+      label: item
+    ansible.builtin.include_vars:
+      file: "{{ item }}"
+    no_log: true
+
+  - name: load creds
+    tags: ["always"]
+    ansible.builtin.set_fact:
+      ansible_user: "{{ accounts[2].username }}"
+      ansible_password: "{{ credentials[accounts[2].username].old | default(credentials[accounts[2].username]) }}"
+    no_log: true
+
+  - name: check connection
+    ansible.builtin.win_ping:
+    tags: ["always"]
 
   tasks:
   - name: apply windows baseline
-    tags: ["os"]
+    tags: ["baseline","os","baseline/os"]
     ansible.builtin.import_role:
       name: portable/baseline
       tasks_from: windows.yml
 
   - name: apply dc baseline
-    tags: ["baseline","non-os"]
+    tags: ["baseline","dc","baseline/dc","rodc","rwdc"]
     ansible.builtin.import_role:
       name: infrastructure/dcs
       tasks_from: baseline.yml
 
   - name: apply rwdc baseline
-    tags: ["rwdc","non-os"]
+    tags: ["baseline","rwdc"]
     ansible.builtin.import_role:
       name: infrastructure/dcs
       tasks_from: rwdc.yml
-    when: inventory_hostname == groups.rwdc[0]
+    when: "(identity_authority | default(false) | bool)"
     run_once: true
-    delegate_to: "{{ groups.rwdc[0] }}"
+
+  - name: join the domain
+    ansible.builtin.import_role:
+      name: portable/domain-join
+      tasks_from: windows.yml
+    when: "not (identity_authority | default(false) | bool)"
+    tags: ["baseline","not-auth","rodc"]
 
   - name: apply rodc baseline
-    tags: ["rodc","non-os"]
+    tags: ["baseline","rodc"]
     ansible.builtin.import_role:
       name: infrastructure/dcs
       tasks_from: rodc.yml
-    when: "'rodc' in group_names"
+    when: "component == 'rodc'"

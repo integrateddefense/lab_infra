@@ -1,3 +1,4 @@
+
 # Creates groups
 
 - name: create group
@@ -9,6 +10,8 @@
     path: "{{ item.path }}"
     state: present
   loop: "{{ ad_groups }}"
+  loop_control:
+    label: "{{ item.name }}"
 
 - name: set members
   microsoft.ad.group:
@@ -17,6 +20,8 @@
       set:
       - "{{ item.members }}"
   loop: "{{ ad_groups }}"
+  loop_control:
+    label: "{{ item.name }}"
   when: "'members' in item"
 
 - name: set built-ins membership
@@ -44,7 +49,17 @@
     that:
       - group_members.output[0].domain == domain_admins_path
       - (group_members.output[0].schema | default([],true)) == []
-      - (group_members.output[0].enterprise | default([],true)) == []
+      - (group_members.output[0].enterprise | default([],true)) == ["CN=ansible,OU=Ansible,OU=Service-Accounts,OU=Identities,DC=ops,DC=indef,DC=space"]
       - (group_members.output[0].gpo | default([],true)) == []
-    fail_msg: "got -{{ group_members.output[0].domain }}- exp -{{ domain_admins_path }}-"
-#    fail_msg: "Unauthorized members in builtin groups:\n Domain Admins - {{ group_members.domain | join(', ') }}\n Schema Admins - {{ group_members.schema | join(', ') }}\n Enterprise Admins - {{ group_members.enterprise | join(', ') }}\n GPO Creator/Owners - {{ group_members | join(', ') }}"
+    fail_msg: "Unauthorized members in builtin groups:\n Wrong Path for Domain Admins - {{ group_members.output[0].domain }}\n Schema Admins - {{ group_members.output[0].schema | default([],true) | join(', ') }}\n Enterprise Admins - {{ group_members.output[0].enterprise | default([],true) | join(', ') }}\n GPO Creator/Owners - {{ group_members.output[0].gpo | default([],true) | join(', ') }}"
+
+
+- name: apply special permissions
+  loop: "{{ ad_groups | selectattr('permissions','defined') | subelements('permissions') }}"
+  ansible.builtin.include_tasks: apply-permissions.yml
+  loop_control:
+    loop_var: group_obj
+    label: "{{ group_obj.0.name }} -> {{ group_obj.1.ou }}"
+  vars:
+    group: "{{ group_obj.0 }}"
+    permissions: "{{ group_obj.1 }}"

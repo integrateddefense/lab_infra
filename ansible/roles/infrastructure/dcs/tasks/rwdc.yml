@@ -1,7 +1,7 @@
 - name: create domain
   microsoft.ad.domain:
     dns_domain_name: "{{ domain.sub }}.{{ domain.root }}"
-    safe_mode_password: "{{ dsrm_password }}"
+    safe_mode_password: "{{ ad.dsrm_password }}"
     database_path: "{{ data_drive.letter }}:\\AD\\NTDS"
     sysvol_path: "{{ data_drive.letter }}:\\AD\\SYSVOL"
     domain_mode: Default
@@ -9,37 +9,36 @@
     reboot: true
   no_log: true
 
-- name: set new connection vars
-  ansible.builtin.set_fact:
-    old_password: "{{ ansible_password }}"
-    old_user: "{{ ansible_user }}"
-    ansible_user: "{{ default_admin_user }}"
-    ansible_password: "{{ default_admin_password }}"
-
-- name: test connection
-  ansible.windows.win_ping:
+- name: load identity authority vars
+  ansible.builtin.include_vars:
+    file: "../inventories/{{ site.segment }}/identity/group_vars/all/vault.yml"
+  no_log: true
+  run_once: true
+  changed_when: false
 
 - name: configure ansible domain admin
   microsoft.ad.user:
-    name: ansible
-    password: "{{ old_password }}"
+    identity: "{{ accounts[2].username }}"
+    password: "{{ credentials[accounts[2].username].new | default(credentials[accounts[2].username]) }}"
+    path: "{{ accounts[2].path }}"
     update_password: when_changed
     password_never_expires: true
     protect_from_deletion: true
     state: present
-    groups:
-      set:
-      - Domain Users
-      - Domain Admins
-      - Enterprise Admins
-      - Schema Admins
-      - Administrators
-      - Group Policy Creator Owners
 
 - name: reset connection vars
   ansible.builtin.set_fact:
-    ansible_user: "{{ old_user }}"
-    ansible_password: "{{ old_password }}"
+    ansible_user: "{{ accounts[2].username }}"
+    ansible_password: "{{ credentials[accounts[2].username] }}"
 
 - name: test connection
   ansible.windows.win_ping:
+
+- name: verify NTDS status
+  ansible.windows.win_powershell:
+    script: |
+      $service = Get-Service NTDS
+      $serve.Status -eq "Running"
+  register: output
+  changed_when: false
+  failed_when: not output.output[0]

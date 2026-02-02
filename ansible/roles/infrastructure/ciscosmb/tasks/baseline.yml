@@ -28,6 +28,7 @@
     lines: # have to clear the domain name first
     - "ip domain name {{ domain.sub }}.{{ domain.root }}"
     save_when: changed
+  changed_when: false
 
 ## Set Clock Settings
 ### Have to extend the timeout for these; internal recalculation will often cause a first-run fail

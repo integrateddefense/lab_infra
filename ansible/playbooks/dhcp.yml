@@ -1,0 +1,31 @@
+# Configures the DHCP Service
+- hosts: dhcp
+  gather_facts: false
+
+  pre_tasks:
+  - name: load credentials
+    ansible.builtin.set_fact:
+      ansible_user: "{{ dhcp_username }}"
+      ansible_password: "{{ dhcp_password }}"
+    no_log: true
+    run_once: true
+    tags: ["always"]
+
+  tasks:
+  - name: apply windows baseline
+    tags: ["baseline","os"]
+    ansible.builtin.import_role:
+      name: portable/baseline
+      tasks_from: windows.yml
+
+  - name: join the domain
+    tags: ["baseline","domain"]
+    ansible.builtin.import_role:
+      name: portable/domain-join
+      tasks_from: windows.yml
+
+#  - name: configure dhcp service
+#    tags: ["service","dhcp"]
+#    ansible.builtin.import_role:
+#      name: infrastructure/dhcp
+#      tasks_from: main.yml

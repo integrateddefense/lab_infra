@@ -77,6 +77,7 @@
       community.windows.win_firewall_rule:
         name: WINRM-HTTPS-In-TCP
         localport: 5986
+        remoteip: "{{ vlans.mgmt.cidr }}"
         action: allow
         direction: in
         protocol: tcp
@@ -86,7 +87,7 @@
 
     - name: clear manual rule
       ansible.windows.win_powershell:
-        script: Remove-NetFirewallRule -name "WINRM-HTTPS-In-TCP" | Out-Null
+        script: Remove-NetFirewallRule -name "WinRM over HTTPS" | Out-Null
       changed_when: false
 # win_firewall_rule maps the name parameter to the DisplayName in windows
 ## the PS cmdlet targets the true name field - so this ensures there isn't a dangling firewall rule
@@ -137,4 +138,3 @@
       community.windows.win_format:
         drive_letter: "{{ data_drive.letter }}"
         file_system: NTFS
-
