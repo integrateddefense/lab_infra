@@ -48,4 +48,8 @@
       name: infrastructure/vfws
       tasks_from: keepalived.yml
 
-
+  - name: configure dhcp relay
+    tags: ["service","vfw","dhcp-relay"]
+    ansible.builtin.import_role:
+      name: infrastructure/vfws
+      tasks_from: dhcp-relay.yml

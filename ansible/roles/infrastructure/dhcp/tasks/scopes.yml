@@ -1,1 +1,135 @@
 # Configures DHCP Scopes
+
+- name: create scopes
+  loop: "{{ scopes }}"
+  loop_control:
+    label: "Creating scope {{ site.code | upper }}-{{ item.name }}"
+  ansible.windows.win_powershell:
+    script: |
+      $status = Get-DhcpServerv4Scope -ScopeId {{ item.id }} -ErrorAction SilentlyContinue
+      $changed = $false
+      if (-not $status)
+      {
+        # Scope does not exist
+        Add-DhcpServerv4SCope -Name "{{ site.code | upper }}-{{ item.name }}" -StartRange {{ item.start }} -EndRange {{ item.end }} -SubnetMask {{ item.mask }}
+        $changed = $true
+      }
+      $changed
+  register: output
+  changed_when: output.output[0]
+
+- name: set scope options
+  loop: "{{ scopes }}"
+  loop_control:
+    label: "Setting options for scope {{ site.code | upper }}-{{ item.name }}"
+  ansible.windows.win_powershell:
+    script: |
+      $current = Get-DhcpServerv4OptionValue -ScopeId {{ item.id }}
+      $changed = $false
+      $messages = @()
+      ## Gateway - Option 003
+      $option3 = $current | Where-Object { $_.OptionId -eq 003 }
+      if (-not $option3)
+      {
+        # Needs to be set
+        Set-DhcpServerv4OptionValue -ScopeId {{ item.id }} -Router {{ item.gateway }}
+        $changed = $true
+        $messages += "Set initial value for Option 3 to {{ item.gateway }}"
+      }
+      else
+      {
+        # Needs to be enforced
+        if (($option3.Value.length -ne 1) -or
+            ($option3.Value[0] -ne "{{ item.gateway }}"))
+        {
+          # Reinforce configuration
+          Set-DhcpServerv4OptionValue -ScopeId {{ item.id }} -Router {{ item.gateway }}
+          $changed = $true
+          $messages += "Enforced Option 3 to {{ item.gateway }}"
+        }
+      }
+      ## DNS Servers - Option 006
+      $option6 = $current | Where-Object {$_.OptionId -eq 006 }
+      if (-not $option6)
+      {
+        # Initial set
+        Set-DhcpServerv4OptionValue -ScopeId {{ item.id }} -DnsServer {{ (item.dns | default(scope_defaults.dns)) | join(',') }}
+        $changed = $true
+        $messages += "Set initial value for Option 6 to {{ (item.dns | default(scope_defaults.dns)) | join(',') }}"
+      }
+      else
+      {
+        # Enforce
+        if ($($option6.Value -join ",") -ne "{{ (item.dns | default(scope_defaults.dns)) | join(',') }}")
+        {
+          Set-DhcpServerv4OptionValue -ScopeId {{ item.id }} -DnsServer {{ (item.dns | default(scope_defaults.dns)) | join(',') }}
+          $changed = $true
+          $messages += "Enforced Option 6 to {{ (item.dns | default(scope_defaults.dns)) | join(',') }}"
+        }
+      }
+      ## Domain Name - Option 015
+      $option15 = $current | Where-Object { $_.OptionId -eq 015 }
+      if (-not $option15)
+      {
+        # Initial Set
+        Set-DhcpServerv4OptionValue -ScopeId {{ item.id }} -DnsDomain "{{ item.domain | default(scope_defaults.domain) }}"
+        $changed = $true
+        $messages += "Set initial value for Option 15 to {{ item.domain | default(scope_defaults.domain) }}"
+      }
+      else
+      {
+        # Enforce
+        if (($option15.Value.Length -ne 1) -or
+            ($option15.Value[0] -ne "{{ item.domain | default(scope_defaults.domain) }}"))
+        {
+          Set-DhcpServerv4OptionValue -ScopeId {{ item.id }} -DnsDomain "{{ item.domain | default(scope_defaults.domain) }}"
+          $changed = $true
+          $messages += "Enforced Option 15 to {{ item.domain | default(scope_defaults.domain) }}"
+        }
+      }
+      @{ changed = $changed; messages = $messages; scope = "{{ site.code | upper }}-{{ item.name }}" }
+  register: output
+  changed_when: output.output[0].changed
+
+- name: display changes
+  when: output.changed
+  loop: "{{ output.results }}"
+  debug:
+    msg:
+    - "Scope    = {{ item.output[0].scope }}"
+    - "Messages = "
+    - "{{ item.output[0].messages }}"
+
+- name: set scope activation
+  loop: "{{ scopes }}"
+  loop_control:
+    label: "Setting Scope {{ site.code | upper }}-{{ item.name }} state to {{ item.state | upper }}"
+  ansible.windows.win_powershell:
+    script: |
+      $current = Get-DhcpServerv4Scope -ScopeId {{ item.id }}
+      $changed = $false
+      if ($current.State.toLower() -ne "{{ item.state | lower }}")
+      {
+        Set-DhcpServerv4Scope -ScopeID {{ item.id }} -State "{{ item.state }}"
+        $changed = $true
+      }
+      $changed
+  register: output
+  changed_when: output.output[0]
+
+- name: set lease duration
+  loop: "{{ scopes }}"
+  loop_control:
+    label: "Setting Scope {{ site.code | upper }}-{{ item.name }} lease duration to {{ item.duration | default(scope_defaults.duration) }}"
+  ansible.windows.win_powershell:
+    script: |
+      $current = Get-DhcpServerv4Scope -ScopeId {{ item.id }}
+      $changed = $false
+      if ($current.LeaseDuration.ToString() -ne "{{ item.duration | default(scope_defaults.duration) }}")
+      {
+        Set-DhcpServerv4Scope -ScopeId {{ item.id }} -LeaseDuration "{{ item.duration | default(scope_defaults.duration) }}"
+        $changed = $true
+      }
+      $changed
+  register: output
+  changed_when: output.output[0]

@@ -1,6 +1,0 @@
-{% if item.settings.restricted_groups is defined %}
-[Group Membership]
-{% for group in (((item.settings | default({})).restricted_groups | default({})).groups | default([])) %}
-{{ group.name }}__Members={{ group.members | sort | join(',') }}
-{% endfor %}
-{% endif %}

@@ -15,11 +15,16 @@ table inet filter {
 
 		# allow incoming vrrp
 {% for item in (vlans | dict2items | rejectattr('value.vfw_ips','undefined')) %}
-		iifname {{ trunk_iface }}.{{ item.value.id}} ip protocol 112 accept
+		iifname {{ trunk_iface }}.{{ item.value.id }} ip protocol 112 accept
 {% endfor %}
 
 		# allow icmp for troubleshooting
 		ip protocol icmp icmp type echo-request accept
+
+		# allow incoming DHCP requests
+{% for item in (vlans | dict2items | selectattr('value.dhcp_relay','defined')) %}
+		iifname {{ trunk_iface }}.{{ item.value.id }} udp dport 67 accept
+{% endfor %}
 
 		log prefix "nft-input-drop: " counter drop
 	}

@@ -1,6 +1,7 @@
 # Assumes 'rwdc' inventory group only includes a single host
 - hosts: domain_controllers
   gather_facts: false
+  tags: ['dcs']
   serial: 1
 
   pre_tasks:
@@ -49,7 +50,7 @@
       tasks_from: windows.yml
 
   - name: apply dc baseline
-    tags: ["baseline","dc","baseline/dc","rodc","rwdc"]
+    tags: ["baseline"]
     ansible.builtin.import_role:
       name: infrastructure/dcs
       tasks_from: baseline.yml
@@ -75,3 +76,40 @@
       name: infrastructure/dcs
       tasks_from: rodc.yml
     when: "component == 'rodc'"
+
+- hosts: ad_work
+  gather_facts: false
+  tags: ['work']
+
+  pre_tasks:
+  - name: load vars
+    tags: ['always']
+    run_once: true
+    ansible.builtin.include_vars:
+      file: "../inventories/{{ site.segment }}/identity/group_vars/all/vault.yml"
+    no_log: true
+
+  - name: load creds
+    tags: ['always']
+    run_once: true
+    no_log: true
+    ansible.builtin.set_fact:
+      ansible_user: ".\\anwork01"
+      ansible_password: "{{ credentials['anwork01'] }}"
+
+  - name: check connection
+    tags: ['always']
+    ansible.builtin.win_ping:
+
+  tasks:
+  - name: apply windows baseline
+    tags: ['baseline']
+    ansible.builtin.import_role:
+      name: portable/baseline
+      tasks_from: windows.yml
+
+  - name: join the domain
+    tags: ['baseline']
+    ansible.builtin.import_role:
+      name: portable/domain-join
+      tasks_from: windows.yml

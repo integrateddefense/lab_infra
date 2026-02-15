@@ -21,7 +21,7 @@
       adapter_name: "{{ adapter.output[0].Name }}"
       dns_servers:
       - "{{ dns.primary }}"
-      - "{{ dns.alternate }}"
+      - "{{ dns.alternate | default(omit) }}"
 
 - name: winrm
   block:
@@ -138,3 +138,15 @@
       community.windows.win_format:
         drive_letter: "{{ data_drive.letter }}"
         file_system: NTFS
+
+- name: install features
+  when: features is defined
+  ansible.windows.win_feature:
+    name: "{{ features }}"
+    state: present
+    include_management_tools: true
+  register: feature_output
+
+- name: restart
+  ansible.windows.win_reboot:
+  when: feature_output.reboot_required

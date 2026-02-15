@@ -26,8 +26,14 @@
       - "{{ dcs.primary.ip }}"
 
 - name: set join OU for RODCs
+  when: component == 'rodc'
   ansible.builtin.set_fact:
     ou: "OU={{ ou_tree[2].name }},{{ ou_tree[2].path }}"
+
+- name: force NTLM for non-DCs
+  when: "component not in ['rodc','rwdc']"
+  ansible.builtin.set_fact:
+    ansible_winrm_transport: ntlm
 
 - name: join the domain
   microsoft.ad.membership:
@@ -39,7 +45,6 @@
     state: domain
     reboot: true
 
-
 - name: fix DC DNS
   when: "component in ['rodc','rwdc'] and not (identity_authority | default(false) | bool)"
   ansible.windows.win_dns_client:
@@ -47,3 +52,10 @@
     dns_servers:
     - "{{ dns.primary }}"
     - "{{ dns.alternate }}"
+
+# Enable DNS registration
+- name: enable registration in DNS
+  ansible.windows.win_powershell:
+    script: |
+      Set-DNSClient -InterfaceAlias "Ethernet" -RegisterThisConnectionsAddress $true
+  changed_when: false

@@ -70,4 +70,13 @@
     dest: /etc/sysctl.d/99-ansible-vfw.conf
   notify: apply sysctl
 
+- name: disable vfw firewalld
+  become: true
+  when: sub_platform == "vfw"
+  ansible.builtin.systemd_service:
+    name: firewalld
+    state: stopped
+    enabled: false
+    masked: true
+
 # TODO: add log forwarding and default services

@@ -45,10 +45,3 @@
       name: services/identity
       tasks_from: svc-accounts.yml
     tags: ["svc","accounts"]
-
-
-  - name: configure GPOs
-    tags: ["gpos"]
-    ansible.builtin.import_role:
-      name: services/identity
-      tasks_from: gpos.yml

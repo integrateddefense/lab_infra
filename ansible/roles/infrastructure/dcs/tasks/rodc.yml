@@ -69,37 +69,6 @@
     type: computer
     state: present
 
-- name: add to RODC GPO
-  delegate_to: "{{ (dcs.primary.hostname | split('.'))[0] }}"
-  ansible.windows.win_powershell:
-    script: |
-      # Get current permission level
-      $current = Get-GPPermission -Name {{ gpos[0].name }} -TargetName {{ rodc.output[0].DistinguishedName }} -TargetType Computer -ErrorAction SilentlyContinue
-      $changed = $false
-      if ( -not $current)
-      {
-        # no permission found, create new
-        Set-GPPermission -Name {{ gpos[0].name }} -TargetName {{rodc.output[0].DistinguishedName }} -TargetType Computer -PermissionLevel GpoApply
-        $changed = $true
-      }
-      elseif ($current.Permission -ne "GpoApply")
-      {
-        # permission found but doesnt match what we want, delete and recreated
-        Set-GPPermission -Name {{ gpos[0].name }} -TargetName {{ rodc.output[0].DistinguishedName }} -TargetType Computer -PermissionLevel None
-        Set-GPPermission -Name {{ gpos[0].name }} -TargetName {{ rodc.output[0].DistinguishedName }} -TargetType Computer -PermissionLevel GpoApply
-        $changed = $true
-      }
-      # else, permission is good
-      $changed
-  register: output
-  changed_when: output.output[0].changed
-#  microsoft.ad.group:
-#    identity: "{{ ad_groups[6].name }}"
-#    scope: "{{ ad_groups[6].scope }}"
-#    members:
-#      add:
-#      - "{{ rodc_guid.output[0] }}"
-
 - name: set creds for RODC
   ansible.builtin.set_fact:
     ansible_user: "{{ accounts[3].username }}"

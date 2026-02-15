@@ -3,13 +3,23 @@
   gather_facts: false
 
   pre_tasks:
+  - name: load identity variables
+    ansible.builtin.include_vars:
+      file: "../inventories/{{ site.segment }}/identity/group_vars/all/vault.yml"
+    no_log: true
+    tags: ['always']
+
   - name: load credentials
     ansible.builtin.set_fact:
-      ansible_user: "{{ dhcp_username }}"
-      ansible_password: "{{ dhcp_password }}"
+      ansible_user: "andhcp01"
+      ansible_password: "{{ credentials['andhcp01'] }}"
     no_log: true
     run_once: true
     tags: ["always"]
+
+  - name: check connection
+    tags: ['always']
+    ansible.builtin.win_ping:
 
   tasks:
   - name: apply windows baseline
@@ -24,8 +34,15 @@
       name: portable/domain-join
       tasks_from: windows.yml
 
-#  - name: configure dhcp service
-#    tags: ["service","dhcp"]
-#    ansible.builtin.import_role:
-#      name: infrastructure/dhcp
-#      tasks_from: main.yml
+  - name: configure dhcp service
+    tags: ["service","dhcp"]
+    ansible.builtin.import_role:
+      name: infrastructure/dhcp
+      tasks_from: main.yml
+
+  - name: configure dhcp scopes
+    tags: ["service","dhcp", "scopes"]
+    ansible.builtin.import_role:
+      name: infrastructure/dhcp
+      tasks_from: scopes.yml
+

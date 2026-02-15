@@ -1,0 +1,6 @@
+[Unit]
+Description=DHCP Relay using dnsmasq.
+
+[Service]
+ExecStart=
+ExecStart=/usr/sbin/dnsmasq --conf-file=/etc/dnsmasq.d/dhcp-relay.conf

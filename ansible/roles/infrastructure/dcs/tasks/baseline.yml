@@ -102,3 +102,9 @@
   when: output.output[0].changed
   debug:
     var: output.output[0].changes
+
+# Disable DNS Devolution
+- name: disable DNS devolution
+  ansible.windows.win_powershell:
+    script: "Set-DNSClientGlobalSetting -UseDevolution $false"
+  changed_when: false

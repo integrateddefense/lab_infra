@@ -24,6 +24,16 @@
     label: "{{ item.name }}"
   when: "'members' in item"
 
+#- name: set memberof
+#  loop: "{{ ad_groups | selectattr('memberof','defined') }}"
+#  loop_control:
+#    label: "Adding {{ item.name }} to {{ }}"
+#  microsoft.ad.group:
+#    identity: "{{  }}"
+#    members:
+#      add:
+#      - "{{ item.name }}"
+
 - name: set built-ins membership
   microsoft.ad.group:
     identity: Domain Admins
