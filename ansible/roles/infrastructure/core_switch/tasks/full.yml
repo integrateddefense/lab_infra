@@ -1,0 +1,46 @@
+- name: configure spanning tree
+  junipernetworks.junos.junos_config:
+    lines:
+    - set protocols rstp
+    - set protocols rstp interface all
+
+- name: Configure root authentication
+  junipernetworks.junos.junos_config:
+    lines:
+    - set system root-authentication no-public-keys
+
+# Create the VLANs and interfaces
+- name: Create VLANs
+  junipernetworks.junos.junos_config:
+    lines:
+    - set vlans {{ item }} vlan-id {{ vlans[item].id }}
+    - set vlans {{ item }} description "{{ vlans[item].description }}"
+  loop: "{{ vlans | dict2items | rejectattr('key','equalto','transit') | map(attribute='key') | list }}"
+
+- name: Create Transit VLANs
+  junipernetworks.junos.junos_config:
+    lines:
+    - set vlans {{ item }} vlan-id {{ vlans[item].id }}
+    - set vlans {{ item }} description "{{ vlans[item].description }}"
+  loop: "{{ vlans.transit | list }}"
+
+- name: Set MGMT Interface
+  junipernetworks.junos.junos_config:
+    lines:
+    - set vlans {{ vlans.mgmt.name }} l3-interface vlan.{{ vlans.mgmt.id }}
+    - set interfaces vlan unit {{ vlans.mgmt.id }} family inet address {{ ansible_host }}/24
+
+# Restrict access to the management terminal
+- name: Create Firewall Filter for the management interface
+  junipernetworks.junos.junos_config:
+    lines:
+    - set firewall family inet filter mgmt_only term allow_mgmt from source-address {{ vlans.mgmt.cidr }}
+    - set firewall family inet filter mgmt_only term allow_mgmt from protocol tcp
+    - set firewall family inet filter mgmt_only term allow_mgmt from destination-port ssh
+    - set firewall family inet filter mgmt_only term allow_mgmt from destination-port 830
+    - set firewall family inet filter mgmt_only term allow_mgmt then accept
+    - set firewall family inet filter mgmt_only term allow_icmp from source-address {{ vlans.mgmt.cidr }}
+    - set firewall family inet filter mgmt_only term allow_icmp from protocol icmp
+    - set firewall family inet filter mgmt_only term allow_icmp from icmp-type echo-request
+    - set firewall family inet filter mgmt_only term allow_icmp then accept
+    - set firewall family inet filter mgmt_only term default_deny then discard

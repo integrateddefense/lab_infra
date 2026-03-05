@@ -1,0 +1,92 @@
+# Maps the data drive on linux machines
+## Takes two variables as inputs in addition to the host:
+### mountpoint - the directory to mount the partition to
+### label - a handy-dandy human readable label to use to reference the partition
+- name: create mountpoint
+  become: true
+  ansible.builtin.file:
+    path: "{{ mountpoint }}"
+    state: directory
+    owner: "{{ owner | default(omit) }}"
+    group: "{{ group | default(omit) }}"
+    mode: "0755"
+    recurse: "{{ recurse | default(true) }}"
+
+- name: check for mount
+  ansible.builtin.command: "mountpoint {{ mountpoint }}"
+  register: mnt_src
+  changed_when: false
+  failed_when: mnt_src.rc == 1
+
+- name: set mounted flag
+  ansible.builtin.set_fact:
+    mounted: "{{ mnt_src.rc == 0 }}"
+
+- name: find disk by label
+  become: true
+  ansible.builtin.command: "blkid -L {{ label }}"
+  register: dev_labeled
+  failed_when: false
+  changed_when: false
+  when: not mounted
+
+- name: discover data disk
+  when: (not mounted) and (dev_labeled.rc != 0)
+  block:
+  - name: identify data disk
+    ansible.builtin.shell:
+      cmd: lsblk -J
+    register: disk_raw
+    changed_when: false
+
+  - name: parse output
+    ansible.builtin.set_fact:
+      disks: "{{ disk_raw.stdout | from_json }}"
+
+  - name: select data disk candidates
+    ansible.builtin.set_fact:
+      data_candidates: >-
+        {{ disks
+            | json_query("blockdevices[?type=='disk' && (!contains(keys(@),'children'))]")
+        }}
+
+  - name: ensure data disk was located
+    ansible.builtin.assert:
+      that:
+      - data_candidates | length > 0
+
+  - name: choose data disk
+    ansible.builtin.set_fact:
+      data_disk: "/dev/{{ data_candidates[0].name }}"
+
+- name: set device facts (existing disk)
+  ansible.builtin.set_fact:
+    data_disk: "{{ data_disk | default(dev_labeled.stdout) }}"
+  when: not mounted
+
+- name: partition the disk
+  become: true
+  community.general.parted:
+    device: "{{ data_disk }}"
+    label: gpt
+    number: 1
+    fs_type: xfs
+    state: present
+  when: not mounted
+
+- name: make filesystem
+  become: true
+  community.general.filesystem:
+    fstype: xfs
+    dev: "{{ data_disk }}1"
+    opts: "-L {{ label }}"
+  when: not mounted
+
+- name: mount and persist
+  become: true
+  ansible.posix.mount:
+    path: "{{ mountpoint }}"
+    src: "LABEL={{ label }}"
+    fstype: xfs
+    opts: "defaults,relatime,x-systemd.automount,nofail"
+    state: mounted

@@ -1,0 +1,117 @@
+# Configures the Code Ecosystem
+## Major Components:
+## - GitStrap - lightweight git system hosted on the Bootstrap node
+## - GitLab - full GitLab omnibus deployment
+
+- name: Configure GitStrap
+  hosts: gitstrap
+  gather_facts: false
+  tags: ["gitstrap"]
+
+  pre_tasks:
+  - name: probe for connection status
+    tags: ['always']
+    ansible.builtin.import_role:
+      name: portable/ssh
+      tasks_from: linux_check.yml
+
+  tasks:
+# Apply Linux baseline
+  - name: configure ssh
+    tags: ["baseline","ssh"]
+    ansible.builtin.import_role:
+      name: portable/ssh
+      tasks_from: linux.yml
+
+  - name: apply linux baseline
+    tags: ["baseline","os"]
+    ansible.builtin.import_role:
+      name: portable/baseline
+      tasks_from: linux.yml
+
+# Configure gitstrap service
+  - name: configure gitstrap
+    tags: ["service","code"]
+    ansible.builtin.import_role:
+      name: services/code
+      tasks_from: gitstrap.yml
+
+- name: Configure GitLab
+  hosts: gitlab
+  gather_facts: false
+  tags: ["gitlab"]
+
+  pre_tasks:
+  - name: probe for connection status
+    tags: ['always']
+    ansible.builtin.import_role:
+      name: portable/ssh
+      tasks_from: linux_check.yml
+
+  tasks:
+# Apply baselines
+  - name: configure SSH
+    tags: ["gitlab/baseline","baseline","ssh"]
+    ansible.builtin.import_role:
+      name: portable/ssh
+      tasks_from: linux.yml
+
+  - name: apply linux baseline
+    tags: ["gitlab/baseline","baseline","os"]
+    ansible.builtin.import_role:
+      name: portable/baseline
+      tasks_from: linux.yml
+
+# Configure GitLab service
+  - name: download and install
+    tags: ["gitlab/service","service","code","gitlab/install"]
+    ansible.builtin.import_role:
+      name: services/code
+      tasks_from: gitlab_install.yml
+
+  - name: configure
+    tags: ["gitlab/service","service","code","gitlab/configure"]
+    ansible.builtin.import_role:
+      name: services/code
+      tasks_from: gitlab_configure.yml
+
+  - name: set permissions
+    tags: ["gitlab/service","service","code","gitlab/permissions"]
+    ansible.builtin.import_role:
+      name: services/code
+      tasks_from: gitlab_permissions.yml
+
+
+- name: Configure Runners
+  hosts: runners
+  gather_facts: false
+  tags: ["runners"]
+
+  pre_tasks:
+  - name: probe for connection status
+    tags: ['always']
+    ansible.builtin.import_role:
+      name: portable/ssh
+      tasks_from: linux_check.yml
+
+  tasks:
+# Apply Linux baseline
+  - name: configure ssh
+    tags: ["baseline","ssh"]
+    ansible.builtin.import_role:
+      name: portable/ssh
+      tasks_from: linux.yml
+
+  - name: apply linux baseline
+    tags: ["baseline","os"]
+    ansible.builtin.import_role:
+      name: portable/baseline
+      tasks_from: linux.yml
+
+# Configure Service
+  - name: install dependencies
+    tags: ["baseline","os","service","code","runner"]
+    ansible.builtin.import_role:
+      name: services/code
+      tasks_from: runner.yml
+

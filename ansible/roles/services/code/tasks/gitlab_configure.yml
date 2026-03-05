@@ -1,0 +1,62 @@
+## Apply the GitLab configuration
+- name: load accounts vars
+  ansible.builtin.include_vars:
+    file: "../inventories/{{ site.segment }}/identity/group_vars/identity_authority/accounts.yml"
+  no_log: true
+  run_once: true
+
+- name: load credentials vars
+  ansible.builtin.include_vars:
+    file: "../inventories/{{ site.segment }}/identity/group_vars/all/vault.yml"
+  no_log: true
+  run_once: true
+
+- name: render configuration template
+  become: true
+  ansible.builtin.blockinfile:
+    path: /etc/gitlab/gitlab.rb
+    marker: "# {mark} ANSIBLE MANAGED: services > code > gitlab_configure"
+    block: "{{ lookup('template',role_path ~ '/files/gitlab.rb.j2') }}"
+    insertafter: EOF
+  register: configure
+
+- name: evaluate need to reconfigure
+  ansible.builtin.set_fact:
+    reconfigure: "{{ configure.changed }}" # Add ORs for additional tasks that might trigger a reload
+
+- name: reconfigure gitlab
+  when: reconfigure
+  become: true
+  ansible.builtin.shell: gitlab-ctl reconfigure
+
+## Configure Groups/Projects
+- name: configure groups
+  delegate_to: localhost
+  vars:
+    ansible_python_interpreter: "{{ mgmt_pi_ansible_python }}"
+  loop: "{{ gitlab_groups }}"
+  loop_control:
+    label: "Creating group {{ item.name }}"
+  community.general.gitlab_group:
+    api_url: "{{ external_url }}"
+    api_token: "{{ credentials['coglab02'] }}"
+    validate_certs: false ## TODO - remove once enterprise CA is available
+    state: present
+    name: "{{ item.name }}"
+    path: "{{ item.path | default(item.name | lower) }}"
+    project_creation_level: "maintainer"
+    subgroup_creation_level: "owner"
+    visibility: "{{ item.visibility }}"
+    description: "{{ item.description }}"
+    wiki_access_level: "{{ item.wiki }}"
+
+- name: configure projects
+  vars:
+    group_path: "{{ gl_group.path | default(gl_group.name | lower) }}"
+    projects: "{{ gl_group.projects }}"
+  loop: "{{ gitlab_groups }}"
+  loop_control:
+    label: "Configuring projects for group {{ gl_group.name }}"
+    loop_var: "gl_group"
+  ansible.builtin.include_tasks:
+    file: configure_projects.yml

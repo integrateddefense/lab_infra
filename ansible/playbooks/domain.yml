@@ -1,0 +1,115 @@
+# Assumes 'rwdc' inventory group only includes a single host
+- hosts: domain_controllers
+  gather_facts: false
+  tags: ['dcs']
+  serial: 1
+
+  pre_tasks:
+  - name: assert 1 rwdc
+    assert:
+      that:
+        - groups.rwdc is defined
+        - groups.rwdc | length == 1
+      fail_msg: "Exactly one RWDC must be defined in [rwdc]"
+    tags: ["always"]
+    run_once: true
+
+  - name: set fact
+    tags: ['always']
+    run_once: true
+    ansible.builtin.set_fact:
+      identity_authority_vars:
+      - "../inventories/{{ site.segment }}/identity/group_vars/all/vault.yml"
+      - "../inventories/{{ site.segment }}/identity/group_vars/identity_authority.yml"
+
+  - name: get identity authority vars
+    tags: ["always"]
+    loop: "{{ identity_authority_vars }}"
+    loop_control:
+      label: item
+    ansible.builtin.include_vars:
+      file: "{{ item }}"
+    no_log: true
+
+  - name: load creds
+    tags: ["always"]
+    ansible.builtin.set_fact:
+      ansible_user: "{{ accounts[2].username }}"
+      ansible_password: "{{ credentials[accounts[2].username].old | default(credentials[accounts[2].username]) }}"
+    no_log: true
+
+  - name: check connection
+    ansible.builtin.win_ping:
+    tags: ["always"]
+
+  tasks:
+  - name: apply windows baseline
+    tags: ["baseline","os","baseline/os"]
+    ansible.builtin.import_role:
+      name: portable/baseline
+      tasks_from: windows.yml
+
+  - name: apply dc baseline
+    tags: ["baseline"]
+    ansible.builtin.import_role:
+      name: infrastructure/dcs
+      tasks_from: baseline.yml
+
+  - name: apply rwdc baseline
+    tags: ["baseline","rwdc"]
+    ansible.builtin.import_role:
+      name: infrastructure/dcs
+      tasks_from: rwdc.yml
+    when: "(identity_authority | default(false) | bool)"
+    run_once: true
+
+  - name: join the domain
+    ansible.builtin.import_role:
+      name: portable/domain-join
+      tasks_from: windows.yml
+    when: "not (identity_authority | default(false) | bool)"
+    tags: ["baseline","not-auth","rodc"]
+
+  - name: apply rodc baseline
+    tags: ["baseline","rodc"]
+    ansible.builtin.import_role:
+      name: infrastructure/dcs
+      tasks_from: rodc.yml
+    when: "component == 'rodc'"
+
+- hosts: ad_work
+  gather_facts: false
+  tags: ['work']
+
+  pre_tasks:
+  - name: load vars
+    tags: ['always']
+    run_once: true
+    ansible.builtin.include_vars:
+      file: "../inventories/{{ site.segment }}/identity/group_vars/all/vault.yml"
+    no_log: true
+
+  - name: load creds
+    tags: ['always']
+    run_once: true
+    no_log: true
+    ansible.builtin.set_fact:
+      ansible_user: ".\\anwork01"
+      ansible_password: "{{ credentials['anwork01'] }}"
+
+  - name: check connection
+    tags: ['always']
+    ansible.builtin.win_ping:
+
+  tasks:
+  - name: apply windows baseline
+    tags: ['baseline']
+    ansible.builtin.import_role:
+      name: portable/baseline
+      tasks_from: windows.yml
+
+  - name: join the domain
+    tags: ['baseline']
+    ansible.builtin.import_role:
+      name: portable/domain-join
+      tasks_from: windows.yml

@@ -1,0 +1,16 @@
+- name: configure project
+  delegate_to: localhost
+  vars:
+    ansible_python_interpreter: "{{ mgmt_pi_ansible_python }}"
+  loop: "{{ projects }}"
+  loop_control:
+    label: "Creating project {{ item.name }}"
+  community.general.gitlab_project:
+    api_url: "{{ external_url }}"
+    api_token: "{{ credentials['coglab02'] }}"
+    validate_certs: false ## TODO - remove once enterprise CA is up
+    name: "{{ item.name }}"
+    group: "{{ group_path }}"
+    visibility: "{{ item.visibility }}"
+    wiki_enabled: "{{ item.wiki }}"
+    description: "{{ item.description }}"

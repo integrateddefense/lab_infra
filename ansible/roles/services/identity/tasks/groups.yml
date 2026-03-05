@@ -1,0 +1,75 @@
+
+# Creates groups
+
+- name: create group
+  microsoft.ad.group:
+    identity: "{{ item.name }}"
+    description: "{{ item.description }}"
+    scope: "{{ item.scope }}"
+    category: "{{ item.category }}"
+    path: "{{ item.path }}"
+    state: present
+  loop: "{{ ad_groups }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: set members
+  microsoft.ad.group:
+    identity: "{{ item.name }}"
+    members:
+      set:
+      - "{{ item.members }}"
+  loop: "{{ ad_groups }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when: "'members' in item"
+
+#- name: set memberof
+#  loop: "{{ ad_groups | selectattr('memberof','defined') }}"
+#  loop_control:
+#    label: "Adding {{ item.name }} to {{ }}"
+#  microsoft.ad.group:
+#    identity: "{{  }}"
+#    members:
+#      add:
+#      - "{{ item.name }}"
+
+- name: set built-ins membership
+  microsoft.ad.group:
+    identity: Domain Admins
+    members:
+      set:
+      - "{{ ad_groups[0].name }}" ## OPS-Admins-Domain
+
+- name: get builtin groups
+  ansible.windows.win_powershell:
+    script: |
+      $domain = [System.Collections.Generic.List[string]](Get-ADGroup -Identity "Domain Admins" -Property Members | Select-Object -ExpandProperty Members)
+      $schema = [System.Collections.Generic.List[string]](Get-ADGroup -Identity "Schema Admins" -Property Members | Select-Object -ExpandProperty Members)
+      $enterprise = [System.Collections.Generic.List[string]](Get-ADGroup -Identity "Enterprise Admins" -Property Members | Select-Object -ExpandProperty Members)
+      $gpo = [System.Collections.Generic.List[string]](Get-ADGroup -Identity "Group Policy Creator Owners" -Property Members | Select-Object -ExpandProperty Members)
+      @{ domain = $domain; schema = $schema; enterprise = $enterprise; gpo = $gpo }
+  register: group_members
+  changed_when: false
+
+- name: ensure empty built ins
+  vars:
+    domain_admins_path: ["CN={{ ad_groups[0].name }},{{ ad_groups[0].path }}"]
+  ansible.builtin.assert:
+    that:
+      - group_members.output[0].domain == domain_admins_path
+      - (group_members.output[0].schema | default([],true)) == []
+      - (group_members.output[0].enterprise | default([],true)) == ["CN=ansible,OU=Ansible,OU=Service-Accounts,OU=Identities,DC=ops,DC=indef,DC=space"]
+      - (group_members.output[0].gpo | default([],true)) == []
+    fail_msg: "Unauthorized members in builtin groups:\n Wrong Path for Domain Admins - {{ group_members.output[0].domain }}\n Schema Admins - {{ group_members.output[0].schema | default([],true) | join(', ') }}\n Enterprise Admins - {{ group_members.output[0].enterprise | default([],true) | join(', ') }}\n GPO Creator/Owners - {{ group_members.output[0].gpo | default([],true) | join(', ') }}"
+
+
+- name: apply special permissions
+  loop: "{{ ad_groups | selectattr('permissions','defined') | subelements('permissions') }}"
+  ansible.builtin.include_tasks: apply-permissions.yml
+  loop_control:
+    loop_var: group_obj
+    label: "{{ group_obj.0.name }} -> {{ group_obj.1.ou }}"
+  vars:
+    group: "{{ group_obj.0 }}"
+    permissions: "{{ group_obj.1 }}"

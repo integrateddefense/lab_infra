@@ -1,0 +1,23 @@
+# MGMT -> Transit DMZ
+add rule inet filter fwd_v{{ vlans.mgmt.id }} oifname "{{ trunk_iface }}.{{ vlans.transit.dmz.id }}" accept
+
+# MGMT -> DMZ
+add rule inet filter fwd_v{{ vlans.mgmt.id }} oifname "{{ trunk_iface }}.{{ vlans.dmz.id }}" tcp dport { 22,443 } accept
+add rule inet filter fwd_v{{ vlans.mgmt.id }} oifname "{{ trunk_iface }}.{{ vlans.dmz.id }}" ip protocol icmp accept
+
+# MGMT -> Core
+add rule inet filter fwd_v{{ vlans.mgmt.id }} oifname "{{ trunk_iface }}.{{ vlans.core.id }}" tcp dport { 22,53,443,5986 } accept
+add rule inet filter fwd_v{{ vlans.mgmt.id }} oifname "{{ trunk_iface }}.{{ vlans.core.id }}" udp dport { 53 } accept
+add rule inet filter fwd_v{{ vlans.mgmt.id }} oifname "{{ trunk_iface }}.{{ vlans.core.id }}" ip protocol icmp accept
+
+# MGMT -> Core_Protected
+add rule inet filter fwd_v{{ vlans.mgmt.id }} oifname "{{ trunk_iface }}.{{ vlans.core_protected.id }}" tcp dport { 22,88,443,5986 } accept
+add rule inet filter fwd_v{{ vlans.mgmt.id }} oifname "{{ trunk_iface }}.{{ vlans.core_protected.id }}" udp dport { 53 } accept
+add rule inet filter fwd_v{{ vlans.mgmt.id }} oifname "{{ trunk_iface }}.{{ vlans.core_protected.id }}" ip protocol icmp accept
+
+# MGMT -> Users
+add rule inet filter fwd_v{{ vlans.mgmt.id }} oifname "{{ trunk_iface }}.{{ vlans.user.id }}" tcp dport { 22,443 } accept
+add rule inet filter fwd_v{{ vlans.mgmt.id }} oifname "{{ trunk_iface }}.{{ vlans.user.id }}" ip protocol icmp accept
+
+# Default rule for the Management VLAN
+add rule inet filter fwd_v{{ vlans.mgmt.id }} drop

@@ -1,0 +1,182 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.3.0 Chrome/140.0.7339.249 Electron/38.7.2 Safari/537.36" version="29.3.0">
+  <diagram name="Page-1" id="tncEPnk-HfEhn7YUidyi">
+    <mxGraphModel dx="1041" dy="1482" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="LShvutRc23LAYX9ps6PK-1" parent="1" style="shape=table;startSize=30;container=1;collapsible=0;childLayout=tableLayout;strokeColor=default;fontSize=16;" value="DHCP Subsystem" vertex="1">
+          <mxGeometry height="110" width="776" x="20" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="LShvutRc23LAYX9ps6PK-2" parent="LShvutRc23LAYX9ps6PK-1" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;strokeColor=inherit;top=0;left=0;bottom=0;right=0;collapsible=0;dropTarget=0;fillColor=none;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=16;" value="" vertex="1">
+          <mxGeometry height="80" width="776" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="LShvutRc23LAYX9ps6PK-3" parent="LShvutRc23LAYX9ps6PK-2" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=16;" value="Subsystem Code" vertex="1">
+          <mxGeometry height="80" width="182" as="geometry">
+            <mxRectangle height="80" width="182" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="LShvutRc23LAYX9ps6PK-4" parent="LShvutRc23LAYX9ps6PK-2" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=16;" value="ad" vertex="1">
+          <mxGeometry height="80" width="98" x="182" as="geometry">
+            <mxRectangle height="80" width="98" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="LShvutRc23LAYX9ps6PK-5" parent="LShvutRc23LAYX9ps6PK-2" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=16;" value="Component Codes" vertex="1">
+          <mxGeometry height="80" width="190" x="280" as="geometry">
+            <mxRectangle height="80" width="190" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="LShvutRc23LAYX9ps6PK-6" parent="LShvutRc23LAYX9ps6PK-2" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=16;" value="dhcp = DHCP server" vertex="1">
+          <mxGeometry height="80" width="306" x="470" as="geometry">
+            <mxRectangle height="80" width="306" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="LShvutRc23LAYX9ps6PK-7" parent="1" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;spacingBottom=0;" value="Version/Date: v1.0 / 23 JAN 2026&lt;div&gt;Scope: DHCP Architecture&lt;/div&gt;&lt;div&gt;Last Edited By: James Thomas&lt;br&gt;https://github.com/integrateddefense/lab_infra&lt;/div&gt;" vertex="1">
+          <mxGeometry height="100" width="330" x="510" y="990" as="geometry" />
+        </mxCell>
+        <mxCell id="LShvutRc23LAYX9ps6PK-8" parent="1" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;spacingBottom=0;" value="* Note: DHCP uses the AD subsystem code but is not part of the Identity Services Subsystem. Windows DHCP is innately integrated with Windows AD, justifying it&#39;s use of the subsystem code. As a smaller subsystem, it does not need component codes, so the DHCP subsystem code resides there." vertex="1">
+          <mxGeometry height="60" width="490" x="20" y="140" as="geometry" />
+        </mxCell>
+        <mxCell id="LShvutRc23LAYX9ps6PK-9" parent="1" style="shape=table;startSize=30;container=1;collapsible=0;childLayout=tableLayout;strokeColor=default;fontSize=16;" value="Data Flows" vertex="1">
+          <mxGeometry height="260" width="830" x="10" y="700" as="geometry" />
+        </mxCell>
+        <mxCell id="LShvutRc23LAYX9ps6PK-10" parent="LShvutRc23LAYX9ps6PK-9" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;strokeColor=inherit;top=0;left=0;bottom=0;right=0;collapsible=0;dropTarget=0;fillColor=none;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=16;" value="" vertex="1">
+          <mxGeometry height="40" width="830" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="LShvutRc23LAYX9ps6PK-11" parent="LShvutRc23LAYX9ps6PK-10" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=16;" value="ID" vertex="1">
+          <mxGeometry height="40" width="60" as="geometry">
+            <mxRectangle height="40" width="60" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="LShvutRc23LAYX9ps6PK-12" parent="LShvutRc23LAYX9ps6PK-10" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=16;" value="Port/Proto" vertex="1">
+          <mxGeometry height="40" width="150" x="60" as="geometry">
+            <mxRectangle height="40" width="150" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="LShvutRc23LAYX9ps6PK-13" parent="LShvutRc23LAYX9ps6PK-10" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=16;" value="Description" vertex="1">
+          <mxGeometry height="40" width="250" x="210" as="geometry">
+            <mxRectangle height="40" width="250" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="LShvutRc23LAYX9ps6PK-14" parent="LShvutRc23LAYX9ps6PK-10" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=16;" value="Controls" vertex="1">
+          <mxGeometry height="40" width="370" x="460" as="geometry">
+            <mxRectangle height="40" width="370" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="LShvutRc23LAYX9ps6PK-15" parent="LShvutRc23LAYX9ps6PK-9" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;strokeColor=inherit;top=0;left=0;bottom=0;right=0;collapsible=0;dropTarget=0;fillColor=none;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=16;" value="" vertex="1">
+          <mxGeometry height="100" width="830" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="LShvutRc23LAYX9ps6PK-16" parent="LShvutRc23LAYX9ps6PK-15" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=16;" value="1" vertex="1">
+          <mxGeometry height="100" width="60" as="geometry">
+            <mxRectangle height="100" width="60" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="LShvutRc23LAYX9ps6PK-17" parent="LShvutRc23LAYX9ps6PK-15" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=16;" value="UDP/67&lt;div&gt;UDP/68&lt;/div&gt;" vertex="1">
+          <mxGeometry height="100" width="150" x="60" as="geometry">
+            <mxRectangle height="100" width="150" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="LShvutRc23LAYX9ps6PK-18" parent="LShvutRc23LAYX9ps6PK-15" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=16;" value="DHCP Relay traffic for new clients requesting IP addresses." vertex="1">
+          <mxGeometry height="100" width="250" x="210" as="geometry">
+            <mxRectangle height="100" width="250" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="LShvutRc23LAYX9ps6PK-19" parent="LShvutRc23LAYX9ps6PK-15" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=16;" value="EWFWs are the only approved DHCP relays and enforce firewall rules that restrict DHCP relay traffic to only themselves." vertex="1">
+          <mxGeometry height="100" width="370" x="460" as="geometry">
+            <mxRectangle height="100" width="370" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="LShvutRc23LAYX9ps6PK-20" parent="LShvutRc23LAYX9ps6PK-9" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;strokeColor=inherit;top=0;left=0;bottom=0;right=0;collapsible=0;dropTarget=0;fillColor=none;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=16;" value="" vertex="1">
+          <mxGeometry height="90" width="830" y="170" as="geometry" />
+        </mxCell>
+        <mxCell id="LShvutRc23LAYX9ps6PK-21" parent="LShvutRc23LAYX9ps6PK-20" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=16;" value="2" vertex="1">
+          <mxGeometry height="90" width="60" as="geometry">
+            <mxRectangle height="90" width="60" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="LShvutRc23LAYX9ps6PK-22" parent="LShvutRc23LAYX9ps6PK-20" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=16;" value="UDP/53" vertex="1">
+          <mxGeometry height="90" width="150" x="60" as="geometry">
+            <mxRectangle height="90" width="150" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="LShvutRc23LAYX9ps6PK-23" parent="LShvutRc23LAYX9ps6PK-20" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=16;" value="Dynamic DNS updates to the RWDC" vertex="1">
+          <mxGeometry height="90" width="250" x="210" as="geometry">
+            <mxRectangle height="90" width="250" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="LShvutRc23LAYX9ps6PK-24" parent="LShvutRc23LAYX9ps6PK-20" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=16;" value="EWFWs whitelisting DNS from DHCP server to ensure small blast radius." vertex="1">
+          <mxGeometry height="90" width="370" x="460" as="geometry">
+            <mxRectangle height="90" width="370" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="LShvutRc23LAYX9ps6PK-35" parent="1" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;spacingBottom=0;" value="* Note: Data Flows are additive; see OS Baseline Subsystem for additional data flows." vertex="1">
+          <mxGeometry height="100" width="330" x="30" y="970" as="geometry" />
+        </mxCell>
+        <mxCell id="LShvutRc23LAYX9ps6PK-36" parent="1" style="shape=table;startSize=30;container=1;collapsible=0;childLayout=tableLayout;strokeColor=default;fontSize=16;" value="DHCP Snooping" vertex="1">
+          <mxGeometry height="259" width="630" x="870" y="21" as="geometry" />
+        </mxCell>
+        <mxCell id="LShvutRc23LAYX9ps6PK-37" parent="LShvutRc23LAYX9ps6PK-36" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;strokeColor=inherit;top=0;left=0;bottom=0;right=0;collapsible=0;dropTarget=0;fillColor=none;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=16;" value="" vertex="1">
+          <mxGeometry height="129" width="630" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="LShvutRc23LAYX9ps6PK-38" parent="LShvutRc23LAYX9ps6PK-37" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=16;" value="Trust Boundary" vertex="1">
+          <mxGeometry height="129" width="180" as="geometry">
+            <mxRectangle height="129" width="180" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="LShvutRc23LAYX9ps6PK-39" parent="LShvutRc23LAYX9ps6PK-37" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=16;" value="Trunks towards the VLAN Gateway (vFW) will function as trusted ports. All others will be untrusted, including disabled ports.&lt;div&gt;Only upward DHCP streams will be trusted (i.e., a distro switch will trust it&#39;s trunk to the core, not a trunk to the access layer)&lt;/div&gt;" vertex="1">
+          <mxGeometry height="129" width="450" x="180" as="geometry">
+            <mxRectangle height="129" width="450" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="LShvutRc23LAYX9ps6PK-42" parent="LShvutRc23LAYX9ps6PK-36" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;strokeColor=inherit;top=0;left=0;bottom=0;right=0;collapsible=0;dropTarget=0;fillColor=none;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=16;" value="" vertex="1">
+          <mxGeometry height="100" width="630" y="159" as="geometry" />
+        </mxCell>
+        <mxCell id="LShvutRc23LAYX9ps6PK-43" parent="LShvutRc23LAYX9ps6PK-42" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=16;" value="Snooping Locations" vertex="1">
+          <mxGeometry height="100" width="180" as="geometry">
+            <mxRectangle height="100" width="180" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="LShvutRc23LAYX9ps6PK-44" parent="LShvutRc23LAYX9ps6PK-42" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=16;" value="All switches will implement snooping, as there are access ports in some fashion at all layers." vertex="1">
+          <mxGeometry height="100" width="450" x="180" as="geometry">
+            <mxRectangle height="100" width="450" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="LShvutRc23LAYX9ps6PK-76" edge="1" parent="1" source="LShvutRc23LAYX9ps6PK-67" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="LShvutRc23LAYX9ps6PK-71">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="LShvutRc23LAYX9ps6PK-67" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="DHCP Server" vertex="1">
+          <mxGeometry height="60" width="120" x="560" y="550" as="geometry" />
+        </mxCell>
+        <mxCell id="LShvutRc23LAYX9ps6PK-68" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="DHCP Client" vertex="1">
+          <mxGeometry height="60" width="120" x="50" y="270" as="geometry" />
+        </mxCell>
+        <mxCell id="LShvutRc23LAYX9ps6PK-69" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="RWDC" vertex="1">
+          <mxGeometry height="60" width="120" x="690" y="370" as="geometry" />
+        </mxCell>
+        <mxCell id="LShvutRc23LAYX9ps6PK-73" edge="1" parent="1" source="LShvutRc23LAYX9ps6PK-70" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.55;exitY=0.95;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="LShvutRc23LAYX9ps6PK-71">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="LShvutRc23LAYX9ps6PK-70" parent="1" style="ellipse;shape=cloud;whiteSpace=wrap;html=1;" value="Network Devices" vertex="1">
+          <mxGeometry height="80" width="120" x="120" y="370" as="geometry" />
+        </mxCell>
+        <mxCell id="LShvutRc23LAYX9ps6PK-74" edge="1" parent="1" source="LShvutRc23LAYX9ps6PK-71" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="LShvutRc23LAYX9ps6PK-67">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="LShvutRc23LAYX9ps6PK-75" edge="1" parent="1" source="LShvutRc23LAYX9ps6PK-71" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.25;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="LShvutRc23LAYX9ps6PK-69">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="LShvutRc23LAYX9ps6PK-71" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="vFW" vertex="1">
+          <mxGeometry height="60" width="120" x="340" y="450" as="geometry" />
+        </mxCell>
+        <mxCell id="LShvutRc23LAYX9ps6PK-72" edge="1" parent="1" source="LShvutRc23LAYX9ps6PK-68" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.4;entryY=0.1;entryDx=0;entryDy=0;entryPerimeter=0;" target="LShvutRc23LAYX9ps6PK-70">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="LShvutRc23LAYX9ps6PK-77" parent="1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fontSize=22;" value="1" vertex="1">
+          <mxGeometry height="40" width="40" x="350" y="530" as="geometry" />
+        </mxCell>
+        <mxCell id="LShvutRc23LAYX9ps6PK-78" parent="1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fontSize=22;" value="2" vertex="1">
+          <mxGeometry height="40" width="40" x="590" y="430" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

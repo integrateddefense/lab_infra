@@ -1,0 +1,5 @@
+- name: Set hostname and domain
+  junipernetworks.junos.junos_config:
+    lines:
+    - set system host-name {{ hostname }}
+    - set system domain-name {{ domain.sub }}.{{ domain.root }}

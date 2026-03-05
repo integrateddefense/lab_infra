@@ -1,0 +1,8 @@
+# DMZ -> Transit DMZ
+add rule inet filter fwd_v{{ vlans.dmz.id }} oifname "{{ trunk_iface }}.{{ vlans.transit.dmz.id }}" tcp dport { 443 } accept
+
+# DMZ -> Core
+add rule inet filter fwd_v{{ vlans.dmz.id }} oifname "{{ trunk_iface }}.{{ vlans.core.id }}" tcp dport { 443 } accept
+
+# Default rule for the DMZ VLAN
+add rule inet filter fwd_v{{ vlans.dmz.id }} drop

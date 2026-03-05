@@ -1,0 +1,120 @@
+- name: create sites
+  ansible.windows.win_powershell:
+    script: |
+      $exists = Get-ADReplicationSite -Filter "Name -eq '{{ item.name }}'"
+      if (-not $exists){
+        New-ADReplicationSite -Name "{{ item.name }}" -Description "{{ item.description }}"
+        $changed = $true
+      }
+      else {
+        Set-ADReplicationSite -Identity "{{ item.name }}" -Description "{{ item.description }}"
+        $changed = $false
+      }
+      @{ changed = $changed }
+  register: result
+  changed_when: result.output[0].changed
+  loop: "{{ sites }}"
+
+- name: enforce sites for each dc
+  ansible.windows.win_powershell:
+    script: |
+      $json = '{{ sites | to_json }}'
+      $sites = ConvertFrom-Json $json
+      $dcs = Get-ADDomainController -Filter * | Select-Object Name, Site
+      $changed = $false
+      $changes = @()
+      foreach ($dc in $dcs) {
+        $site_code = ($dc.Name[1..2] -join "").ToLower()
+        $type = ($dc.Name[5..8] -join "").ToLower()
+        $site = $sites | Where-Object { $_.code -eq $site_code }
+        if ($type -eq "rwdc"){
+          $name = $site.name + "-Protected"
+        } else { $name = $site.name }
+
+        if ($name -ne $dc.Site){
+          Move-ADDirectoryServer -Identity $dc.Name -Site $name
+          $changed = $true
+          $changes += "$($dc.Name): $($dc.Site) -> $name"
+        }
+      }
+      @{ changed = $changed; changes = $changes }
+  register: result
+  changed_when: result.output[0].changed
+
+- name: show changes
+  debug:
+    var: result.output[0].changes
+  when: result.output[0].changed
+
+- name: check default site
+  ansible.windows.win_powershell:
+    script: |
+      $default = Get-ADReplicationSite -Filter "Name -eq 'Default-First-Site-Name'" -Properties *
+      $dcs = Get-ADDomainController -Filter "Site -eq 'Default-First-Site-Name'" | Select-Object Hostname
+      @{ subnets = $default.Subnets; dcs = $dcs}
+  register: default_site
+  changed_when: false
+
+- name: assert no subnets on default site
+  ansible.builtin.assert:
+    that:
+    - default_site.output[0].subnets | length == 0
+    fail_msg: "WARNING - Default site includes subnet(s) {{ default_site.output[0].subnets | join(', ') }}"
+
+- name: assert no dcs on default site
+  ansible.builtin.assert:
+    that:
+    - default_site.output[0].dcs is defined
+    fail_msg: "Default site includes Domain Controller(s): {{ (default_site.output[0].dcs | default([],true)) | list | join(', ') }}"
+
+- name: associate subnets
+  ansible.windows.win_powershell:
+    script: |
+      $exists = Get-ADReplicationSubnet -Identity "{{ item.cidr }}"
+      if (-not $exists){
+        New-ADReplicationSubnet -Name "{{ item.cidr }}" -Site "{{ item.site }}" -Description "{{ item.description }}"
+        $changed = $true
+      }
+      else {
+        Set-ADReplicationSubnet -Identity "{{ item.cidr }}" -Site "{{ item.site }}" -Description "{{ item.description }}"
+        $changed = $false
+      }
+      @{ changed = $changed }
+  register: result
+  changed_when: result.output[0].changed
+  loop: "{{ subnets }}"
+
+- name: create site links
+  loop: "{{ site_links }}"
+  loop_control:
+    label: "Creating link between {{ item.sites[0] }} and {{ item.sites[1] }}"
+  ansible.windows.win_powershell:
+    script: |
+      $link = Get-ADReplicationSiteLink -Identity {{ item.name }}
+      $sites = ConvertFrom-json @'
+      {{ item.sites | to_json }}
+      '@
+      $changed = $false
+      if ( -not $link)
+      {
+        # link doesnt exist, so recreate it
+        New-ADReplicationSiteLink -Name {{ item.name }} -SitesIncluded $sites[0],$sites[1] -Cost {{ item.cost }} -ReplicationFrequencyInMinutes {{ item.freq }}
+        $changed = $true
+      }
+      else
+      {
+        # site exists, so make sure it matches the spec
+        $spec_sites  = $sites | Sort-Object
+        $current_sites = $link.SitesIncluded | Sort-Object
+        if ( (@($spec_sites) -ceq @($current_sites)) -or ($link.ReplicationFrequencyInMinutes -ne {{ item.freq }}) -or ($link.Cost -ne {{ item.cost }}) )
+        {
+          # if anything doesnt match, we need to recreate the link
+          Remove-ADReplicationSiteLink -Identity {{ item.name }}
+          New-ADReplicationSiteLink -Name {{ item.name }} -SitesIncluded sites[0],sites[1] -Cost {{ item.cost }} -ReplicationFrequencyInMinutes {{ item.freq }}
+          $changed = $true
+        }
+        # if everything matches, we're good
+      }
+      @{ changed = $changed }
+  register: result
+  changed_when: result.output[0].changed

@@ -1,0 +1,61 @@
+- name: load creds
+  ansible.builtin.include_vars:
+    file: "../inventories/{{ site.segment }}/identity/group_vars/all/vault.yml"
+  run_once: true
+  no_log: true
+
+- name: load accounts
+  ansible.builtin.include_vars:
+    file: "../inventories/{{ site.segment }}/identity/group_vars/identity_authority/accounts.yml"
+  run_once: true
+  no_log: true
+
+- name: point DC DNS at RWDC
+  when: "component in ['rodc','rwdc'] and not (identity_authority | default(false) | bool)"
+  block:
+  - name: get adapter
+    ansible.windows.win_powershell:
+      script: Get-NetAdapter
+    register: adapter
+    changed_when: false
+
+  - name: configure DNS client
+    ansible.windows.win_dns_client:
+      adapter_name: "{{ adapter.output[0].Name }}"
+      dns_servers:
+      - "{{ dcs.primary.ip }}"
+
+- name: set join OU for RODCs
+  when: component == 'rodc'
+  ansible.builtin.set_fact:
+    ou: "OU={{ ou_tree[2].name }},{{ ou_tree[2].path }}"
+
+- name: force NTLM for non-DCs
+  when: "component not in ['rodc','rwdc']"
+  ansible.builtin.set_fact:
+    ansible_winrm_transport: ntlm
+
+- name: join the domain
+  microsoft.ad.membership:
+    dns_domain_name: "{{ domain.sub }}.{{ domain.root }}"
+    hostname: "{{ inventory_hostname }}"
+    domain_admin_user: "{{ domain.sub | upper }}\\{{ accounts[0].username }}"
+    domain_admin_password: "{{ credentials[accounts[0].username] }}"
+    domain_ou_path: "{{ ou }}"
+    state: domain
+    reboot: true
+
+- name: fix DC DNS
+  when: "component in ['rodc','rwdc'] and not (identity_authority | default(false) | bool)"
+  ansible.windows.win_dns_client:
+    adapter_name: "{{ adapter.output[0].Name }}"
+    dns_servers:
+    - "{{ dns.primary }}"
+    - "{{ dns.alternate }}"
+
+# Enable DNS registration
+- name: enable registration in DNS
+  ansible.windows.win_powershell:
+    script: |
+      Set-DNSClient -InterfaceAlias "Ethernet" -RegisterThisConnectionsAddress $true
+  changed_when: false

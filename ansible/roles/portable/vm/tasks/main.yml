@@ -1,0 +1,52 @@
+# Creates a VM with the given specifications
+## Only supports ProxMox Hypervisors
+
+# Pre-Checks - make sure necessary vars are defined
+- name: verify hypervisor compatibility
+  ansible.builtin.fail:
+    msg: "Playbook only supports ProxMox Hypervisors"
+  when: sub_platform != "proxmox"
+
+- name: verify defined vars
+  ansible.builtin.fail:
+    msg: "Variable {{ item }} is not defined"
+  loop:
+  - vm_name
+  - vm_id
+  - vm_description
+  - template_name
+  - template_id
+  - template_storage
+  - template_storage_size
+  - vm_storage
+  - vm_sockets
+  - vm_cores
+  - vm_mem
+  - hypervisor_target
+  when: vars[item] is undefined
+
+# Step 1) Discover Current State
+## Enforces idempotency by skipping clone and config steps
+- name: get vm state
+  delegate_to: localhost
+  vars:
+    ansible_python_interpreter: "{{ mgmt_pi_ansible_python }}"
+  community.proxmox.proxmox_vm_info:
+    api_host: "{{ ansible_host }}"
+    api_user: "{{ api_username }}"
+    api_token_id: "{{ api_token_name }}"
+    api_token_secret: "{{ proxmox_api_token_secret }}"
+    node: "{{ hypervisor_target }}"
+    vmid: "{{ vm_id }}"
+  register: vm_info
+
+- name: create vm
+  ansible.builtin.include_tasks: "create.yml"
+  when: vm_info.virtual_machines[0] is undefined
+
+- name: enforce hardware configuration
+  ansible.builtin.include_tasks: "configure.yml"
+
+- name: start vm
+  ansible.builtin.include_tasks: "start.yml"
+

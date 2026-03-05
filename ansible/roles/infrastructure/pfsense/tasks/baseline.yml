@@ -1,0 +1,30 @@
+# Baseline configurations
+
+- name: set pfsense hostname
+  become: true
+  pfsensible.core.pfsense_setup:
+    hostname: "{{ inventory_hostname }}"
+    domain: "{{ domain.sub }}.{{ domain.root }}"
+  changed_when: false
+
+- name: set freebsd hostname
+  become: true
+  ansible.builtin.command: "hostname {{ inventory_hostname }}.{{ domain.sub }}.{{ domain.root }}"
+  changed_when: false
+
+- name: set time and ntp
+  become: true
+  pfsensible.core.pfsense_setup:
+    timezone: "America/New_York"
+    timeservers: "{{ dcs.rodc.hostname }}"
+  changed_when: false
+
+- name: set dns
+  become: true
+  pfsensible.core.pfsense_setup:
+    dns_addresses: "{{ dcs.rodc.ip }}"
+    dnsallowoverride: false
+    dnslocalhost: false
+  changed_when: false
+
+# TODO: configure DNSSEC and forwarding

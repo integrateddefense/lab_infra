@@ -1,0 +1,97 @@
+# Bridges AD group membership to GitLab Admin permissions and Group Membership and Access Levels
+## GitLab provides this service via paid subscriptions; this role imitates this functionality for the free tier
+- name: load accounts vars
+  ansible.builtin.include_vars:
+    file: "../inventories/{{ site.segment }}/identity/group_vars/identity_authority/accounts..yml"
+  no_log: true
+
+- name: load credentials
+  ansible.builtin.include_vars:
+    file: "../inventories/{{ site.segment }}/identity/group_vars/all/vault.yml"
+  no_log: true
+
+- name: set connection vars for RWDC
+  delegate_to: "{{ (dcs.primary.hostname | split('.'))[0] }}"
+  ansible.builtin.set_fact:
+    ansible_user: "{{ accounts[2].username }}"
+    ansible_password: "{{ credentials[accounts[2].username] }}"
+  delegate_facts: true
+  no_log: true
+
+- name: query RWDC for group membership
+  delegate_to: "{{ (dcs.primary.hostname | split('.'))[0] }}"
+  ansible.windows.win_powershell:
+    script: |
+      $admin_group = "{{ gitlab.admin_group }}"
+      $user_group_prefix = "{{ gitlab.user_group_prefix }}"
+      $gitlab_access_levels = @('Guest','Planner','Reporter','Developer','Maintainer','Owner')
+      $gitlab_groups = @'
+      {{ gitlab_groups | to_json }}
+      '@ | ConvertFrom-Json
+      # Build list of groups to query for Group Access Levels
+      $to_query = @()
+      foreach ($gitlab_group in $gitlab_groups)
+      {
+        foreach ($level in $gitlab_access_levels)
+        {
+          $to_query += $user_group_prefix+$gitlab_group.name+"-"+$level
+        }
+      }
+      # Query and grab results
+      $gitlab_admins = @((Get-ADGroup $admin_group -Properties members | Select-Object members).members | ForEach-Object { Get-ADUser $_ } | Select-Object UserPrincipalName,Name,SamAccountName)
+      $gitlab_accesses = @()
+      foreach ($ad_group in $to_query)
+      {
+        $members = Get-ADGroup -Filter "SamAccountName -eq '$ad_group'" -Properties members | Select-Object members
+        if (-not $members)
+        {
+          continue
+        }
+        $group = $ad_group.Split("-")[3]
+        $access_level = $ad_group.Split("-")[4]
+        $gitlab_accesses += @(@{
+          members = @($members.members | ForEach-Object { Get-ADUser $_ } | Select-Object UserPrincipalName,Name,SamAccountName)
+          group = $group
+          level = $access_level
+        })
+      }
+      @{ admins = $gitlab_admins; accesses = $gitlab_accesses } | ConvertTo-Json -Depth 4
+  register: memberships_raw
+  changed_when: false
+
+- name: process results
+  ansible.builtin.set_fact:
+    memberships: "{{ memberships_raw.output[-1] | from_json }}"
+
+- name: enable admin users
+  delegate_to: localhost
+  vars:
+    ansible_python_interpreter: "{{ mgmt_pi_ansible_python }}"
+  loop: "{{ memberships.admins }}"
+  loop_control:
+    label: "Setting user {{ item.Name }} as an admin"
+  community.general.gitlab_user:
+    api_url: "{{ external_url }}"
+    api_token: "{{ credentials['coglab02'] }}"
+    validate_certs: false ## TODO - set to true once enterprise CA is available
+    username: "{{ item.SamAccountName }}"
+    isadmin: true
+    name: "{{ item.Name }}"
+    email: "{{ item.UserPrincipalName }}"
+
+- name: configure group membership
+  delegate_to: localhost
+  vars:
+    ansible_python_interpreter: "{{ mgmt_pi_ansible_python }}"
+  loop: "{{ memberships.accesses }}"
+  loop_control:
+    label: "Setting {{ access.level }} permissions for {{ access.group }}"
+    loop_var: "access"
+  community.general.gitlab_group_members:
+    api_url: "{{ external_url }}"
+    api_token: "{{ credentials['coglab02'] }}"
+    validate_certs: false ## TODO - set to true once enterprise CA is available
+    gitlab_group: "{{ access.group | lower}}"
+    gitlab_user: "{{ access.members | map(attribute='SamAccountName') }}"
+    access_level: "{{ access.level | lower }}"
+    purge_users: "{{ access.level | lower }}"

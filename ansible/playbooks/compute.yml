@@ -1,0 +1,195 @@
+- hosts: compute_nodes
+  serial: 1
+  gather_facts: false
+
+  tasks:
+  - name: probe for connection status
+    tags: ["always"]
+    ansible.builtin.import_role:
+      name: portable/ssh
+      tasks_from: linux_check.yml
+
+- hosts: compute_nodes
+  gather_facts: false
+
+  tasks:
+
+# Baseline
+  - name: Configure host networking
+    become: true
+    tags: ["baseline","net"]
+    ansible.builtin.import_role:
+      name: portable/baseline
+      tasks_from: proxmox_network.yml
+
+  - name: configure proxmox host
+    tags: ["baseline","proxmox"]
+    ansible.builtin.import_role:
+      name: portable/baseline
+      tasks_from: proxmox.yml
+
+  - name: apply linux baseline
+    tags: ["baseline","host"]
+    ansible.builtin.import_role:
+      name: portable/baseline
+      tasks_from: linux.yml
+
+  - name: Configure SSH
+    tags: ["baseline","ssh"]
+    ansible.builtin.import_role:
+      name: portable/ssh
+      tasks_from: linux.yml
+
+#  - debug:
+#      var: hostvars[server[0]].ansible_host
+#    tags: vms
+#    loop: "{{ groups['compute_nodes'] | sort | slice(2) }}"
+#    loop_control:
+#      loop_var: server
+#      index_var: iteration
+#      label: "Creating vFW on {{ server }}"
+
+#  - meta: end_host
+#    tags: vms
+
+# Infrastructure VMs
+  - name: create vFW VMs
+    tags: ["vms","network","vfw","network/vfw"]
+    run_once: true
+    ansible.builtin.include_role:
+      name: portable/vm
+      apply:
+        tags: ["vms","network","vfw","network/vfw"]
+    loop: "{{ (groups['compute_nodes'] | sort | list)[0:(vfw.vm.name | length)] }}"
+    loop_control:
+      loop_var: server
+      index_var: iteration
+      label: "Creating vFW on {{ server }}"
+    vars:
+      hypervisor_target: "{{ server }}"
+      template_name: "{{ templates.alma9.name }}"
+      template_id: "{{ templates.alma9.id }}"
+      template_storage: "{{ templates.alma9.storage.type }}"
+      template_storage_size: "{{ templates.alma9.storage.size }}"
+      vm_name: "{{ vfw.vm.name[iteration] }}"
+      vm_id: "{{ vfw.vm.id[iteration] }}"
+      vm_description: "{{ vfw.vm.description[iteration] }}"
+      vm_storage: "{{ vfw.vm.storage }}"
+      vm_sockets: "{{ vfw.vm.sockets }}"
+      vm_cores: "{{ vfw.vm.cores }}"
+      vm_mem: "{{ vfw.vm.mem }}"
+      ## To configure the service, see playbooks/vfw.yml
+
+  - name: create DHCP VMs
+    tags: ["vms","services","dhcp","service/dhcp"]
+    run_once: true
+    ansible.builtin.include_role:
+      name: portable/vm
+      apply:
+        tags: ["vms","services","dhcp","service/dhcp"]
+    loop: "{{ (groups['compute_nodes'] | sort | list)[0:(dhcp.vm.name | length)] }}"
+    loop_control:
+      loop_var: server
+      index_var: iteration
+      label: "Creating DHCP Server on {{ server }}"
+    vars:
+      hypervisor_target: "{{ server }}"
+      template_name: "{{ templates.win22.name }}"
+      template_id: "{{ templates.win22.id }}"
+      template_storage: "{{ templates.win22.storage.type }}"
+      template_storage_size: "{{ templates.win22.storage.size }}"
+      vm_name: "{{ dhcp.vm.name[iteration] }}"
+      vm_id: "{{ dhcp.vm.id[iteration] }}"
+      vm_description: "{{ dhcp.vm.description[iteration] }}"
+      vm_storage: "{{ dhcp.vm.storage }}"
+      vm_sockets: "{{ dhcp.vm.sockets }}"
+      vm_cores: "{{ dhcp.vm.cores }}"
+      vm_mem: "{{ dhcp.vm.mem }}"
+      vm_vid: "{{ dhcp.vm.vid }}"
+      ## To configure the service, see playbooks/dhcp.yml
+
+  - name: create RODC VMs
+    tags: ["vms","services","ad","services/ad"]
+    run_once: true
+    ansible.builtin.include_role:
+      name: portable/vm
+      apply:
+        tags: ["vms","services","ad","services/ad"]
+    loop: "{{ (groups['compute_nodes'] | sort | list)[0:(rodc.vm.name | length)] }}"
+    loop_control:
+      loop_var: server
+      index_var: iteration
+      label: "Creating RODC Server on {{ server }}"
+    vars:
+      hypervisor_target: "{{ server }}"
+      template_name: "{{ templates.win22.name }}"
+      template_id: "{{ templates.win22.id }}"
+      template_storage: "{{ templates.win22.storage.type }}"
+      template_storage_size: "{{ templates.win22.storage.size }}"
+      vm_name: "{{ rodc.vm.name[iteration] }}"
+      vm_id: "{{ rodc.vm.id[iteration] }}"
+      vm_description: "{{ rodc.vm.description[iteration] }}"
+      vm_storage: "{{ rodc.vm.storage }}"
+      vm_storage_size: "{{ rodc.vm.size }}"
+      vm_sockets: "{{ rodc.vm.sockets }}"
+      vm_cores: "{{ rodc.vm.cores }}"
+      vm_mem: "{{ rodc.vm.mem }}"
+      vm_vid: "{{ rodc.vm.vid }}"
+      ## To configure the service, see playbooks/domain.yml
+
+  - name: create Code/GitLab subsystem VMs
+    tags: ["vms","services","code","gitlab","services/gitlab"]
+    run_once: true
+    ansible.builtin.include_role:
+      name: portable/vm
+      apply:
+        tags: ["vms","services","code","gitlab","services/gitlab"]
+    loop: "{{ (groups['compute_nodes'] | sort | list)[0:(code.glab.name | length)] }}"
+    loop_control:
+      loop_var: server
+      index_var: iteration
+      label: "Creating Code VM on {{ server }}"
+    vars:
+      hypervisor_target: "{{ server }}"
+      template_name: "{{ templates.alma9.name }}"
+      template_id: "{{ templates.alma9.id }}"
+      template_storage: "{{ templates.alma9.storage.type }}"
+      template_storage_size: "{{ templates.alma9.storage.size }}"
+      vm_name: "{{ code.glab.name[iteration] }}"
+      vm_id: "{{ code.glab.id[iteration] }}"
+      vm_description: "{{ code.glab.description[iteration] }}"
+      vm_storage: "{{ code.glab.storage }}"
+      vm_storage_size: "{{ code.glab.size }}"
+      vm_sockets: "{{ code.glab.sockets }}"
+      vm_cores: "{{ code.glab.cores }}"
+      vm_mem: "{{ code.glab.mem }}"
+      ## To configure the service, see playbooks/code.yml
+
+  - name: create Code/Runner subsystem VMs
+    tags: ["vms","services","code","gitlab","services/gitlab","gitlab/runner"]
+    run_once: true
+    ansible.builtin.include_role:
+      name: portable/vm
+      apply:
+        tags: ["vms","services","code","gitlab","services/gitlab","gitlab/runner"]
+    loop: "{{ (groups['compute_nodes'] | sort | list)[0:(code.runr.name | length)] }}"
+    loop_control:
+      loop_var: server
+      index_var: iteration
+      label: "Creating Code VM on {{ server }}"
+    vars:
+      hypervisor_target: "{{ server }}"
+      template_name: "{{ templates.alma9.name }}"
+      template_id: "{{ templates.alma9.id }}"
+      template_storage: "{{ templates.alma9.storage.type }}"
+      template_storage_size: "{{ templates.alma9.storage.size }}"
+      vm_name: "{{ code.runr.name[iteration] }}"
+      vm_id: "{{ code.runr.id[iteration] }}"
+      vm_description: "{{ code.runr.description[iteration] }}"
+      vm_storage: "{{ code.runr.storage }}"
+      vm_storage_size: "{{ code.runr.size }}"
+      vm_sockets: "{{ code.runr.sockets }}"
+      vm_cores: "{{ code.runr.cores }}"
+      vm_mem: "{{ code.runr.mem }}"
+      ## To configure the service, see playbooks/code.yml
+

@@ -1,0 +1,9 @@
+# A simple playbook that tests only the API credential tasks of the linux>proxmox baseline tasks
+
+- name: Testing just the proxmox API credential tasks
+  hosts: all
+  gather_facts: false
+
+  tasks:
+  - name: Get tasks
+    import_tasks: roles/bootstrap_ansible/tasks/proxmox.yml

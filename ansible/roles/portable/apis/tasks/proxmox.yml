@@ -1,0 +1,101 @@
+# Creates a user and associated API Token for ansible to use to manage ProxMox via the API
+
+## Create the User
+- name: Get Current Users
+  become: true
+  ansible.utils.cli_parse:
+    command: pveum user list --output-format json
+    parser:
+      name: ansible.utils.json
+  register: users_list
+  changed_when: false
+
+- name: Create API user
+  become: true
+  ansible.builtin.shell: pveum user add {{ api_username }}
+  when: "api_username not in users_list.parsed | map(attribute='userid') | list"
+
+## Create Token
+
+- name: Check current tokens
+  become: true
+  ansible.utils.cli_parse:
+    command: pveum user token list {{ api_username }} --output-format json
+    parser:
+      name: ansible.utils.json
+  register: token_list
+  changed_when: false
+
+- name: Create User Token
+  become: true
+  ansible.utils.cli_parse:
+    command: pveum user token add {{ api_username }} {{ api_token_name }} --privsep 1 --output-format json
+    parser:
+      name: ansible.utils.json
+  register: token
+  no_log: true
+  when: "api_token_name not in token_list.parsed | map(attribute='tokenid') | list"
+
+- name: Store API Token
+  when: "api_token_name not in token_list.parsed | map(attribute='tokenid') | list"
+  block:
+  - name: Prompt for Vault Password
+    delegate_to: mgmt_pi
+    ansible.builtin.pause:
+      prompt: "Enter passphrase to use for the API Token vault"
+      echo: no
+    register: vault_pass_runtime
+    run_once: true
+    no_log: true
+
+  - name: Set Token Content
+    delegate_to: mgmt_pi
+    no_log: true
+    ansible.builtin.set_fact:
+      content: |
+        proxmox_api_token_id: "{{ token.parsed['full-tokenid'] }}"
+        proxmox_api_token_secret: "{{ token.parsed.value }}"
+      group_vars_path: "{{ inventory_dir }}/group_vars/{{ tmpfs_token_filename }}"
+
+  - name: Create Token File
+    delegate_to: localhost
+    no_log: true
+    ansible.builtin.copy:
+      content: "{{ content }}"
+      dest: "/dev/shm/{{ tmpfs_token_filename }}"
+      mode: "0700"
+      directory_mode: "0700"
+
+  - name: Encrypt Token File
+    delegate_to: localhost
+    no_log: true
+    ansible.builtin.command:
+      cmd: ansible-vault encrypt /dev/shm/{{ tmpfs_token_filename }}
+      stdin: "{{ vault_pass_runtime.user_input }}{{ '\n' }}{{ vault_pass_runtime.user_input }}"
+
+  - name: Move to group_vars
+    delegate_to: localhost
+    ansible.builtin.shell: mv /dev/shm/{{ tmpfs_token_filename }} {{ group_vars_path }}
+
+  always:
+  - name: Clear tmpfs
+    ansible.builtin.shell: rm -rf /dev/shm/{{ tmpfs_token_filename }}
+    ignore_errors: true
+
+## One Liner to check if the token is good - send directly to command line
+# ansible localhost -m uri -a url=https://10.0.99.11:8006/api2/json/version validate_certs=no return_content=yes headers={Authorization:PVEAPIToken {{ proxmox_api_token_id }}={{ proxmox_api_token_secret }}} -e @group_vars/bootstrap_steady_vault.yml --ask-vault-pass
+
+## Bind ACLs for access
+- name: Bind user to ACLs
+  become: true
+  ansible.builtin.shell:
+    cmd: "pveum acl modify / -users '{{ api_username }}' -role PVEAdmin"
+  changed_when: false
+
+- name: Bind token to ACLs
+  become: true
+  ansible.builtin.shell:
+    cmd: "pveum acl modify / -tokens '{{ api_username }}!{{ api_token_name }}' -role PVEAdmin"
+  changed_when: false
+## TODO: implement least privilege
+### Notes: Should bind on more restrictive paths with more restrictive roles for GitOps targets; potentially restrict to VM level (i.e., can't do GitOps for DCs to avoid breaking them)

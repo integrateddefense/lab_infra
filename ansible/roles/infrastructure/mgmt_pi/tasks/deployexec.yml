@@ -1,0 +1,144 @@
+# Configures a non-working directory copy of the repo for the deployment executor service
+- name: create ansible group
+  become: true
+  ansible.builtin.group:
+    name: ansible
+    state: present
+
+- name: create service user
+  become: true
+  ansible.builtin.user:
+    name: deployexec
+    system: true
+    home: /opt/deployment-executor/
+    shell: /usr/bin/nologin
+    group: ansible
+
+- name: create directories
+  loop:
+  - "/opt/deployment-executor/"
+  - "/opt/deployment-executor/.ssh"
+  - "/etc/indef/"
+  - "/etc/indef/deployment-executor"
+  loop_control:
+    label: "Creating {{ item }}"
+  become: true
+  ansible.builtin.file:
+    state: directory
+    mode: 0770
+    owner: deployexec
+    group: ansible
+    path: "{{ item }}"
+
+- name: create token files
+  loop:
+  - "/etc/indef/deployment-executor/read-only.token"
+  - "/etc/indef/deployment-executor/read-write.token"
+  loop_control:
+    label: "Creating {{ item }}"
+  become: true
+  ansible.builtin.file:
+    state: file
+    path: "{{ item }}"
+    mode: 0660
+    owner: deployexec
+    group: ansible
+  register: token_results
+
+- name: remind user to generate tokens
+  when: token_results.changed
+  ansible.builtin.fail:
+    msg: "Token file(s) {{ token_results.results | selectattr('changed') | map(attribute='item') | list | join(', ') }} were created or changed; ensure tokens are present before continuing"
+
+- name: create ssh key files
+  become: true
+  loop:
+  - type: ed25519
+    path: /opt/deployment-executor/.ssh/id_ed25519
+  - type: rsa
+    path: /opt/deployment-executor/.ssh/id_rsa
+  community.crypto.openssh_keypair:
+    path: "{{ item.path }}"
+    type: "{{ item.type }}"
+    regenerate: full_idempotence
+    owner: deployexec
+    group: ansible
+    mode: 0600
+  register: keys_changed
+
+- name: ensure key is configured in gitlab
+  when: keys_changed.changed
+  ansible.builtin.fail:
+    msg: "New SSH Key configured; ensure key is configured as a deploy key on the infrastructure repository before continuing"
+
+- name: deploy ssh configuration
+  become: true
+  ansible.builtin.template:
+    src: ssh_config.j2
+    dest: /opt/deployment-executor/.ssh/config
+    owner: deployexec
+    group: ansible
+    mode: 0600
+
+- name: clone repo
+  become: true
+  become_user: deployexec
+  ansible.builtin.git:
+    repo: 'git@gitlab.ops.indef.space:indef/Infrastructure.git'
+    dest: /opt/deployment-executor/Infrastructure
+    single_branch: yes
+    version: main
+    update: true
+    clone: true
+    force: true
+
+- name: deploy ansible.cfg
+  become: true
+  ansible.builtin.template:
+    src: ansible.cfg.j2
+    dest: /opt/deployment-executor/Infrastructure/ansible/ansible.cfg
+    owner: deployexec
+    group: ansible
+    mode: 0660
+
+- name: ensure repo ownership
+  become: true
+  ansible.builtin.file:
+    path: /opt/deployment-executor/Infrastructure
+    state: directory
+    owner: deployexec
+    group: ansible
+    mode: "2775"
+
+- name: deploy service config
+  become: true
+  ansible.builtin.template:
+    src: deployment-executor.service.j2
+    dest: /etc/systemd/system/deployment-executor.service
+    owner: root
+    group: root
+    mode: '0600'
+  register: service_results
+
+- name: deploy timer config
+  become: true
+  ansible.builtin.template:
+    src: deployment-executor.timer.j2
+    dest: /etc/systemd/system/deployment-executor.timer
+    owner: root
+    group: root
+    mode: '0600'
+  register: timer_results
+
+- name: reload systemd
+  when: service_results.changed or timer_results.changed
+  become: true
+  ansible.builtin.systemd_service:
+    daemon_reload: true
+
+- name: enable deployment executor
+  become: true
+  ansible.builtin.systemd_service:
+    name: deployment-executor.timer
+    enabled: true
+    state: started

@@ -1,0 +1,131 @@
+## Install and perform basic initial configurations for GitLab
+- name: add docker ce repo
+  become: true
+  ansible.builtin.yum_repository:
+    name: docker-ce
+    description: "Docker CE Repository"
+    baseurl: https://download.docker.com/linux/centos/$releasever/$basearch/stable
+    gpgcheck: yes
+    gpgkey:
+    - https://download.docker.com/linux/centos/gpg
+    repo_gpgcheck: yes
+    sslverify: true
+    sslcacert: /etc/pki/tls/certs/ca-bundle.crt
+    enabled: yes
+
+- name: add gitlab install repo
+  become: true
+  ansible.builtin.yum_repository:
+    name: gitlab-runner
+    description: "GitLab Enterprise Edition Repository"
+    baseurl: https://packages.gitlab.com/runner/gitlab-runner/el/9/$basearch
+    gpgcheck: yes
+    repo_gpgcheck: yes
+    gpgkey:
+    - https://packages.gitlab.com/runner/gitlab-runner/gpgkey
+    - https://packages.gitlab.com/runner/gitlab-runner/gpgkey/runner-gitlab-runner-4C80FB51394521E9.pub.gpg
+    - https://packages.gitlab.com/runner/gitlab-runner/gpgkey/runner-gitlab-runner-49F16C5CC3A0F81F.pub.gpg
+    sslverify: true
+    sslcacert: /etc/pki/tls/certs/ca-bundle.crt
+    enabled: yes
+
+- name: install dependencies
+  become: true
+  ansible.builtin.package:
+    name:
+    - gitlab-runner
+    - docker-ce
+    - docker-ce-cli
+    - containerd.io
+    - docker-buildx-plugin
+    - docker-compose-plugin
+    state: present
+
+# Configure the docker engine
+- name: configure docker log growth
+  become: true
+  ansible.builtin.template:
+    src: docker_daemon.json.j2
+    dest: /etc/docker/daemon.json
+    owner: root
+    group: root
+    mode: "0644"
+  register: docker_changed
+
+- name: add gitlab runner as docker executor
+  changed_when: false
+  become: true
+  ansible.builtin.command: usermod -aG docker gitlab-runner
+
+- name: enable and start docker
+  become: true
+  when: docker_changed.changed
+  ansible.builtin.systemd_service:
+    name: docker
+    enabled: true
+    state: restarted
+
+# Configure gitlab-runner
+- name: load credentials
+  ansible.builtin.include_vars:
+    file: "../inventories/{{ site.segment }}/identity/group_vars/all/vault.yml"
+  no_log: true
+  run_once: true
+
+- name: load gitlab vars
+  ansible.builtin.include_vars:
+    file: "../inventories/{{ site.segment }}/{{ site.name }}/group_vars/gitlab.yml"
+
+- name: resolve project_id
+  when: scope == "project"
+  delegate_to: localhost
+  vars:
+    ansible_python_interpreter: "{{ mgmt_pi_ansible_python }}"
+  community.general.gitlab_project:
+    api_url: "{{ external_url }}"
+    api_token: "{{ credentials['coglab02'] }}"
+    validate_certs: false ## TODO - remove once enterprise CA is available
+    name: "{{ project.name }}"
+    group: "{{ project.group }}"
+  register: resolved
+
+- name: create project-level runner
+  when: scope == "project"
+  delegate_to: localhost
+  vars:
+    ansible_python_interpreter: "{{ mgmt_pi_ansible_python }}"
+  community.general.gitlab_runner:
+    api_url: "{{ external_url }}"
+    api_token: "{{ credentials['coglab02'] }}"
+    validate_certs: false ## TODO - remove once enterprise CA is available
+    description: "{{ description }}"
+    state: present
+    active: true
+    project: "{{ resolved.project.id }}"
+    locked: true
+    run_untagged: false
+    maximum_timeout: 600
+    tag_list: "{{ tag_list }}"
+  register: runner
+
+- when: scope != "project"
+  ansible.builtin.fail:
+    msg: "Scope not equal to project has not been implemented yet"
+
+- name: write runner-side config
+  become: true
+  ansible.builtin.template:
+    src: runner_config.toml.j2
+    dest: /etc/gitlab-runner/config.toml
+    owner: root
+    group: root
+    mode: "0600"
+  register: runner_changed
+
+- name: enable and restart gitlab-runner
+  become: true
+  when: runner_changed.changed
+  ansible.builtin.systemd_service:
+    name: gitlab-runner
+    enabled: true
+    state: restarted

@@ -1,0 +1,11 @@
+- name: reload sshd (linux)
+  become: true
+  ansible.builtin.systemd_service:
+    name: sshd
+    state: reloaded
+
+- name: reload sshd (pfsense)
+  become: true
+  ansible.builtin.service:
+    name: sshd
+    state: reloaded

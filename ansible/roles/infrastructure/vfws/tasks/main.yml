@@ -1,0 +1,12 @@
+# Main role file for configuring the vfws.
+- name: prep interface references
+  ansible.builtin.include_tasks: "prep.yml"
+
+- name: configure interfaces
+  ansible.builtin.include_tasks: "interfaces.yml"
+
+- name: configure nftables rules
+  ansible.builtin.include_tasks: "nftables.yml"
+
+- name: configure keepalived
+  ansible.builtin.include_tasks: "keepalived.yml"

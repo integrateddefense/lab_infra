@@ -1,0 +1,8 @@
+- name: create OU structure
+  microsoft.ad.ou:
+    name: "{{ item.name }}"
+    path: "{{ item.path }}"
+    protect_from_deletion: "{{ item.protected | default('false') }}"
+    description: "ANSIBLE MANAGED: {{ item.description }}"
+    state: present
+  loop: "{{ ou_tree }}"

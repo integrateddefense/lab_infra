@@ -1,0 +1,33 @@
+# Configure DNS Zones and Static Records
+- name: configure zones
+  loop: "{{ dns_spec.zones }}"
+  loop_control:
+    label: "Creating forward zone {{ item.name }}"
+  ansible.windows.win_dns_zone:
+    name: "{{ item.name }}"
+    type: "{{ item.type }}"
+    state: present
+    dynamic_update: "{{ item.dynamic_updates }}"
+    replication: "{{ item.replication_scope }}"
+
+- name: configure reverse zones
+  loop: "{{ dns_spec.reverse_zones }}"
+  loop_control:
+    label: "Creating reverse zone {{ item.name }}"
+  ansible.windows.win_dns_zone:
+    name: "{{ item.name }}"
+    type: "{{ item.type }}"
+    state: present
+    dynamic_update: "{{ item.dynamic_updates }}"
+    replication: "{{ item.replication_scope }}"
+
+- name: configure static records
+  loop: "{{ dns_spec.records }}"
+  loop_control:
+    label: "Creating {{ item.type }} Record for {{ item.name }} in {{ item.zone }}"
+  ansible.windows.win_dns_record:
+    zone: "{{ item.zone }}"
+    name: "{{ item.name }}"
+    type: "{{ item.type }}"
+    value: "{{ item.value }}"
+    ttl: "{{ item.ttl | default(omit) }}"

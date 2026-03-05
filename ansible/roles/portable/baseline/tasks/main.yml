@@ -1,0 +1,20 @@
+# Baseline Role
+## Currently applied settings:
+### - SSH (including password restrictions on the ansible user account)
+### - Update sources (i.e., apt repos)
+### - Break glass account (TBD)
+### - Log forwarding (TBD)
+
+
+- name: Route for Linux
+  include_tasks: linux.yml
+  when:
+  - platform == "linux"
+
+- name: Route for Windows
+  include_tasks: windows.yml
+  when: platform == "windows"
+
+- name: Route for Juniper Devices
+  include_tasks: junos.yml
+  when: platform == "junos"

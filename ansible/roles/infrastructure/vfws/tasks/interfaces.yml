@@ -1,0 +1,74 @@
+- block:
+  - name: check for prep tasks
+    ansible.builtin.assert:
+      that:
+      - trunk_iface is defined
+      - mgmt_iface is defined
+  rescue:
+  - name: run prep tasks
+    ansible.builtin.include_tasks: "prep.yml"
+
+- name: set management interface
+  become: true
+  ansible.builtin.template:
+    src: templates/mgmt_iface.j2
+    dest: /etc/NetworkManager/system-connections/mgmt.nmconnection
+    owner: root
+    group: root
+    mode: '0600'
+  notify:
+  - reload nmcli
+  - bring up mgmt
+
+- name: set trunk interface
+  become: true
+  ansible.builtin.template:
+    src: templates/trunk_iface.j2
+    dest: /etc/NetworkManager/system-connections/trunk.nmconnection
+    owner: root
+    group: root
+    mode: '0600'
+  notify:
+  - reload nmcli
+
+- name: set vlan interfaces
+  loop: "{{ vlans | dict2items | selectattr('value.vfw_ips','defined') | rejectattr('key','equalto','mgmt') }}"
+  loop_control:
+    label: "setting vlan {{ item.key }}"
+  become: true
+  ansible.builtin.template:
+    src: templates/vlan_iface.j2
+    dest: /etc/NetworkManager/system-connections/{{ item.key }}.nmconnection
+    owner: root
+    group: root
+    mode: '0600'
+  notify:
+  - reload nmcli
+  - bring up all connections
+
+- name: set transit vlan interfaces
+  loop: "{{ vlans.transit | dict2items | selectattr('value.vfw_ips','defined') }}"
+  loop_control:
+    label: "setting vlan transit-{{ item.key }}"
+  become: true
+  ansible.builtin.template:
+    src: templates/transit_vlan_iface.j2
+    dest: /etc/NetworkManager/system-connections/transit-{{ item.key }}.nmconnection
+    owner: root
+    group: root
+    mode: '0600'
+  notify:
+  - reload nmcli
+  - bring up all connections
+
+- name: check for stubs
+  become: true
+  ansible.builtin.shell: nmcli -t -f NAME connection show | grep "Wired connection" | wc -l
+  register: stubs_count
+  changed_when: false
+
+- name: delete stubs
+  when: (stubs_count.stdout | int) > 0
+  become: true
+  ansible.builtin.shell: nmcli -t -f NAME connection show | grep "Wired connection" | while read -r conn; do nmcli connection delete "$conn"; done
+  notify: reload nmcli

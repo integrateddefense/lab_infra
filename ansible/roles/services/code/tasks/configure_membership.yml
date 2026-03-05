@@ -1,0 +1,9 @@
+- name: configure membership
+  delegate_to: localhost
+  vars:
+    ansible_python_interpreter: "{{ mgmt_pi_ansible_python }}"
+  loop: "{{ members }}"
+  loop_control:
+    label: "Setting {{ item.SamAccountName }} to {{ level }} for {{ group_name }}"
+  community.general.gitlab_group_members:
+    

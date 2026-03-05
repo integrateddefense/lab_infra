@@ -1,0 +1,44 @@
+- name: create domain
+  microsoft.ad.domain:
+    dns_domain_name: "{{ domain.sub }}.{{ domain.root }}"
+    safe_mode_password: "{{ ad.dsrm_password }}"
+    database_path: "{{ data_drive.letter }}:\\AD\\NTDS"
+    sysvol_path: "{{ data_drive.letter }}:\\AD\\SYSVOL"
+    domain_mode: Default
+    forest_mode: Default
+    reboot: true
+  no_log: true
+
+- name: load identity authority vars
+  ansible.builtin.include_vars:
+    file: "../inventories/{{ site.segment }}/identity/group_vars/all/vault.yml"
+  no_log: true
+  run_once: true
+  changed_when: false
+
+- name: configure ansible domain admin
+  microsoft.ad.user:
+    identity: "{{ accounts[2].username }}"
+    password: "{{ credentials[accounts[2].username].new | default(credentials[accounts[2].username]) }}"
+    path: "{{ accounts[2].path }}"
+    update_password: when_changed
+    password_never_expires: true
+    protect_from_deletion: true
+    state: present
+
+- name: reset connection vars
+  ansible.builtin.set_fact:
+    ansible_user: "{{ accounts[2].username }}"
+    ansible_password: "{{ credentials[accounts[2].username] }}"
+
+- name: test connection
+  ansible.windows.win_ping:
+
+- name: verify NTDS status
+  ansible.windows.win_powershell:
+    script: |
+      $service = Get-Service NTDS
+      @{ status = $service; ready = $service.Status -eq "Running" }
+  register: output
+  changed_when: false
+  failed_when: not output.output[0].service

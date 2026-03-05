@@ -1,0 +1,19 @@
+{# 
+  Configures DNSMasq to only provide DHCP Relay services
+  This file only configures the overall service - each interface is configured in its own file to match the ansible data model
+#}
+# Disable DNS completely
+port=0
+no-resolv
+no-hosts
+# Set to only bind on specific interfaces
+bind-interfaces
+interface={{ trunk_iface }}.{{ vlans.core.id }}
+{% for vlan in (vlans | dict2items | selectattr('value.dhcp_relay','defined')) %}
+interface={{ trunk_iface }}.{{ vlan.value.id }}
+dhcp-relay={{ vlan.value.gateway }},{{ components.dhcp_server.ip }},{{ trunk_iface }}.{{ vlans.core.id }}
+{% endfor %}
+
+# Log DHCP actions
+log-dhcp
+

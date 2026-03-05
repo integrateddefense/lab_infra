@@ -1,0 +1,33 @@
+# Creates a VM that doesn't exist
+
+- name: get template vmid
+  delegate_to: localhost
+  vars:
+    ansible_python_interpreter: "{{ mgmt_pi_ansible_python }}"
+  community.proxmox.proxmox_vm_info:
+    api_host: "{{ ansible_host }}"
+    api_user: "{{ api_username }}"
+    api_token_id: "{{ api_token_name }}"
+    api_token_secret: "{{ proxmox_api_token_secret }}"
+    node: "{{ hypervisor_target }}"
+    name: "{{ template_name }}"
+  register: template_data
+
+- name: create vm
+  delegate_to: localhost
+  vars:
+    ansible_python_interpreter: "{{ mgmt_pi_ansible_python }}"
+  community.proxmox.proxmox_kvm:
+    api_host: "{{ ansible_host }}"
+    api_user: "{{ api_username }}"
+    api_token_id: "{{ api_token_name }}"
+    api_token_secret: "{{ proxmox_api_token_secret }}"
+    node: "{{ hypervisor_target }}"
+    vmid: "{{ template_data.proxmox_vms[0].vmid }}"
+    clone: "{{ template_name }}"
+    name: "{{ vm_name }}"
+    newid: "{{ vm_id }}"
+    full: true
+    storage: "{{ vm_storage }}"
+    state: present
+    timeout: 600

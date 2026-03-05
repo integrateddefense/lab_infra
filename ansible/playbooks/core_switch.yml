@@ -1,0 +1,70 @@
+- name: Core Switch
+  hosts: core_switch
+  gather_facts: false
+  connection: netconf
+
+  pre_tasks:
+  ## TODO: Add pre_tasks to check for key variables prior to execution
+  - name: Compare configuration
+    tags: ["always"]
+    junipernetworks.junos.junos_rpc:
+      rpc: get-configuration
+      attrs:
+        compare: rollback
+        rollback: "0"
+        database: candidate
+        format: text
+    register: pending_changes
+
+  - name: Check for pending changes
+    tags: ["always"]
+    ansible.builtin.fail:
+      msg: "Uncommitted changes detected: {{ pending_changes.output[1:-1] }}"
+    when: pending_changes.output[1:-1] | length > 1
+
+  - name: Grab a backup
+    tags: ["always"]
+    junipernetworks.junos.junos_config:
+      backup: true
+      backup_options: {
+        filename: "playbooks/backup/junos/{{ site.code }}_{{ hostname }}_backup.conf",
+        dir_path: .
+      }
+
+  tasks:
+
+  - name: gather junos facts
+    junipernetworks.junos.facts:
+    tags: [facts]
+
+## Portable Roles
+  - name: ssh
+    ansible.builtin.import_role:
+      name: portable/ssh
+      tasks_from: junos.yml
+    tags: [portable,ssh]
+
+## Function Roles
+  - name: base
+    ansible.builtin.import_role:
+      name: infrastructure/core_switch
+      tasks_from: base.yml
+    tags: [base]
+
+  - name: full
+    tags: [full]
+    ansible.builtin.import_role:
+      name: infrastructure/core_switch
+      tasks_from: full.yml
+
+  - name: ports
+    tags: [ports]
+    ansible.builtin.import_role:
+      name: infrastructure/core_switch
+      tasks_from: ports.yml
+
+## Save by default
+
+  - name: save config
+    junipernetworks.junos.junos_config:
+      confirm_commit: true

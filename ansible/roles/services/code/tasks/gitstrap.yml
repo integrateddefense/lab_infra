@@ -1,0 +1,85 @@
+# Configures the gitstrap service on the bootstrap node
+## A lightweight, Git-Over-SSH implementation as a hot-backup to the primary GitLab instance
+
+# Overall Approach:
+## Download and/or update the git package
+## Configure git user and git-shell
+## Configure data disk
+## Configure pre-receive hook for git
+## Create bare IaC repo (if nonexistent)
+
+- name: create paths
+  ansible.builtin.set_fact:
+    iac_path: "{{ mountpoint }}/{{ repos.iac.name }}.git"
+
+# Download git package
+- name: download git
+  become: true
+  ansible.builtin.package:
+    name: git
+    state: present
+
+# Configure git user
+- name: create git user
+  become: true
+  ansible.builtin.user:
+    name: git
+    shell: /usr/bin/git-shell
+    state: present
+
+# Configure git-shell
+- name: add to shells
+  become: true
+  ansible.builtin.lineinfile:
+    path: /etc/shells
+    line: "/usr/bin/git-shell"
+    state: present
+
+# Create bare IaC repo
+- name: create bare IaC repo
+  become: true
+  ansible.builtin.command: "runuser -u git -- git init --bare {{ iac_path }}"
+  args:
+    creates: "{{ iac_path }}/HEAD"
+
+#- name: set ownership
+#  become: true
+#  ansible.builtin.command: "chown {{ owner }}:{{ group }} -R {{ iac_path }}"
+#  changed_when: false
+
+- name: apply sane configs
+  block:
+  - name: set default branch to main
+    become: true
+    community.general.git_config:
+      file: "{{ iac_path }}/config"
+      name: init.defaultBranch
+      scope: file
+      value: main
+      state: present
+  - name: deny non-fastforward on main
+    become: true
+    community.general.git_config:
+      file: "{{ iac_path }}/config"
+      name: receive.denyNonFastForwards
+      value: "true"
+      scope: file
+      state: present
+  - name: fix permissions
+    become: true
+    ansible.builtin.file:
+      path: "{{ iac_path }}"
+      state: directory
+      owner: "{{ owner }}"
+      group: "{{ group }}"
+      recurse: yes
+
+# Configure pre-receive hook for IaC repo
+- name: set pre-receive hook
+  become: true
+  ansible.builtin.copy:
+    src: files/pre-receive.sh
+    dest: "{{ mountpoint }}/{{ repos.iac.name }}.git/hooks/pre-receive"
+    owner: git
+    group: git
+    mode: "0755"

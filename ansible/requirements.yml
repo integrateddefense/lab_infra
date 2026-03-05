@@ -1,0 +1,25 @@
+# Required Ansible collections
+## Each collection will include a reference to the role or playbook that requires it
+
+collections:
+# Added by the portable/ssh role
+- name: ansible.posix
+# Added by the core site core switch
+- name: junipernetworks.junos
+# Added by the portable/ssh role
+- name: ansible.utils
+# Added by the portable/vm role and the portable/baseline/proxmox tasks
+- name: community.proxmox
+# Added by the portable/bootstrap/windows tasks
+- name: ansible.windows
+- name: community.windows
+# Added by the services/identity role
+- name: microsoft.ad
+# Added by the services/git role
+- name: community.general
+# Added by the infrastructure/pfsense role
+- name: pfsensible.core
+# Added by infrastructure/access_switch and distro_switch roles
+- name: cisco.ios
+# Added by infrastructure/mgmt_pi role
+- name: community.crypto

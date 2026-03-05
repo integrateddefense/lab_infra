@@ -1,0 +1,16 @@
+{# Configures the Deployment-Executor Service #}
+[Unit]
+Description=Deployment Executor
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=deployexec
+Group=ansible
+WorkingDirectory=/opt/deployment-executor/
+ExecStart=/opt/deployment-executor/Infrastructure/.venv/bin/python /opt/deployment-executor/Infrastructure/gitops/deployment-executor/deployment_executor.py {{ gitlab_url }} {{ site.name }} {{ node_name }}
+NoNewPrivileges=true
+PrivateTmp=true
+StandardOutput=journal
+StandardError=journal

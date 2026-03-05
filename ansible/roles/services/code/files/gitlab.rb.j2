@@ -1,0 +1,36 @@
+{#
+  Configures GitLab via /etc/gitlab/gitlab.rb
+  Must issue `gitlab-ctl reconfigure` for changes to take effect
+
+  Comment format matches the provided format
+  ##  : Titles and details
+  ##! : References to more documentation
+#}
+
+
+## Basic Configuration - Set the URL for GitLab to listen on
+external_url '{{ external_url }}'
+## Basic Configuration - Disable interaction with LetsEncrypt
+## If not disabled, will attempt to acquire a cert from LetsEncrypt
+letsencrypt['enable'] = false
+
+## LDAP Settings
+##! Docs: https://docs.gitlab.com/ee/administration/auth/ldap/index.html
+gitlab_rails['ldap_enabled'] = true
+gitlab_rails['prevent_ldap_sign_in'] = false
+##! Block is written as YAML using a Ruby renderer, so make sure it uses EOS correctly
+gitlab_rails['ldap_servers'] = YAML.load <<-'EOS'
+  main:
+    label: '{{ site.segment | upper }}-{{ site.name | upper }}-AD'
+    host: '{{ dcs.rodc.hostname }}'
+    port: 389
+    uid: 'sAMAccountName'
+    bind_dn: 'CN={{ accounts[4].username }},{{ accounts[4].path }}'
+    password: '{{ credentials[accounts[4].username] }}'
+    encryption: 'plain'
+    active_directory: true
+    allow_username_or_email_login: false
+    block_auto_created_users: false
+    base: 'OU=Identities,{{ root_dn }}'
+    user_filter: '(memberOf=CN=OPS-Code-Users,{{ (ad_groups | selectattr('name','equalto','OPS-Code-Users'))[0].path }})'
+EOS

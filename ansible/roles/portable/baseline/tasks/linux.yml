@@ -1,0 +1,115 @@
+# Install packages
+- name: install env-wide packages
+  become: true
+  ansible.builtin.package:
+    name: "{{ linux_packages }}"
+    state: present
+    update_cache: true
+
+- name: install system-specific packages
+  become: true
+  ansible.builtin.package:
+    name: "{{ packages }}"
+    state: present
+    update_cache: false
+
+# Configure time sync
+- name: prep chrony config directory
+  become: true
+  ansible.builtin.file:
+    state: directory
+    path: /etc/chrony/conf.d/
+
+- name: configure chronyd
+  become: true
+  ansible.builtin.copy:
+    src: files/chronyd.conf
+    dest: /etc/chrony/conf.d/99-ansible.conf
+  notify: restart chronyd
+
+- name: prep chrony sources directory
+  become: true
+  ansible.builtin.file:
+    state: directory
+    path: /etc/chrony/sources.d/
+
+- name: configure chrony sources
+  become: true
+  ansible.builtin.template:
+    src: templates/chrony-sources.j2
+    dest: /etc/chrony/sources.d/99-ansible.conf
+  notify: reload chronyd sources
+
+- name: enable chronyd service
+  become: true
+  ansible.builtin.systemd_service:
+    name: chronyd
+    state: started
+
+# Configure sysctl
+- name: configure generic sysctl
+  become: true
+  ansible.builtin.copy:
+    src: files/sysctl-generic.conf
+    dest: /etc/sysctl.d/99-ansible-generic.conf
+  notify: apply sysctl
+
+- name: configure proxmox sysctl
+  become: true
+  when: sub_platform == "proxmox"
+  ansible.builtin.copy:
+    src: files/sysctl-proxmox.conf
+    dest: /etc/sysctl.d/99-ansible-proxmox.conf
+  notify: apply sysctl
+
+- name: configure vfw sysctl
+  become: true
+  when: sub_platform == "vfw"
+  ansible.builtin.copy:
+    src: files/sysctl-vfw.conf
+    dest: /etc/sysctl.d/99-ansible-vfw.conf
+  notify: apply sysctl
+
+# Configure Data Disk if specified
+- name: configure data disk
+  when: "'mountpoint' is defined"
+  ansible.builtin.import_role:
+    name: portable/disks
+    tasks_from: linux.yml
+
+# Configure firewalld
+## Disabled on vFWs - interferes with direct control of nftables
+- name: disable vfw firewalld
+  become: true
+  when: sub_platform == "vfw"
+  ansible.builtin.systemd_service:
+    name: firewalld
+    state: stopped
+    enabled: false
+    masked: true
+
+- name: configure firewalld on non-vfws
+  when:
+  - sub_platform != "vfw"
+  - firewalld_services is defined
+  block:
+  - name: enable and start firewalld
+    become: true
+    ansible.builtin.systemd_service:
+      name: firewalld
+      state: started
+      enabled: true
+
+  - name: allow configured services
+    become: true
+    loop: "{{ firewalld_services }}"
+    loop_control:
+      label: "Allowing {{ item }}"
+    ansible.posix.firewalld:
+      service: "{{ item }}"
+      state: enabled
+      permanent: true
+      immediate: true
+      zone: public
+
+# TODO: add log forwarding and default services

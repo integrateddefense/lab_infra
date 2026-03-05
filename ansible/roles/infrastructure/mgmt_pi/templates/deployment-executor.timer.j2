@@ -1,0 +1,12 @@
+{# Configures the timer which starts the deployment executor service #}
+[Unit]
+Description=Run Deployment Executor frequently
+
+[Timer]
+OnBootSec=10
+OnUnitActiveSec=15
+Unit=deployment-executor.service
+Persistent=true
+
+[Install]
+WantedBy=timers.target

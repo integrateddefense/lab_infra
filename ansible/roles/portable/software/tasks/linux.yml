@@ -1,0 +1,9 @@
+# Installs packages on linux-based hosts
+
+- name: "Install package"
+  ansible.builtin.package:
+    name: "{{ item }}"
+    state: present
+  loop: "{{ packages }}"
+  loop_control:
+    label: "{{ item }}"

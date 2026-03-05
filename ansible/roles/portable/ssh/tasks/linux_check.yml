@@ -1,0 +1,35 @@
+# Active Probe - check if we needed a password at the command line
+- name: attempt key-based logon
+  delegate_to: localhost
+  become: false
+  ansible.builtin.command: "ssh -i {{ ansible_ssh_private_key_file }} -o BatchMode=yes -o PasswordAuthentication=no -o KbdInteractiveAuthentication=no -o ChallengeResponseAuthentication=no -o StrictHostKeyChecking=accept-new {{ ansible_user }}@{{ ansible_host }}"
+  register: ssh_probe
+  changed_when: false
+  failed_when: false
+
+- name: remember result
+  ansible.builtin.set_fact:
+    ssh_key_verified: "{{ ssh_probe.rc == 0 }}"
+
+- when: not ssh_key_verified
+  block:
+  - name: get password from user
+    ansible.builtin.pause:
+      prompt: "Enter SSH password for {{ ansible_user }}: "
+      echo: no
+    register: raw_input
+    no_log: true
+
+  - name: set ssh password
+    no_log: true
+    ansible.builtin.set_fact:
+      ansible_ssh_pass: "{{ raw_input.user_input }}"
+      ansible_become_pass: "{{ raw_input.user_input }}"
+
+  - name: check for ssh password
+    ansible.builtin.ping:
+
+  - name: check for become password
+    ansible.builtin.command: whoami
+    become: true
+    changed_when: false

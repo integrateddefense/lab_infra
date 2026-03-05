@@ -1,0 +1,108 @@
+- hosts: bootstrap_node
+  gather_facts: false
+
+  pre_tasks:
+  - name: probe for connection status
+    tags: ['always']
+    ansible.builtin.import_role:
+      name: portable/ssh
+      tasks_from: linux_check.yml
+
+  tasks:
+
+# Baseline
+  - name: Configure SSH
+    tags: ["baseline","ssh"]
+    ansible.builtin.import_role:
+      name: portable/ssh
+      tasks_from: linux.yml
+
+  - name: Configure proxmox API
+    tags: ["baseline","api"]
+    ansible.builtin.import_role:
+      name: portable/apis
+      tasks_from: proxmox.yml
+
+  - name: apply linux baseline
+    tags: ["baseline","host"]
+    ansible.builtin.import_role:
+      name: portable/baseline
+      tasks_from: linux.yml
+
+  - name: Configure host networking
+    become: true
+    tags: ["baseline","net"]
+    ansible.builtin.import_role:
+      name: portable/baseline
+      tasks_from: proxmox_network.yml
+
+  - name: configure proxmox host
+    tags: ["baseline","proxmox"]
+    ansible.builtin.import_role:
+      name: portable/baseline
+      tasks_from: proxmox.yml
+
+# Identity Services
+  - name: Create RWDC VM
+    tags: ["infrastructure","identity","ad","ad/infrastructure"]
+    ansible.builtin.import_role:
+      name: portable/vm
+    vars:
+      hypervisor_target: "bootstrap"
+      template_name: "{{ templates.win22.name }}"
+      template_id: "{{ templates.win22.id }}"
+      template_storage: "{{ templates.win22.storage.type }}"
+      template_storage_size: "{{ templates.win22.storage.size }}"
+      vm_name: "{{ ad.dc.vm.name }}"
+      vm_id: "{{ ad.dc.vm.id }}"
+      vm_description: "{{ ad.dc.vm.description }}"
+      vm_storage: "{{ ad.dc.vm.storage }}"
+      vm_storage_size: "{{ ad.dc.vm.size }}"
+      vm_sockets: "{{ ad.dc.vm.sockets }}"
+      vm_cores: "{{ ad.dc.vm.cores }}"
+      vm_mem: "{{ ad.dc.vm.mem }}"
+      vm_vid: "{{ ad.dc.vm.vid }}"
+
+  - name: Create Identity Services GUI Management Box
+    tags: ["infrastructure","identity","ad","ad/infrastructure"]
+    ansible.builtin.import_role:
+      name: portable/vm
+    vars:
+      hypervisor_target: "bootstrap"
+      template_name: "{{ templates.win22_gui.name }}"
+      template_id: "{{ templates.win22_gui.id }}"
+      template_storage: "{{ templates.win22_gui.storage.type }}"
+      template_storage_size: "{{ templates.win22_gui.storage.size }}"
+      vm_name: "{{ ad.work.vm.name }}"
+      vm_id: "{{ ad.work.vm.id }}"
+      vm_description: "{{ ad.work.vm.description }}"
+      vm_storage: "{{ ad.work.vm.storage }}"
+      vm_sockets: "{{ ad.work.vm.sockets }}"
+      vm_cores: "{{ ad.work.vm.cores }}"
+      vm_mem: "{{ ad.work.vm.mem }}"
+      vm_vid: "{{ ad.work.vm.vid }}"
+
+## To configure the service, see playbooks/identity.yml
+
+# Git Services
+  - name: create git VM
+    tags: ["infrastructure","code","git","git/infrastructure"]
+    ansible.builtin.import_role:
+      name: portable/vm
+    vars:
+      hypervisor_target: "bootstrap"
+      template_name: "{{ templates.alma9.name }}"
+      template_id: "{{ templates.alma9.id }}"
+      template_storage: "{{ templates.alma9.storage.type }}"
+      template_storage_size: "{{ templates.alma9.storage.size }}"
+      vm_name: "{{ git.vm.name }}"
+      vm_id: "{{ git.vm.id }}"
+      vm_description: "{{ git.vm.description }}"
+      vm_storage: "{{ git.vm.storage }}"
+      vm_storage_size: "{{ git.vm.size }}"
+      vm_sockets: "{{ git.vm.sockets }}"
+      vm_cores: "{{ git.vm.cores }}"
+      vm_mem: "{{ git.vm.mem }}"
+      vm_vid: "{{ git.vm.vid }}"
+
+## To configure the service, see playbooks/git.yml

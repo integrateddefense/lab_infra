@@ -1,0 +1,42 @@
+- name: disable ssh root authentication
+  junipernetworks.junos.junos_config:
+    lines:
+    - set system root-authentication no-public-keys
+
+- name: configure remote management
+  junipernetworks.junos.junos_config:
+    lines:
+    - set system services ssh
+    - set system services ssh protocol-version v2
+    - set system services ssh root-login deny
+    - set system services netconf ssh
+
+- name: configure ansible ssh keys
+  junipernetworks.junos.junos_user:
+    name: "{{ bootstrap_user }}"
+    role: super-user
+    sshkey: "{{ lookup('file',bootstrap_user_pub_key_path) }}"
+    state: present
+
+- name: prep to test key-based auth
+  set_fact:
+    ansible_private_key_file: "{{ bootstrap_user_private_key_path }}"
+    ansible_password: ""
+    ansible_ssh_common_args: "-o PreferredAuthentications=publickey -o PasswordAuthentication=no"
+
+- name: reset connection
+  ansible.builtin.meta: reset_connection
+
+- name: test key-based auth
+  junipernetworks.junos.junos_facts:
+  register: facts
+
+- name: disable password auth
+  junipernetworks.junos.junos_config:
+    lines:
+    - delete system login user {{ bootstrap_user }} authentication encrypted-password
+    - set system services ssh no-passwords
+  when:
+  - facts is succeeded
+  - facts.ansible_facts is defined
+  - (facts.ansible_facts | length) > 0

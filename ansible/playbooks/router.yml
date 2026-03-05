@@ -1,0 +1,49 @@
+- hosts: router
+  gather_facts: false
+
+  pre_tasks:
+  - name: connection check
+    ansible.builtin.import_role:
+      name: portable/ssh
+      tasks_from: linux_check.yml
+    tags: ["always"]
+
+  - name: config backup
+    ansible.builtin.import_role:
+      name: infrastructure/pfsense
+      tasks_from: backup.yml
+    tags: ["always"]
+
+  tasks:
+# Baseline
+  - ansible.builtin.import_role:
+      name: portable/ssh
+      tasks_from: pfsense.yml
+    tags: ["baseline","ssh"]
+
+# Service
+  - ansible.builtin.import_role:
+      name: infrastructure/pfsense
+      tasks_from: baseline.yml
+    tags: ["baseline","os"]
+# Technically baseline, since we're configuring pfSense to clobber the FreeBSD
+
+  - ansible.builtin.import_role:
+      name: infrastructure/pfsense
+      tasks_from: interfaces.yml
+    tags: ["service","ints"]
+
+  - ansible.builtin.import_role:
+      name: infrastructure/pfsense
+      tasks_from: routing.yml
+    tags: ["service","routes"]
+
+  - ansible.builtin.import_role:
+      name: infrastructure/pfsense
+      tasks_from: port-forward.yml
+    tags: ["service","port-forward"]
+
+  - ansible.builtin.import_role:
+      name: infrastructure/pfsense
+      tasks_from: firewall.yml
+    tags: ["service","firewall"]

@@ -1,0 +1,84 @@
+# Tasks to bootstrap key-based auth over SSH for ansible on Linux devices
+
+- name: Create default user
+  ansible.builtin.user:
+    name: "{{ ansible_user }}"
+    shell: "/bin/bash"
+    state: present
+
+- name: Deploy public key
+  ansible.posix.authorized_key:
+    user: ansible
+    key: "{{ lookup('file', ansible_user_pub_key_file) }}"
+    state: present
+
+- name: Add to sudoers group
+  become: true
+  ansible.builtin.lineinfile:
+    path: /etc/sudoers.d/{{ ansible_user }}
+    line: "{{ ansible_user }} ALL=(ALL) NOPASSWD:ALL"
+    mode: "0440"
+    create: yes
+
+- name: Require Terminal Access
+  become: true
+  ansible.builtin.lineinfile:
+    path: /etc/sudoers.d/{{ ansible_user }}
+    line: "Defaults:{{ ansible_user }} !requiretty"
+    mode: "0440"
+    create: yes
+
+- name: Prepare for Key-Based Auth Test
+  ansible.builtin.set_fact:
+    ansible_user: ansible
+    ansible_private_key_file: "{{ ansible_ssh_private_key_file }}"
+    ansible_ssh_common_args: "-o PreferredAuthentications=publickey -o PasswordAuthentication=no"
+  when: not ssh_key_verified
+
+- name: Reset Connection
+  ansible.builtin.meta: reset_connection
+
+- name: test key-based auth
+  when: not ssh_key_verified
+  block:
+  - name: Test Key-Based Auth
+    ansible.builtin.setup:
+      gather_subset:
+      - network
+      - user
+    register: facts
+
+  - name: Validate Key-Based Auth Test
+    ansible.builtin.fail:
+      msg: "Host {{ facts.ansible_facts.ansible_hostname }} is running as {{facts.ansible_facts.ansible_user_id }}"
+    when:
+    - facts.ansible_facts.ansible_user_id != ansible_user
+    notify: reload sshd (linux)
+
+- name: Ensure drop-in SSH configs are supported
+  become: true
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^\s*Include\s+/etc/ssh/sshd_config\.d/\*'
+    line: 'Include /etc/ssh/ssd_config.d/*'
+    insertafter: BOF
+  notify: reload sshd (linux)
+
+- name: Enforce Key-Based Auth
+  become: true
+  ansible.builtin.blockinfile:
+    path: /etc/ssh/sshd_config.d/99-hardening.conf
+    create: yes
+    mode: '0644'
+    marker: "# {mark} ANSIBLE MANAGED: portable > ssh"
+    block: |
+      PermitRootLogin prohibit-password
+      PasswordAuthentication no
+      PubkeyAuthentication yes
+  notify: reload sshd (linux)
+
+- name: Check SSHD Config
+  become: true
+  ansible.builtin.command: /usr/sbin/sshd -t
+  register: sshd_check
+  changed_when: false

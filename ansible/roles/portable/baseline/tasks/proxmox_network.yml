@@ -1,0 +1,84 @@
+# Called from the baseline role to configure the network settings on the bootstrap node
+
+- name: count interfaces
+  ansible.builtin.shell: find /sys/class/net -type l -not -lname "*virtual*" | wc -l
+  register: raw_count
+  changed_when: false
+
+- name: set vars
+  ansible.builtin.set_fact:
+    num_ints: "{{ raw_count.stdout }}"
+
+- name: configure single-NIC system
+  when: num_ints == "1"
+  block:
+  - name: grab interface name
+    ansible.builtin.shell: find /sys/class/net -type l -not -lname "*virtual*" -printf "%f"
+    register: physical_iface_name
+    changed_when: false
+
+  - name: create vm bridge
+    ansible.builtin.blockinfile:
+      marker: "# {mark} ANSIBLE MANAGED: portable > baseline > proxmox_network > single > vm bridge"
+      path: /etc/network/interfaces
+      block: |
+        auto vmbr{{ bridges.data_bridge }}
+        iface vmbr0 inet manual
+          bridge-ports {{ physical_iface_name.stdout }}
+          bridge-stp on
+          bridge-vlan-aware yes
+          bridge-vids {{ bridges.bootstrap.vids | join(' ') }}
+    notify: Reload interface configurations
+
+  - name: create management subinterface
+    ansible.builtin.blockinfile:
+      marker: "# {mark} ANSIBLE MANAGED: portable > baseline > proxmox_network > single > mgmt bridge"
+      path: /etc/network/interfaces
+      block: |
+        auto vmbr{{ bridges.mgmt_bridge }}
+        iface vmbr{{ bridges.mgmt_bridge }} inet static
+          address {{ ansible_host }}/24
+          gateway {{ vlans.mgmt.gateway }}
+    notify: Reload interface configurations
+
+
+- name: configure multi-NIC system
+  when: num_ints != "1"
+  block:
+  - name: create bond interface
+    ansible.builtin.blockinfile:
+      marker: "# {mark} ANSIBLE MANAGED: portable > baseline > proxmox_network > multi > bond"
+      path: /etc/network/interfaces
+      block: |
+        auto bond0
+        iface bond0 inet manual
+          bond-mode 802.3ad
+          bond-slaves eno3 eno4
+    notify: Reload interface configurations
+
+  - name: create bond bridge
+    ansible.builtin.blockinfile:
+      marker: "# {mark} ANSIBLE MANAGED: portable > baseline > proxmox_network > multi > bond bridge"
+      path: /etc/network/interfaces
+      block: |
+        auto vmbr{{ bridges.data_bridge }}
+        iface vmbr{{ bridges.data_bridge }} inet manual
+          bridge-ports bond0
+          bridge-stp on
+          bridge-vlan-aware yes
+          bridge-vids {{ bridges.compute.vids | join(' ') }}
+    notify: Reload interface configurations
+
+  - name: create management bridge
+    ansible.builtin.blockinfile:
+      marker: "# {mark} ANSIBLE MANAGED: portable > baseline > proxmox_network > multi > mgmt bridge"
+      path: /etc/network/interfaces
+      block: |
+        auto vmbr{{ bridges.mgmt_bridge }}
+        iface vmbr{{ bridges.mgmt_bridge }} inet static
+          address {{ ansible_host }}/24
+          gateway {{ vlans.mgmt.gateway }}
+          bridge-ports eno2
+          bridge-stp off
+          bridge-fd 0
+    notify: Reload interface configurations

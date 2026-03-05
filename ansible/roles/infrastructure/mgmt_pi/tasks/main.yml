@@ -1,0 +1,42 @@
+- name: Disable Wi-Fi and Bluetooth
+  ansible.builtin.copy:
+    dest: /etc/modprobe.d/disable-wireless.conf
+    content: |
+      blacklist brcmfmac
+      blacklist brcmutil
+      blacklist bluetooth
+      blacklist btusb
+
+- name: Enable rsyslog service
+  ansible.builtin.systemd_service:
+    name: rsyslog
+    enabled: true
+
+- name: Set iptables to allow outbound only
+  ansible.builtin.shell: |
+    # Clear existing IPTables config
+    iptables -F
+    iptables -X
+    # Create new chain to handle logging dropped packets
+    iptables -N LOGGING
+    iptables -F LOGGING
+    # Allow return traffic from outbound connections, loopback, and ICMP
+    iptables -A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+    iptables -A INPUT -i lo -j ACCEPT
+    iptables -A INPUT -p icmp --icmp-type echo-reply -j ACCEPT
+    # Send anything not headed to the loopback to the logging chain
+    iptables -A INPUT ! -i lo -j LOGGING
+    # Log all hits at a maximum of 5/min at the NOTICE log level, then drop them
+    iptables -A LOGGING -m limit --limit 5\/minute -j LOG --log-prefix "IPTables-Dropped: " --log-level 5
+    iptables -A LOGGING -j DROP
+    # Set default policies
+    iptables -P INPUT DROP
+    iptables -P FORWARD DROP
+    iptables -P OUTPUT ACCEPT
+  become: true
+  changed_when: false
+
+- name: Save iptables rules for persistence
+  become: true
+  ansible.builtin.shell: iptables-save > /etc/iptables/rules.v4
+  changed_when: false

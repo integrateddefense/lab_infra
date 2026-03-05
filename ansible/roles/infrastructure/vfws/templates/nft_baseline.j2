@@ -1,0 +1,62 @@
+table inet filter {
+	chain input {
+		type filter hook input priority 0;
+		policy drop;
+
+		# default accept anything on the loopback interface
+		iif lo accept;
+
+		# always allow established/related connections
+		ct state established,related accept
+		ct state invalid drop
+
+		# only allow management protocols via the management interface
+		iifname {{ mgmt_iface }} tcp dport { 22 } accept
+
+		# allow incoming vrrp
+{% for item in (vlans | dict2items | rejectattr('value.vfw_ips','undefined')) %}
+		iifname {{ trunk_iface }}.{{ item.value.id }} ip protocol 112 accept
+{% endfor %}
+
+		# allow icmp for troubleshooting
+		ip protocol icmp icmp type echo-request accept
+
+		# allow incoming DHCP requests
+{% for item in (vlans | dict2items | selectattr('value.dhcp_relay','defined')) %}
+		iifname {{ trunk_iface }}.{{ item.value.id }} udp dport 67 accept
+{% endfor %}
+
+		log prefix "nft-input-drop: " counter drop
+	}
+
+	chain forward {
+		type filter hook forward priority 0;
+		policy drop;
+
+		# always allow established/related connections
+		ct state established,related accept
+
+		# subchains for each VLAN
+{% for item in (vlans | dict2items | rejectattr('value.vfw_ips','undefined') | rejectattr('key','equalto','mgmt')) %}
+		iifname "{{ trunk_iface }}.{{ item.value.id }}" jump fwd_v{{ item.value.id }}
+{% endfor %}
+{% for item in (vlans.transit | dict2items ) %}
+		iifname "{{ trunk_iface }}.{{ item.value.id }}" jump fwd_v{{ item.value.id }}
+{% endfor %}
+		iifname "{{ mgmt_iface }}" jump fwd_v{{ vlans.mgmt.id }}
+
+		log prefix "nft-fwd-drop: " counter drop
+	}
+
+	chain output {
+		type filter hook output priority 0;
+		policy accept
+	}
+
+{% for item in (vlans | dict2items | rejectattr('value.vfw_ips','undefined')) %}
+	chain fwd_v{{ item.value.id }} { }
+{% endfor %}
+{% for item in (vlans.transit | dict2items ) %}
+	chain fwd_v{{ item.value.id }} { }
+{% endfor %}
+}

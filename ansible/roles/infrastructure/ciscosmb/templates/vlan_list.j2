@@ -1,0 +1,16 @@
+{%- set sorted_list = vlans | dict2items | selectattr('value.id','defined') | map(attribute='value.id') | map('int') | sort -%}
+{%- set ns = namespace(res=[], start=none, end=none) -%}
+{%- for v in sorted_list -%}
+  {%- if ns.start is none -%}
+    {%- set ns.start, ns.end = v, v -%}
+  {%- elif v == ns.end+1 -%}
+    {%- set ns.end = v -%}
+  {%- else -%}
+    {%- set _ = ns.res.append(ns.start|string if ns.start == ns.end else ns.start|string + '-' + ns.end|string) -%}
+    {%- set ns.start, ns.end = v, v -%}
+  {%- endif -%}
+{%- endfor -%}
+{%- if ns.start is not none -%}
+  {%- set _ = ns.res.append(ns.start|string if ns.start == ns.end else ns.start|string + '-' + ns.end|string -%}
+{%- endif -%}
+{{ ns.res | join(',') }}

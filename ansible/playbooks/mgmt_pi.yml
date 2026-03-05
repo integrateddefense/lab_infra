@@ -1,0 +1,24 @@
+- name: Bootstrap the management pi
+  hosts: mgmt_pi
+  become: true
+  gather_facts: false
+
+  tasks:
+
+  - name: package
+    ansible.builtin.import_role:
+      name: portable/software
+      tasks_from: linux.yml
+    tags: ['baseline','packages']
+
+  - name: OS baseline
+    ansible.builtin.import_role:
+      name: infrastructure/mgmt_pi
+      tasks_from: main.yml
+    tags: ['baseline','os']
+
+  - name: configure Deployment Executor
+    ansible.builtin.import_role:
+      name: infrastructure/mgmt_pi
+      tasks_from: deployexec.yml
+    tags: ['baseline','deployexec']

@@ -1,0 +1,30 @@
+# DEV Note: C1200s don't like the cisco.ios.ios_user plugin; kills the socket for some reason
+- name: enable ssh pubkey auth and auto login
+  become: true
+  cisco.ios.ios_config:
+    lines:
+    - ip ssh pubkey-auth auto-login
+    save_when: changed
+
+- name: prep key
+  vars:
+    pubkey: "{{ lookup('file',ansible_user_pub_key_file).split( )[1] }}"
+    chunk_len: 150
+  ansible.builtin.set_fact:
+    chunks: "{{ pubkey | regex_findall('.{1,' ~ chunk_len ~ '}') | map('regex_replace','^(.*)$','key-string row \\1') | list }}"
+
+- name: set ansible user SSH key
+  become: true
+  cisco.ios.ios_config:
+    lines: "{{ chunks }}"
+    parents:
+      - crypto key pubkey-chain ssh
+      - user-key ansible rsa
+    save_when: changed
+
+- name: disable ssh password auth
+  become: true
+  cisco.ios.ios_config:
+    lines:
+    - no ip ssh password-auth
+    save_when: changed

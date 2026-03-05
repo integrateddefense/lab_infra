@@ -1,0 +1,28 @@
+# Tasks to configure keepalived
+
+- block:
+  - name: check for prep tasks
+    ansible.builtin.assert:
+      that:
+      - trunk_iface is defined
+      - mgmt_iface is defined
+  rescue:
+  - name: run prep tasks
+    ansible.builtin.include_tasks: "prep.yml"
+
+- name: deploy keepalived configuration
+  become: true
+  ansible.builtin.template:
+    src: templates/keepalived.conf.j2
+    dest: /etc/keepalived/keepalived.conf
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: enable keepalived
+  become: true
+  ansible.builtin.systemd_service:
+    name: keepalived
+    state: started
+    enabled: true
+

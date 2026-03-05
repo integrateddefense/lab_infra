@@ -1,0 +1,16 @@
+- name: test token access
+  hosts: bootstrap
+  gather_facts: false
+
+  tasks:
+  - name: check for templates
+    ansible.builtin.uri:
+      url: "https://{{ansible_host}}:8006/api2/json/nodes/bootstrap/qemu/150/config"
+      method: GET
+      validate_certs: false
+      headers:
+        Authorization: "PVEAPIToken={{api_username}}!{{api_token_name}}={{proxmox_api_token_secret}}"
+    register: probe
+
+  - debug:
+      var: probe

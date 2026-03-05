@@ -1,0 +1,60 @@
+global_defs {
+  vrrp_version 3
+  router_id {{ inventory_hostname }}
+  
+}
+
+{% for item in (vlans | dict2items | rejectattr('value.vfw_ips','undefined') | rejectattr('key','equalto','mgmt')) %}
+vrrp_instance {{ item.key }} {
+  state BACKUP
+  priority {{ (10-node_index)*10 }}
+  interface {{ trunk_iface }}.{{ item.value.id }}
+  virtual_router_id {{ item.value.id }}
+  nopreempt
+  advert_int 1
+  garp_master_repeat 5
+  garp_master_refresh 10
+  garp_master_delay 1
+  virtual_ipaddress { {{ item.value.gateway }}/{{ (item.value.cidr | split("/"))[-1] }} dev {{ trunk_iface }}.{{ item.value.id }}  }
+  unicast_src_ip {{ item.value.vfw_ips[node_index] }}
+  unicast_peer {
+    {{ (item.value.vfw_ips[0:node_index] + item.value.vfw_ips[node_index+1:]) | join('\n') }}
+  }
+}
+{% endfor %}
+
+vrrp_instance mgmt {
+  state BACKUP
+  priority {{ (10-node_index)*10 }}
+  interface {{ mgmt_iface }}
+  virtual_router_id {{ vlans.mgmt.id }}
+  nopreempt
+  advert_int 1
+  garp_master_repeat 5
+  garp_master_refresh 10
+  garp_master_delay 1
+  virtual_ipaddress { {{ vlans.mgmt.gateway }}/{{ (vlans.mgmt.cidr | split("/"))[-1] }} dev {{ mgmt_iface }}  }
+  unicast_src_ip {{ vlans.mgmt.vfw_ips[node_index] }}
+  unicast_peer {
+    {{ (vlans.mgmt.vfw_ips[0:node_index] + vlans.mgmt.vfw_ips[node_index+1:]) | join('\n') }}
+  }
+}
+
+
+{% for item in (vlans.transit | dict2items | rejectattr('value.vfw_ips','undefined')) %}
+vrrp_instance transit.{{ item.key }} {
+  state BACKUP
+  interface {{ trunk_iface }}.{{ item.value.id }}
+  virtual_router_id {{ item.value.id }}
+  nopreempt
+  advert_int 1
+  garp_master_repeat 5
+  garp_master_refresh 10
+  garp_master_delay 1
+  virtual_ipaddress { {{ item.value.gateway }}/{{ (item.value.cidr | split("/"))[-1] }} dev {{ trunk_iface }}.{{ item.value.id }}  }
+  unicast_src_ip {{ item.value.vfw_ips[node_index] }}
+  unicast_peer {
+    {{ (item.value.vfw_ips[0:node_index] + item.value.vfw_ips[node_index+1:]) | join('\n') }}
+  }
+}
+{% endfor %}

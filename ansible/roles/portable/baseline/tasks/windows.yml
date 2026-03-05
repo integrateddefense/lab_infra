@@ -1,0 +1,154 @@
+- name: hostname
+  ansible.windows.win_hostname:
+    name: "{{ hostname }}"
+  register: res
+
+- name: reboot
+  ansible.windows.win_reboot:
+    msg: "Reboot initiated by ansible"
+  when: res.reboot_required
+
+- name: networking
+  block:
+  - name: get adapter name
+    ansible.windows.win_powershell:
+      script: Get-NetAdapter
+    register: adapter
+    changed_when: false
+
+  - name: set dns servers
+    ansible.windows.win_dns_client:
+      adapter_name: "{{ adapter.output[0].Name }}"
+      dns_servers:
+      - "{{ dns.primary }}"
+      - "{{ dns.alternate | default(omit) }}"
+
+- name: winrm
+  block:
+  - name: create cert
+    ansible.windows.win_powershell:
+      script: |
+        $fqdn = '{{ hostname }}.{{ domain.sub }}.{{ domain.root }}'
+        $cert = Get-ChildItem Cert:\LocalMachine\My |
+                Where-Object { $_.Subject -like "CN=$fqdn" } |
+                Sort-Object NotAfter -Descending | Select-Object -First 1
+        if (-not $cert) {
+          $cert = New-SelfSignedCertificate -DnsName $env:COMPUTERNAME,$fqdn -CertStoreLocation Cert:\LocalMachine\My
+          $changed = $true
+        } else {
+          $changed = $false
+        }
+        @{thumb = $cert.Thumbprint; changed = $changed; fqdn = $fqdn}
+    register: winrm_cert
+    changed_when: winrm_cert.output[0].changed
+
+  - name: configure listener
+    block:
+    - name: clear unsecure listener
+      ansible.windows.win_powershell:
+        script: winrm delete winrm/config/Listener?Address=*+Transport=HTTP 2> $null | Out-Null
+      changed_when: false
+
+    - name: ensure bound to cert
+      ansible.windows.win_powershell:
+        script: |
+          $fqdn       = '{{ winrm_cert.output[0].fqdn }}'
+          $thumb      = '{{ winrm_cert.output[0].thumb }}'
+          $listener   = (winrm enumerate winrm/config/Listener) 2> $null
+          $hasHttps   = $listener -match 'Transport = HTTPS'
+          $needCreate = $true
+          if ($hasHttps){
+            $currentThumb = ($listener | Select-String -Pattern 'CertificateThumbPrint = (.*)').Matches.Groups[1].Value.Trim()
+            if ($currentThumb -ieq $thumb) { $needCreate = $false }
+            else { winrm delete winrm/config/Listener?Address=*+Transport-HTTPS > $null }
+          }
+          if ($needCreate){
+            winrm create winrm/config/Listener?Address=*+Transport=HTTPS "@{Hostname='$fqdn';CertificateThumbprint='$thumb'}" > $null
+            $changed = $true
+          }
+          else { $changed = $false }
+          @{ changed = $changed }
+      register: winrm_https
+      changed_when: winrm_https.output[0].changed
+
+  - name: firewall
+    block:
+    - name: create permanent rule
+      community.windows.win_firewall_rule:
+        name: WINRM-HTTPS-In-TCP
+        localport: 5986
+        remoteip: "{{ vlans.mgmt.cidr }}"
+        action: allow
+        direction: in
+        protocol: tcp
+        state: present
+        enabled: true
+        description: "ANSIBLE MANAGED: portable > baseline > windows"
+
+    - name: clear manual rule
+      ansible.windows.win_powershell:
+        script: Remove-NetFirewallRule -name "WinRM over HTTPS" | Out-Null
+      changed_when: false
+# win_firewall_rule maps the name parameter to the DisplayName in windows
+## the PS cmdlet targets the true name field - so this ensures there isn't a dangling firewall rule
+
+- name: time
+  block:
+  - name: set timezone
+    ansible.windows.win_timezone:
+      timezone: "{{ timezone.win }}"
+
+  - name: set NTP source
+    ansible.windows.win_powershell:
+      script: |
+        $ntp_servers = '{{ ntp_servers | default(["pool.ntp.org"]) | join(",") }}'
+        $cfg         = (w32tm /query /configuration) -join "`n"
+        if ($cfg -notmatch [regex]::Escape($desired)) {
+          w32tm /config /manualpeerlist:"$desired" /syncfromflags:manual /update | Out-Null
+          Restart-Service w32time
+          w32tm /resync | Out-Null
+          $changed = $true
+        } else { $changed = $false }
+        @{ changed = $changed }
+    register: ntp_set
+    changed_when: ntp_set.output[0].changed
+
+- name: data
+  block:
+  - name: get disk number
+    ansible.windows.win_powershell:
+      script: (disk | Where-Object { $_.OperationalStatus -eq "Offline" -or $_.PartitionStyle -eq "RAW" }).Number
+    register: disk_num
+    changed_when: false
+
+  - name: prep disk
+    when: disk_num.output[0] is not none
+    block:
+    - name: initialize disk
+      community.windows.win_initialize_disk:
+        disk_number: "{{ disk_num.output[0] }}"
+
+    - name: create partition
+      community.windows.win_partition:
+        partition_size: -1
+        disk_number: "{{ disk_num.output[0] }}"
+        drive_letter: "{{ data_drive.letter }}"
+
+    - name: format volume
+      community.windows.win_format:
+        drive_letter: "{{ data_drive.letter }}"
+        file_system: NTFS
+
+- name: install features
+  when: features is defined
+  block:
+  - name: installing features
+    ansible.windows.win_feature:
+      name: "{{ features }}"
+      state: present
+      include_management_tools: true
+    register: feature_output
+
+  - name: restart
+    ansible.windows.win_reboot:
+    when: feature_output.reboot_required
