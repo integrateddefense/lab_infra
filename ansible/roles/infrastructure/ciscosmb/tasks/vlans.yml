@@ -3,7 +3,7 @@
 ## Deliberately ignores transit VLANS; no need for them at this level
 - name: prep vlans
   ansible.builtin.set_fact:
-    vlan_ids: "{{ vlans | dict2items | selectattr('value.id','defined') | map(attribute='value.id') | to_cisco_range }}"
+    vlan_ids: "{{ vlans | dict2items | selectattr('value.id','defined') | rejectattr('key','equal_to','storage') | map(attribute='value.id') | to_cisco_range }}"
 
 - name: configure VLANs
   become: true

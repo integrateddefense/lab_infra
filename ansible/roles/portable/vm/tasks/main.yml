@@ -14,10 +14,6 @@
   - vm_name
   - vm_id
   - vm_description
-  - template_name
-  - template_id
-  - template_storage
-  - template_storage_size
   - vm_storage
   - vm_sockets
   - vm_cores
@@ -40,13 +36,18 @@
     vmid: "{{ vm_id }}"
   register: vm_info
 
+- name: clone vm
+  ansible.builtin.include_tasks: "clone.yml"
+  when: vm_info.virtual_machines[0] is undefined and template_name is defined
+
 - name: create vm
   ansible.builtin.include_tasks: "create.yml"
-  when: vm_info.virtual_machines[0] is undefined
+  when: vm_info.virtual_machines[0] is undefined and template_name is undefined
 
 - name: enforce hardware configuration
   ansible.builtin.include_tasks: "configure.yml"
 
 - name: start vm
+  when: template_name is defined
   ansible.builtin.include_tasks: "start.yml"
 

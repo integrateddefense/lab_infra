@@ -1,0 +1,25 @@
+# Configures the Storage Ecosystem
+## Major Components:
+## - TrueNAS VM: a virtualized instance of TrueNAS that will eventually be replaced by a hardware solution
+
+- name: configure TrueNAS
+  hosts: truenas
+  gather_facts: false
+
+  pre_tasks:
+  - name: load credentials
+    tags: ['always']
+    ansible.builtin.include_vars:
+      file: "../inventories/{{ site.segment }}/identity/group_vars/all/vault.yml"
+
+  - name: check service connectivity
+    tags: ['always']
+    ansible.builtin.uri:
+      url: https://storage.ops.indef.space/
+      
+
+  - name: check API token
+    tags: ['always']
+    ansible.builtin.uri:
+      validate_certs: false  # TODO - remove once enterprise CA is up and running
+      url: https://storage.ops.indef.space/api/v2.0/auth/check_user

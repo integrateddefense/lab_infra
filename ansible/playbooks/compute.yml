@@ -40,18 +40,6 @@
       name: portable/ssh
       tasks_from: linux.yml
 
-#  - debug:
-#      var: hostvars[server[0]].ansible_host
-#    tags: vms
-#    loop: "{{ groups['compute_nodes'] | sort | slice(2) }}"
-#    loop_control:
-#      loop_var: server
-#      index_var: iteration
-#      label: "Creating vFW on {{ server }}"
-
-#  - meta: end_host
-#    tags: vms
-
 # Infrastructure VMs
   - name: create vFW VMs
     tags: ["vms","network","vfw","network/vfw"]
@@ -193,3 +181,28 @@
       vm_mem: "{{ code.runr.mem }}"
       ## To configure the service, see playbooks/code.yml
 
+  - name: create temporary storage controller
+    tags: ['vms','services','storage']
+    run_once: true
+    ansible.builtin.include_role:
+      name: portable/vm
+      apply:
+        tags: ['vms','services','storage']
+    loop: "{{ (groups['compute_nodes'] | sort | list)[0:(storage.tnas.name | length)] }}"
+    loop_control:
+      loop_var: server
+      index_var: iteration
+      label: "Creating TrueNAS VM on {{ server }}"
+    vars:
+      hypervisor_target: "{{ server }}"
+      vm_name: "{{ storage.tnas.name[iteration] }}"
+      vm_id: "{{ storage.tnas.id[iteration] }}"
+      vm_description: "{{ storage.tnas.description[iteration] }}"
+      vm_storage: "{{ storage.tnas.storage }}"
+      vm_storage_size: "{{ storage.tnas.size }}"
+      vm_storage_cache: "{{ storage.tnas.cache }}"
+      vm_sockets: "{{ storage.tnas.sockets }}"
+      vm_cores: "{{ storage.tnas.cores }}"
+      vm_mem: "{{ storage.tnas.mem }}"
+      vm_vid: "{{ storage.tnas.vid }}"
+      ## To configure the service, see playbooks/code.yml

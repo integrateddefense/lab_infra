@@ -1,0 +1,264 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.6.1 Chrome/142.0.7444.265 Electron/39.8.0 Safari/537.36" version="29.6.1">
+  <diagram name="Page-1" id="W8uQxrO-HtEz5srYKWhD">
+    <mxGraphModel dx="1041" dy="1482" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="AsoYpP1Xw2ITsiif2-1J-57" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;" value="Storage VLAN" vertex="1">
+          <mxGeometry height="220" width="259" x="140" y="238" as="geometry" />
+        </mxCell>
+        <mxCell id="AsoYpP1Xw2ITsiif2-1J-56" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=right;verticalAlign=top;" value="Protected Services" vertex="1">
+          <mxGeometry height="100" width="111" x="399" y="288" as="geometry" />
+        </mxCell>
+        <mxCell id="AsoYpP1Xw2ITsiif2-1J-1" parent="1" style="shape=table;startSize=30;container=1;collapsible=0;childLayout=tableLayout;strokeColor=default;fontSize=16;" value="Storage Ecosystem" vertex="1">
+          <mxGeometry height="90" width="776" x="30" y="10" as="geometry" />
+        </mxCell>
+        <mxCell id="AsoYpP1Xw2ITsiif2-1J-2" parent="AsoYpP1Xw2ITsiif2-1J-1" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;strokeColor=inherit;top=0;left=0;bottom=0;right=0;collapsible=0;dropTarget=0;fillColor=none;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=16;" value="" vertex="1">
+          <mxGeometry height="60" width="776" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="AsoYpP1Xw2ITsiif2-1J-3" parent="AsoYpP1Xw2ITsiif2-1J-2" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=16;" value="Subsystem Code" vertex="1">
+          <mxGeometry height="60" width="182" as="geometry">
+            <mxRectangle height="60" width="182" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="AsoYpP1Xw2ITsiif2-1J-4" parent="AsoYpP1Xw2ITsiif2-1J-2" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=16;" value="sn" vertex="1">
+          <mxGeometry height="60" width="98" x="182" as="geometry">
+            <mxRectangle height="60" width="98" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="AsoYpP1Xw2ITsiif2-1J-5" parent="AsoYpP1Xw2ITsiif2-1J-2" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=16;" value="Component Codes" vertex="1">
+          <mxGeometry height="60" width="190" x="280" as="geometry">
+            <mxRectangle height="60" width="190" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="AsoYpP1Xw2ITsiif2-1J-6" parent="AsoYpP1Xw2ITsiif2-1J-2" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=16;" value="&lt;div&gt;tnas = TrueNAS&lt;/div&gt;" vertex="1">
+          <mxGeometry height="60" width="306" x="470" as="geometry">
+            <mxRectangle height="60" width="306" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="AsoYpP1Xw2ITsiif2-1J-7" parent="1" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;spacingBottom=0;" value="Version/Date: v1.0 /&amp;nbsp; 11 March 2026&lt;div&gt;Scope: Storage Ecosystem Architectural Diagrams&lt;/div&gt;&lt;div&gt;https://github.com/integrateddefense/lab_infra&lt;/div&gt;" vertex="1">
+          <mxGeometry height="68" width="381" x="460" y="1030" as="geometry" />
+        </mxCell>
+        <mxCell id="AsoYpP1Xw2ITsiif2-1J-8" parent="1" style="shape=table;startSize=20;container=1;collapsible=0;childLayout=tableLayout;strokeColor=default;fontSize=14;" value="Data Flows" vertex="1">
+          <mxGeometry height="448" width="830" x="11" y="582" as="geometry" />
+        </mxCell>
+        <mxCell id="AsoYpP1Xw2ITsiif2-1J-9" parent="AsoYpP1Xw2ITsiif2-1J-8" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;strokeColor=inherit;top=0;left=0;bottom=0;right=0;collapsible=0;dropTarget=0;fillColor=none;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=14;" value="" vertex="1">
+          <mxGeometry height="18" width="830" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="AsoYpP1Xw2ITsiif2-1J-10" parent="AsoYpP1Xw2ITsiif2-1J-9" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=14;" value="ID" vertex="1">
+          <mxGeometry height="18" width="60" as="geometry">
+            <mxRectangle height="18" width="60" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="AsoYpP1Xw2ITsiif2-1J-11" parent="AsoYpP1Xw2ITsiif2-1J-9" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=14;" value="Port/Proto" vertex="1">
+          <mxGeometry height="18" width="150" x="60" as="geometry">
+            <mxRectangle height="18" width="150" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="AsoYpP1Xw2ITsiif2-1J-12" parent="AsoYpP1Xw2ITsiif2-1J-9" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=14;" value="Description" vertex="1">
+          <mxGeometry height="18" width="250" x="210" as="geometry">
+            <mxRectangle height="18" width="250" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="AsoYpP1Xw2ITsiif2-1J-13" parent="AsoYpP1Xw2ITsiif2-1J-9" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=14;" value="Controls" vertex="1">
+          <mxGeometry height="18" width="370" x="460" as="geometry">
+            <mxRectangle height="18" width="370" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="AsoYpP1Xw2ITsiif2-1J-14" parent="AsoYpP1Xw2ITsiif2-1J-8" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;strokeColor=inherit;top=0;left=0;bottom=0;right=0;collapsible=0;dropTarget=0;fillColor=none;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=14;" value="" vertex="1">
+          <mxGeometry height="82" width="830" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="AsoYpP1Xw2ITsiif2-1J-15" parent="AsoYpP1Xw2ITsiif2-1J-14" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=14;" value="1" vertex="1">
+          <mxGeometry height="82" width="60" as="geometry">
+            <mxRectangle height="82" width="60" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="AsoYpP1Xw2ITsiif2-1J-16" parent="AsoYpP1Xw2ITsiif2-1J-14" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=14;" value="3260/TCP" vertex="1">
+          <mxGeometry height="82" width="150" x="60" as="geometry">
+            <mxRectangle height="82" width="150" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="AsoYpP1Xw2ITsiif2-1J-17" parent="AsoYpP1Xw2ITsiif2-1J-14" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=14;" value="ISCSI Shares" vertex="1">
+          <mxGeometry height="82" width="250" x="210" as="geometry">
+            <mxRectangle height="82" width="250" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="AsoYpP1Xw2ITsiif2-1J-18" parent="AsoYpP1Xw2ITsiif2-1J-14" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=14;" value="Host-based firewall ports restricting access to ICMP and 3260/TCP on same L2 segment only, plus monitoring alerts, IQN whitelisting for explicitly authorized initiators." vertex="1">
+          <mxGeometry height="82" width="370" x="460" as="geometry">
+            <mxRectangle height="82" width="370" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="AsoYpP1Xw2ITsiif2-1J-19" parent="AsoYpP1Xw2ITsiif2-1J-8" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;strokeColor=inherit;top=0;left=0;bottom=0;right=0;collapsible=0;dropTarget=0;fillColor=none;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=14;" value="" vertex="1">
+          <mxGeometry height="82" width="830" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="AsoYpP1Xw2ITsiif2-1J-20" parent="AsoYpP1Xw2ITsiif2-1J-19" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=14;" value="2" vertex="1">
+          <mxGeometry height="82" width="60" as="geometry">
+            <mxRectangle height="82" width="60" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="AsoYpP1Xw2ITsiif2-1J-21" parent="AsoYpP1Xw2ITsiif2-1J-19" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=14;" value="&lt;div&gt;2049/TCP+UDP&lt;/div&gt;" vertex="1">
+          <mxGeometry height="82" width="150" x="60" as="geometry">
+            <mxRectangle height="82" width="150" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="AsoYpP1Xw2ITsiif2-1J-22" parent="AsoYpP1Xw2ITsiif2-1J-19" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=14;" value="NFS Shares" vertex="1">
+          <mxGeometry height="82" width="250" x="210" as="geometry">
+            <mxRectangle height="82" width="250" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="AsoYpP1Xw2ITsiif2-1J-23" parent="AsoYpP1Xw2ITsiif2-1J-19" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=14;" value="AD group-based access via kerberos, IP-based export restrictions preventing access outside of protected IP spaces." vertex="1">
+          <mxGeometry height="82" width="370" x="460" as="geometry">
+            <mxRectangle height="82" width="370" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="AsoYpP1Xw2ITsiif2-1J-73" parent="AsoYpP1Xw2ITsiif2-1J-8" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;strokeColor=inherit;top=0;left=0;bottom=0;right=0;collapsible=0;dropTarget=0;fillColor=none;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=14;" vertex="1">
+          <mxGeometry height="82" width="830" y="202" as="geometry" />
+        </mxCell>
+        <mxCell id="AsoYpP1Xw2ITsiif2-1J-74" parent="AsoYpP1Xw2ITsiif2-1J-73" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=14;" value="3" vertex="1">
+          <mxGeometry height="82" width="60" as="geometry">
+            <mxRectangle height="82" width="60" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="AsoYpP1Xw2ITsiif2-1J-75" parent="AsoYpP1Xw2ITsiif2-1J-73" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=14;" value="445/TCP" vertex="1">
+          <mxGeometry height="82" width="150" x="60" as="geometry">
+            <mxRectangle height="82" width="150" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="AsoYpP1Xw2ITsiif2-1J-76" parent="AsoYpP1Xw2ITsiif2-1J-73" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=14;" value="SMB Shares" vertex="1">
+          <mxGeometry height="82" width="250" x="210" as="geometry">
+            <mxRectangle height="82" width="250" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="AsoYpP1Xw2ITsiif2-1J-77" parent="AsoYpP1Xw2ITsiif2-1J-73" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=14;" value="AD group-based via kerberos with SMB signing required." vertex="1">
+          <mxGeometry height="82" width="370" x="460" as="geometry">
+            <mxRectangle height="82" width="370" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="AsoYpP1Xw2ITsiif2-1J-78" parent="AsoYpP1Xw2ITsiif2-1J-8" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;strokeColor=inherit;top=0;left=0;bottom=0;right=0;collapsible=0;dropTarget=0;fillColor=none;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=14;" vertex="1">
+          <mxGeometry height="82" width="830" y="284" as="geometry" />
+        </mxCell>
+        <mxCell id="AsoYpP1Xw2ITsiif2-1J-79" parent="AsoYpP1Xw2ITsiif2-1J-78" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=14;" value="4" vertex="1">
+          <mxGeometry height="82" width="60" as="geometry">
+            <mxRectangle height="82" width="60" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="AsoYpP1Xw2ITsiif2-1J-80" parent="AsoYpP1Xw2ITsiif2-1J-78" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=14;" value="443/TCP" vertex="1">
+          <mxGeometry height="82" width="150" x="60" as="geometry">
+            <mxRectangle height="82" width="150" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="AsoYpP1Xw2ITsiif2-1J-81" parent="AsoYpP1Xw2ITsiif2-1J-78" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=14;" value="S3 Shares" vertex="1">
+          <mxGeometry height="82" width="250" x="210" as="geometry">
+            <mxRectangle height="82" width="250" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="AsoYpP1Xw2ITsiif2-1J-82" parent="AsoYpP1Xw2ITsiif2-1J-78" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=14;" value="MinIO IAM policies scoped per access key with TLS enforced." vertex="1">
+          <mxGeometry height="82" width="370" x="460" as="geometry">
+            <mxRectangle height="82" width="370" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="AsoYpP1Xw2ITsiif2-1J-90" parent="AsoYpP1Xw2ITsiif2-1J-8" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;strokeColor=inherit;top=0;left=0;bottom=0;right=0;collapsible=0;dropTarget=0;fillColor=none;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=14;" vertex="1">
+          <mxGeometry height="82" width="830" y="366" as="geometry" />
+        </mxCell>
+        <mxCell id="AsoYpP1Xw2ITsiif2-1J-91" parent="AsoYpP1Xw2ITsiif2-1J-90" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=14;" value="5" vertex="1">
+          <mxGeometry height="82" width="60" as="geometry">
+            <mxRectangle height="82" width="60" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="AsoYpP1Xw2ITsiif2-1J-92" parent="AsoYpP1Xw2ITsiif2-1J-90" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=14;" value="389/TCP&lt;div&gt;636/TCP&lt;/div&gt;" vertex="1">
+          <mxGeometry height="82" width="150" x="60" as="geometry">
+            <mxRectangle height="82" width="150" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="AsoYpP1Xw2ITsiif2-1J-93" parent="AsoYpP1Xw2ITsiif2-1J-90" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=14;" value="AD Integration" vertex="1">
+          <mxGeometry height="82" width="250" x="210" as="geometry">
+            <mxRectangle height="82" width="250" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="AsoYpP1Xw2ITsiif2-1J-94" parent="AsoYpP1Xw2ITsiif2-1J-90" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=14;" value="Narrowly scoped bind account." vertex="1">
+          <mxGeometry height="82" width="370" x="460" as="geometry">
+            <mxRectangle height="82" width="370" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="AsoYpP1Xw2ITsiif2-1J-49" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="TrueNAS" vertex="1">
+          <mxGeometry height="60" width="120" x="339" y="318" as="geometry" />
+        </mxCell>
+        <mxCell id="AsoYpP1Xw2ITsiif2-1J-50" parent="1" style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;spacingBottom=0;" value="&lt;span style=&quot;font-size: 10px;&quot;&gt;* Note: v1.x documents an MVP solution that runs on Proxmox as a VM. Full solution will be a hardware appliance with TrueNAS running on baremetal.&lt;/span&gt;" vertex="1">
+          <mxGeometry height="60" width="290" x="10" y="110" as="geometry" />
+        </mxCell>
+        <mxCell id="AsoYpP1Xw2ITsiif2-1J-51" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Compute Nodes" vertex="1">
+          <mxGeometry height="60" width="120" x="80" y="278" as="geometry" />
+        </mxCell>
+        <mxCell id="AsoYpP1Xw2ITsiif2-1J-52" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Database Servers" vertex="1">
+          <mxGeometry height="60" width="120" x="80" y="358" as="geometry" />
+        </mxCell>
+        <mxCell id="AsoYpP1Xw2ITsiif2-1J-53" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="WIN Member Servers/Workstations" vertex="1">
+          <mxGeometry height="60" width="120" x="640" y="278" as="geometry" />
+        </mxCell>
+        <mxCell id="AsoYpP1Xw2ITsiif2-1J-55" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="S3 Consumers" vertex="1">
+          <mxGeometry height="60" width="120" x="640" y="358" as="geometry" />
+        </mxCell>
+        <mxCell id="AsoYpP1Xw2ITsiif2-1J-59" edge="1" parent="1" source="AsoYpP1Xw2ITsiif2-1J-49" style="endArrow=classic;startArrow=classic;html=1;rounded=0;exitX=1;exitY=0.25;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="AsoYpP1Xw2ITsiif2-1J-53" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="550" y="210" as="sourcePoint" />
+            <mxPoint x="660" y="128" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="AsoYpP1Xw2ITsiif2-1J-60" parent="1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fontSize=22;" value="1" vertex="1">
+          <mxGeometry height="40" width="40" x="230" y="328" as="geometry" />
+        </mxCell>
+        <mxCell id="AsoYpP1Xw2ITsiif2-1J-62" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="RODC" vertex="1">
+          <mxGeometry height="60" width="120" x="590.5" y="478" as="geometry" />
+        </mxCell>
+        <mxCell id="AsoYpP1Xw2ITsiif2-1J-63" edge="1" parent="1" source="AsoYpP1Xw2ITsiif2-1J-49" style="endArrow=classic;startArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="AsoYpP1Xw2ITsiif2-1J-55" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="600" y="383" as="sourcePoint" />
+            <mxPoint x="781" y="358" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="AsoYpP1Xw2ITsiif2-1J-64" edge="1" parent="1" source="AsoYpP1Xw2ITsiif2-1J-49" style="endArrow=classic;startArrow=classic;html=1;rounded=0;exitX=1;exitY=0.75;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="AsoYpP1Xw2ITsiif2-1J-62" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="550" y="428" as="sourcePoint" />
+            <mxPoint x="731" y="468" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="AsoYpP1Xw2ITsiif2-1J-65" edge="1" parent="1" source="AsoYpP1Xw2ITsiif2-1J-51" style="endArrow=classic;startArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="AsoYpP1Xw2ITsiif2-1J-49" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="300" y="248" as="sourcePoint" />
+            <mxPoint x="481" y="288" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="AsoYpP1Xw2ITsiif2-1J-66" edge="1" parent="1" source="AsoYpP1Xw2ITsiif2-1J-52" style="endArrow=classic;startArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="AsoYpP1Xw2ITsiif2-1J-49" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="210" y="508" as="sourcePoint" />
+            <mxPoint x="391" y="548" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="AsoYpP1Xw2ITsiif2-1J-67" parent="1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fontSize=22;" value="3" vertex="1">
+          <mxGeometry height="40" width="40" x="590.5" y="278" as="geometry" />
+        </mxCell>
+        <mxCell id="AsoYpP1Xw2ITsiif2-1J-71" parent="1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fontSize=22;" value="4" vertex="1">
+          <mxGeometry height="40" width="40" x="550.5" y="368" as="geometry" />
+        </mxCell>
+        <mxCell id="AsoYpP1Xw2ITsiif2-1J-72" parent="1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fontSize=22;" value="5" vertex="1">
+          <mxGeometry height="40" width="40" x="510" y="428" as="geometry" />
+        </mxCell>
+        <mxCell id="AsoYpP1Xw2ITsiif2-1J-86" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="NIX Member Servers/Workstations" vertex="1">
+          <mxGeometry height="60" width="120" x="640" y="208" as="geometry" />
+        </mxCell>
+        <mxCell id="AsoYpP1Xw2ITsiif2-1J-87" edge="1" parent="1" source="AsoYpP1Xw2ITsiif2-1J-49" style="endArrow=classic;startArrow=classic;html=1;rounded=0;exitX=1;exitY=0;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="AsoYpP1Xw2ITsiif2-1J-86" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="680" y="323" as="sourcePoint" />
+            <mxPoint x="861" y="298" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="AsoYpP1Xw2ITsiif2-1J-88" parent="1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fontSize=22;" value="2" vertex="1">
+          <mxGeometry height="40" width="40" x="570" y="228" as="geometry" />
+        </mxCell>
+        <mxCell id="AsoYpP1Xw2ITsiif2-1J-89" parent="1" style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;spacingBottom=0;" value="&lt;span style=&quot;font-size: 10px;&quot;&gt;* All components on the Storage VLAN will be dual-homed. Storage VLAN is a flat Layer 2 segment serving ISCSI only.&lt;/span&gt;" vertex="1">
+          <mxGeometry height="60" width="290" x="60" y="478" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
