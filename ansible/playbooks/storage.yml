@@ -15,6 +15,7 @@
   - name: check service connectivity
     tags: ['always']
     ansible.builtin.uri:
+      validate_certs: false  # TODO - remove once enterprise CA is up and running
       url: https://storage.ops.indef.space/
       
 
@@ -22,4 +23,6 @@
     tags: ['always']
     ansible.builtin.uri:
       validate_certs: false  # TODO - remove once enterprise CA is up and running
-      url: https://storage.ops.indef.space/api/v2.0/auth/check_user
+      url: https://storage.ops.indef.space/api/v2.0/auth/login_with_token
+      headers:
+        Authorization: "Bearer {{ credentials['antnas01'] }}"

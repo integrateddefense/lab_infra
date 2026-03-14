@@ -60,6 +60,9 @@
   when: 'template_storage is not defined'
   block:
   - name: configure os disk (fresh)
+    loop: "{{ [vm_storage_size] | flatten }}"
+    loop_control:
+      index_var: idx
     delegate_to: localhost
     vars:
       ansible_python_interpreter: "{{ mgmt_pi_ansible_python }}"
@@ -69,10 +72,10 @@
       api_token_id: "{{ api_token_name }}"
       api_token_secret: "{{ proxmox_api_token_secret }}"
       vmid: "{{ vm_id }}"
-      disk: scsi0
+      disk: "scsi{{ idx }}"
       state: present
       storage: "{{ vm_storage | default(omit) }}"
-      size: "{{ vm_storage_size | default(omit) }}"
+      size: "{{ item | default(omit) }}"
       cache: "{{ vm_storage_cache }}"
 
 - name: configure nic

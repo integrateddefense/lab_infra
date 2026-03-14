@@ -7,6 +7,8 @@ add rule inet filter fwd_v{{ vlans.user.id }} oifname "{{ trunk_iface }}.{{ vlan
 # User -> Core Protected
 add rule inet filter fwd_v{{ vlans.user.id }} oifname "{{ trunk_iface }}.{{ vlans.core_protected.id }}" tcp dport { 88,443,445,464 } accept
 add rule inet filter fwd_v{{ vlans.user.id }} oifname "{{ trunk_iface }}.{{ vlans.core_protected.id }}" udp dport { 53,88,464 } accept
+## Storage UI
+add rule inet filter fwd_v{{ vlans.user.id }} oifname "{{ trunk_iface }}.{{ vlans.core_protected.id }}" tcp dport { 443 } accept
 
 # User -> Transit / Internet
 add rule inet filter fwd_v{{ vlans.user.id }} oifname "{{ trunk_iface }}.{{ vlans.transit.dmz.id }}" accept
