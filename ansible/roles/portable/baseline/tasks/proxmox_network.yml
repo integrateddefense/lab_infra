@@ -82,3 +82,15 @@
           bridge-stp off
           bridge-fd 0
     notify: Reload interface configurations
+
+  - name: create isolated
+    ansible.builtin.blockinfile:
+      marker: "# {mark} ANSIBLE MANAGED: portable > baseline > proxmox_network > multi > mgmt bridge"
+      path: /etc/network/interfaces
+      block: |
+        auto vmbr-isolated
+        iface vmbr-isolated inet manual
+          bridge-ports none
+          bridge-stp off
+          bridge-fd 0
+    notify: Reload interface configurations
