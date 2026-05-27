@@ -1,0 +1,8 @@
+{# Manifest for a Single-IP Cilium Pool #}
+apiVersion: cilium.io/v2
+kind: CiliumLoadBalancerIPPool
+metadata:
+  name: {{ cluster_name }}-pool
+spec:
+  blocks:
+  - cidr: "{{ dns_spec.records | selectattr('ref','defined') | selectattr('ref','equalto',dns_cluster_ref) | map(attribute='value') | first }}/32"

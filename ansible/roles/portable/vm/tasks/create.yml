@@ -22,3 +22,11 @@
     storage: "{{ vm_storage }}"
     state: present
     timeout: 600
+    bios: "{{ vm_bios | default(omit)}}"
+    cpu: "{{ vm_cpu_type | default(omit) }}"
+  register: create_output
+
+- name: set created flag
+  delegate_to: localhost
+  ansible.builtin.set_fact:
+    was_created: "{{ create_output.changed }}"

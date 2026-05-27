@@ -1,0 +1,25 @@
+# Queries provided nodes and selects an OS disk
+
+- name: check variables
+  ansible.builtin.assert:
+    that:
+    - target | length > 0
+
+- name: get disk info
+  ansible.builtin.command: "talosctl get disks --nodes {{ target }} -o yaml {{ options | default(omit) }} --endpoints {{ target }}"
+  register: disks_raw
+  changed_when: false
+
+- name: parse output
+  ansible.builtin.set_fact:
+    disks: "{{ disks_raw.stdout | from_yaml_all }}"
+
+- name: select OS disk
+  ansible.builtin.set_fact:
+    os_disk: "{{ disks | selectattr('spec.readonly','equalto',false) | rejectattr('spec.cdrom','equalto',true) }}"
+
+- name: error check for disk selection
+  ansible.builtin.assert:
+    that:
+    - os_disk | list | length == 1
+    - os_disk[0].metadata.id is defined

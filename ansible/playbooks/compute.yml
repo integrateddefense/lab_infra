@@ -181,6 +181,69 @@
       vm_mem: "{{ code.runr.mem }}"
       ## To configure the service, see playbooks/code.yml
 
+  - name: create k8s/control subsystem
+    tags: ["vms","infrastructure","k8s","control","infrastructure/k8s","k8s/control"]
+    run_once: true
+    ansible.builtin.include_role:
+      name: portable/vm
+      apply:
+        tags: ["vms","infrastructure","k8s","control","infrastructure/k8s","k8s/control"]
+    loop: "{{ (groups['compute_nodes'] | sort | list)[0:(talos.control_plane.name | length)] }}"
+    loop_control:
+      loop_var: server
+      index_var: iteration
+      label: "Creating K8S Control Plane VM on {{ server }}"
+    vars:
+      hypervisor_target: "{{ server }}"
+      vm_name: "{{ talos.control_plane.name[iteration] }}"
+      vm_id: "{{ talos.control_plane.id[iteration] }}"
+      vm_description: "{{ talos.control_plane.description[iteration] }}"
+      vm_storage: "{{ talos.control_plane.storage }}"
+      vm_storage_size: "{{ talos.control_plane.size }}"
+      vm_sockets: "{{ talos.control_plane.sockets }}"
+      vm_cores: "{{ talos.control_plane.cores }}"
+      vm_mem: "{{ talos.control_plane.mem }}"
+      vm_vid: "{{ talos.control_plane.vid }}"
+      vm_iso:  "{{ talos.control_plane.iso }}"
+      vm_start: true
+      vm_bios: "{{ talos.control_plane.bios }}"
+      vm_cpu_type: "{{ talos.control_plane.cpu_type }}"
+      ## To configure the service, see playbooks/kube.yml
+
+  - name: precompute servers
+    tags: ["vms","infrastructure","k8s","data","infrastructure/k8s","k8s/data"]
+    ansible.builtin.set_fact:
+      servers: "{{ groups['compute_nodes'] | sort | list }}"
+      num_compute_nodes: "{{ groups['compute_nodes'] | length }}"
+
+  - name: create k8s/data subsystem
+    tags: ["vms","infrastructure","k8s","data","infrastructure/k8s","k8s/data"]
+    run_once: true
+    ansible.builtin.include_role:
+      name: portable/vm
+      apply:
+        tags: ["vms","infrastructure","k8s","data","infrastructure/k8s","k8s/data"]
+    loop: "{{ range(talos.data_plane.name | length) | list }}"
+    loop_control:
+      loop_var: idx
+      label: "Creating K8S Data Plane VM on {{ servers[idx % num_compute_nodes] }}"
+    vars:
+      hypervisor_target: "{{ servers[idx % num_compute_nodes] }}"
+      vm_name: "{{ talos.data_plane.name[idx] }}"
+      vm_id: "{{ talos.data_plane.id[idx] }}"
+      vm_description: "{{ talos.data_plane.description[idx] }}"
+      vm_storage: "{{ talos.data_plane.storage }}"
+      vm_storage_size: "{{ talos.data_plane.size }}"
+      vm_sockets: "{{ talos.data_plane.sockets }}"
+      vm_cores: "{{ talos.data_plane.cores }}"
+      vm_mem: "{{ talos.data_plane.mem }}"
+      vm_vid: "{{ talos.data_plane.vid }}"
+      vm_iso:  "{{ talos.data_plane.iso }}"
+      vm_start: true
+      vm_bios: "{{ talos.data_plane.bios }}"
+      vm_cpu_type: "{{ talos.data_plane.cpu_type }}"
+      ## To configure the service, see playbooks/kube.yml
+
   - name: create temporary storage controller
     tags: ['vms','services','storage']
     run_once: true

@@ -1,0 +1,73 @@
+# Configures democratic-csi secrets
+- name: load credentials
+  run_once: true
+  ansible.builtin.include_vars:
+    file: "../inventories/{{ site.segment }}/identity/group_vars/all/vault.yml"
+  no_log: true
+
+- name: load dns spec
+  run_once: true
+  ansible.builtin.include_vars:
+    file: "../inventories/{{ site.segment }}/identity/group_vars/all/dns.yml"
+  no_log: true
+
+- name: create namespace
+  kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig_path }}"
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: storage
+        labels:
+          pod-security.kubernetes.io/enforce: privileged
+
+- name: build hostname
+  ansible.builtin.set_fact:
+    tnas_host: "{{ (dns_spec.records | selectattr('ref','defined') | selectattr('ref','equalto','tnas') | map(attribute='name') | first) ~ '.' ~ domain.full}}"
+
+- name: deploy iscsi driver config
+  kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig_path }}"
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: truenas-iscsi-driver-config
+        namespace: storage
+      stringData:
+        driver-config-file.yaml: |
+          driver: freenas-api-iscsi
+          httpConnection:
+            allowInsecure: true
+            apiKey: "{{ truenas.democratic_csi.token }}"
+            host: "{{ tnas_host }}"
+            port: 443
+            protocol: https
+            apiVersion: 2
+          instance_id: null
+          iscsi:
+            targetPortal: "10.0.50.50:3260"
+            targetPortals: []
+            interface:
+            namePrefix: "k8s-{{ cluster_name }}-"
+            targetGroups:
+            - targetGroupPortalGroup: 1
+              targetGroupInitiatorGroup: 2
+              targetGroupAuthType: None
+              targetGroupAuthGroup:
+            extentCommentTemplate: >-
+              {% raw %}{{ parameters.[csi.storage.k8s.io/pvc/namespace] }}/{{ parameters.[csi.storage.k8s.io/pvc/name] }}{% endraw %}
+          
+            extentInsecureTpc: true
+            extentXenCompat: false
+            extentDisablePhysicalBlockSize: true
+            extentBlockSize: 512
+            extentRpm: SSD
+          zfs:
+            datasetParentName: "mvp/iscsi/k8s/{{ cluster_name }}/volumes"
+            detachedSnapshotsDatasetParentName: "mvp/iscsi/k8s/{{ cluster_name }}/snapshots"
+
+## TODO - update zfs paths once larger storage node is available

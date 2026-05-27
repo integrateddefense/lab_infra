@@ -1,0 +1,166 @@
+# Installs and configures the Cilium CNI in the cluster
+
+- name: deploy cilium standard CRDs
+  kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig_path }}"
+    src: 'https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{ versions.gateway_api }}/standard-install.yaml'
+    apply: true
+    server_side_apply:
+      field_manager: ansible
+  changed_when: false
+  # always reports changed
+
+- name: deploy cilium experimental CRDs
+  kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig_path }}"
+    src: 'https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{ versions.gateway_api }}/experimental-install.yaml'
+    apply: true
+    server_side_apply:
+      field_manager: ansible
+      force_conflicts: true
+  changed_when: false
+  # always reports changed
+
+- name: wait for CRDs to be established
+  kubernetes.core.k8s_info:
+    kubeconfig: "{{ kubeconfig_path }}"
+    api_version: apiextensions.k8s.io/v1
+    kind: CustomResourceDefinition
+    name: gatewayclasses.gateway.networking.k8s.io
+  register: crd_status
+  until: >
+    crd_status.resources | length > 0 and
+    crd_status.resources[0].status.conditions |
+    selectattr('type','equalto','Established') |
+    selectattr('status','equalto','True') | list | length > 0
+  retries: 20
+  delay: 5
+
+- name: install cilium CNI
+  ansible.builtin.shell: |
+    helm upgrade --install cilium oci://quay.io/cilium/charts/cilium --version {{ versions.cilium }} --namespace kube-system --set ipam.mode=kubernetes --set kubeProxyReplacement=true --set securityContext.capabilities.ciliumAgent='{CHOWN,KILL,NET_ADMIN,NET_RAW,IPC_LOCK,SYS_ADMIN,SYS_RESOURCE,DAC_OVERRIDE,FOWNER,SETGID,SETUID}' --set securityContext.capabilities.cleanCiliumState='{NET_ADMIN,SYS_ADMIN,SYS_RESOURCE}' --set cgroup.autoMount.enabled=false --set cgroup.hostRoot=/sys/fs/cgroup --set k8sServiceHost=localhost --set k8sServicePort=7445 --set gatewayAPI.enabled=true --set gatewayAPI.enableAlpn=true --set gatewayAPI.enableAppProtocol=true --set l2announcements.enabled=true --kubeconfig {{ kubeconfig_path }}
+  changed_when: false
+
+- name: trigger cilium daemonset restart
+  ansible.builtin.command: kubectl rollout restart daemonset/cilium -n kube-system --kubeconfig {{ kubeconfig_path }}
+  changed_when: false
+
+- name: trigger cilium deployment restart
+  ansible.builtin.command: kubectl rollout restart deployment/cilium-operator -n kube-system --kubeconfig {{ kubeconfig_path }}
+  changed_when: false
+
+- name: wait for cilium daemonset to resolve
+  kubernetes.core.k8s_info:
+    kubeconfig: "{{ kubeconfig_path }}"
+    api_version: apps/v1
+    kind: DaemonSet
+    name: cilium
+    namespace: kube-system
+  register: cilium_status
+  until: cilium_status.resources[0].status.desiredNumberScheduled == cilium_status.resources[0].status.numberReady
+  retries: 30
+  delay: 5
+
+- name: wait for cilium deployment to resolve
+  kubernetes.core.k8s_info:
+    kubeconfig: "{{ kubeconfig_path }}"
+    api_version: apps/v1
+    kind: Deployment
+    name: cilium-operator
+    namespace: kube-system
+  register: cilium_status
+  until: cilium_status.resources[0].status.readyReplicas == cilium_status.resources[0].status.replicas
+  retries: 30
+  delay: 5
+
+- name: load dns vars
+  ansible.builtin.include_vars:
+    file: '../inventories/{{ site.segment }}/identity/group_vars/all/dns.yml'
+
+- name: create gateway namespace
+  kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig_path }}"
+    name: gateway
+    api_version: v1
+    kind: Namespace
+    state: present
+
+- name: deploy cilium ip pool object
+  kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig_path }}"
+    state: present
+    namespace: gateway
+    template: single_ip_pool.yml.j2
+  vars:
+    dns_cluster_ref: "k8s-{{ cluster_name }}"
+
+- name: deploy cilium L2 announcement policy object
+  kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig_path }}"
+    state: present
+    namespace: gateway
+    template: l2_announcement.yml.j2
+
+- name: create directory for gateway artifacts
+  become: true
+  ansible.builtin.file:
+    state: directory
+    path: "{{ gateway_root }}"
+    owner: deployexec
+    group: ansible
+    mode: 0770
+
+## TODO - refactor below tasks once enterprise CA is available; should pull from CA
+- name: generate private key
+  become: true
+  community.crypto.openssl_privatekey:
+    path: "{{ gateway_root }}/priv_key.pem"
+    owner: deployexec
+    group: ansible
+    mode: 0760
+
+- name: generate CSR
+  become: true
+  community.crypto.openssl_csr:
+    path: "{{ gateway_root }}/gateway.csr"
+    privatekey_path: "{{ gateway_root }}/priv_key.pem"
+    common_name: "*.{{ cluster_name }}.ops.indef.space"
+    subject_alt_name: 'DNS:{{ cluster_name }}.ops.indef.space;DNS:*.{{ cluster_name }}.ops.indef.space'
+    owner: deployexec
+    group: ansible
+    mode: 0764
+
+- name: generate self signed cert
+  become: true
+  community.crypto.x509_certificate:
+    path: "{{ gateway_root}}/gateway.crt"
+    csr_path: "{{ gateway_root }}/gateway.csr"
+    privatekey_path: "{{ gateway_root }}/priv_key.pem"
+    provider: selfsigned
+    owner: deployexec
+    group: ansible
+    mode: 0764
+
+- name: deploy k8s secret
+  kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig_path }}"
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: "{{ cluster_name }}-gateway-tls-ss"
+        namespace: gateway
+      type: kubernetes.io/tls
+      data:
+        tls.crt: "{{ lookup('file',gateway_root ~ '/gateway.crt') | b64encode }}"
+        tls.key: "{{ lookup('file',gateway_root ~ '/priv_key.pem') | b64encode }}"
+
+## TODO - refactor above tasks once enterprise CA is available; should pull from CA
+
+- name: deploy cilium GatewayAPI object
+  kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig_path }}"
+    state: present
+    namespace: gateway
+    template: gateway_api.yml.j2

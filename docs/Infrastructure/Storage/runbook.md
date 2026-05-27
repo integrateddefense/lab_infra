@@ -146,6 +146,7 @@ Complete all items before proceeding to Step 2.
 - Account: domain join account (scoped to target OU only)
 - Computer Account OU: `OU=Storage,OU=Linux,OU=Servers,DC=ops,DC=indef,DC=space`
 - Kerberos Principal: select or leave default
+- Uncheck `Enabled DNS Updates`  since the server is dual-homed, it will register both IPs under the same name, leading to non-deterministic resolution errors depending on which record the DC returns first.
 
 **NOTE:** If the join fails with `WERR_NERR_DEFAULTJOINREQUIRED`, retry once before troubleshooting. A Kerberos ticket cache issue on the join account is the most common cause and a second attempt often succeeds. If it fails a second time, invalidate the join account ticket by toggling `SmartcardLogonRequired` on and off, then retry immediately:
 
@@ -201,6 +202,17 @@ Create three datasets within the pool. Share Type must be set correctly at creat
 - For full solution: whitelist each authorized initiator IQN explicitly — K8s nodes and database servers only
 
 > **NOTE:** IQN whitelisting is the primary access control for iSCSI. There is no protocol-level signing equivalent. Network isolation (L2 segment, no gateway, no EWFW) and IQN whitelisting together are the compensating controls documented in the architecture.
+---
+> **NOTE:** In Talos, IQNs are set in the file `/etc/iscsi/initiatorname.iscsi` and follow the standard format. Talosctl will generate a default at install time, or the IQN can be set with the `machine:files:` section of the config. Example below
+>
+> ``` yaml
+> machine:
+>   files:
+>   - path: /etc/iscsi/initiatorname.iscsi
+>     permissions: 0644
+>     op: overwrite
+>     content: "InitiatorName=< iqn >"
+> ```
 
 ### Shares > iSCSI > Wizard
 
@@ -264,15 +276,54 @@ S3 object storage is deferred to the Kubernetes epic. The S3 service will run as
 
 ---
 
-## Step 7 — Validation
+## Step 7 - Democratic-CSI Configuration
+
+This section details the configuration of the TNAS server to support containerized workloads via iSCSI using the `democratic-csi` interface for iSCSI only using the freenas-api-iscsi driver.
+
+### Create a non-root user
+
+This user provides the API access for iSCSI. Create a new user and group for it via Credentials > Users. Disable password, and disable all accesses.
+
+Once created, go to Credentials > Groups and give the newly created group the Local Administrator role.
+
+Back to Credentials > Users, select the new csi user and select `Add API Key` in the right panel. Give the key a name, set expiry, and copy the generated key to the clipboard for deployment later.
+
+Lastly, store the key in the secrets manager of choice.
+
+## Step 8 — Validation
 
 ### iSCSI Validation
 
-**TBD** — no iSCSI consumer available in MVP. Validate when K8s nodes are provisioned in the Kubernetes epic. At that point:
+Because the iSCSI consumer is the democratic-csi controllers on the kubernetes cluster, validating the configuration is a two-part test.
 
-- Confirm K8s node can discover and mount the iSCSI target
-- Confirm IQN appears in initiator log
-- Update initiator group whitelist with confirmed IQN
+#### Part 1 - Application Health
+
+If the application reports that it is healthy and in sync with its git specification, then it is likely that the iSCSI components are working. There is no need for continuous end-to-end health monitoring by claiming a volume in a CronJob, or similar, as that test is much noisier and can create unintended failure states.
+
+#### Part 2 - PVC Bindings
+
+The second test is a one-time attempt to bind a PersistentVolumeClaim using the democratic-csi provided iscsi storage class. This is valid at install time and after an upgrade, but is covered by the Application's inate health checks after.
+
+``` shell
+# Generate a one-off pvc
+kubectl apply -f - <<EOF
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: csi-test-pvc
+  namespace: storage
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: iscsi
+EOF
+kubectl get pvc csi-test-pvc -n storage -w
+```
+
+Don't forget `--kubeconfig` if your kubeconfig is not in the default path, and watch as the PVC goes from Pending to Bound. If it binds, democratic-csi is working end-to-end and you can delete the PVC to return to a normal state.
 
 ### SMB Validation
 

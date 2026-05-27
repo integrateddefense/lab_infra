@@ -1,0 +1,79 @@
+# Identifies the node stage and delegates to other task files accordingly
+
+# If talosconfig isn't available, the cluster needs to be bootstrapped
+- name: check for talosconfig
+  ansible.builtin.file:
+    path: "/opt/deployment-executor/k8s/talosconfig"
+  failed_when: false
+  register: talosconfig_status
+
+- name: cluster bootstrap
+  when: talosconfig_status.state == 'absent'
+  block:
+  - name: select OS disk
+    ansible.builtin.include_tasks:
+      file: select_disk.yml
+    vars:
+      targets: "{{ components.talos.primary_cluster.control_plane | map(attribute='ip.service') }}"
+
+  - name: generate initial talosctl config
+    ansible.builtin.command: "talosctl gen config {{ site.name }}-{{ components.talos.primary_cluster.cluster_name }} https://{{ components.talos.primary_cluster.cluster_dns }}:6443 --install-disk {{ os_disk[0].spec.dev_path }} --output {{ k8s_root }}"
+    args:
+      creates: "{{ k8s_root }}/controlplane.yaml"
+
+- name: identify node states
+  when: talosconfig_status.state != 'absent'
+  block:
+  - name: ping cluster nodes
+    block:
+    - name: ping target nodes
+      loop: "{{ components.talos.primary_cluster.control_plane | map(attribute='ip.service') }}"
+      ansible.builtin.command: "ping {{ item }} -c 2"
+      changed_when: false
+      failed_when: false
+      register: ping_results
+
+    - name: remove cluster nodes that are offline
+      ansible.builtin.set_fact:
+        hosts_up: "{{ ping_results.results | selectattr('rc','equalto',0) | map(attribute='item') }}"
+
+    - name: get machine status
+      loop: "{{ hosts_up }}"
+      loop_control:
+        label: "Checking cluster status for {{ item }}"
+      ansible.builtin.command: "talosctl get machinestatus --nodes {{ item }} --endpoints {{ item }} -o yaml --talosconfig {{ talosconfig_path }}"
+      register: status_raw
+      failed_when: false
+      changed_when: false
+
+    - name: set updates vs creates
+      ansible.builtin.set_fact:
+        updates: "{{ status_raw.results | selectattr('rc','equalto',0) | map(attribute='item') }}"
+        creates: "{{ status_raw.results | selectattr('rc','equalto',1) | map(attribute='item') }}"
+
+- name: update control nodes
+  when: updates | length > 0
+  loop: "{{ updates }}"
+  loop_control:
+    label: "Updating control node config for {{ item }}"
+  ansible.builtin.include_tasks:
+    file: update_control.yml
+
+- name: create control nodes
+  when: creates | length > 0
+  loop: "{{ creates }}"
+  loop_control:
+    label: "Creating new control node config for {{ item }}"
+  ansible.builtin.include_tasks:
+    file: create_control.yml
+
+- name: initialize etcd
+  ansible.builtin.command: "talosctl bootstrap --nodes {{ hosts_up[0] }} --endpoints {{ hosts_up[0] }} --talosconfig {{ talosconfig_path }}"
+  failed_when: false
+  register: bootstrap_result
+  changed_when: bootstrap_result.rc == 0
+
+- name: download kubeconfig
+  ansible.builtin.command: "sudo -u deployexec talosctl kubeconfig {{ kubeconfig_path }} --nodes {{ components.talos.primary_cluster.cluster_dns }} --endpoints {{ components.talos.primary_cluster.cluster_dns }} --talosconfig {{ talosconfig_path }}"
+  changed_when: false
+

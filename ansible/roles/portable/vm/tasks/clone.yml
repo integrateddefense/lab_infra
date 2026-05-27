@@ -40,3 +40,9 @@
     storage: "{{ vm_storage }}"
     state: present
     timeout: 600
+
+- name: unset created flag
+  delegate_to: localhost
+  delegate_facts: true
+  ansible.builtin.set_fact:
+    was_created: false

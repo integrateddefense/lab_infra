@@ -21,6 +21,11 @@
   - hypervisor_target
   when: vars[item] is undefined
 
+- name: unset created flag
+  delegate_to: localhost
+  ansible.builtin.set_fact:
+    was_created: false
+
 # Step 1) Discover Current State
 ## Enforces idempotency by skipping clone and config steps
 - name: get vm state
@@ -48,6 +53,6 @@
   ansible.builtin.include_tasks: "configure.yml"
 
 - name: start vm
-  when: template_name is defined
+  when: template_name is defined or vm_start
   ansible.builtin.include_tasks: "start.yml"
 

@@ -62,7 +62,8 @@
   - name: configure os disk (fresh)
     loop: "{{ [vm_storage_size] | flatten }}"
     loop_control:
-      index_var: idx
+      index_var: disk_num
+      label: "Creating disk {{ disk_num }} with size {{ item }} on VM ID {{ vm_id }}"
     delegate_to: localhost
     vars:
       ansible_python_interpreter: "{{ mgmt_pi_ansible_python }}"
@@ -72,19 +73,19 @@
       api_token_id: "{{ api_token_name }}"
       api_token_secret: "{{ proxmox_api_token_secret }}"
       vmid: "{{ vm_id }}"
-      disk: "scsi{{ idx }}"
+      disk: "scsi{{ disk_num }}"
       state: present
       storage: "{{ vm_storage | default(omit) }}"
       size: "{{ item | default(omit) }}"
-      cache: "{{ vm_storage_cache }}"
+      cache: "{{ vm_storage_cache | default(omit) }}"
 
 - name: configure nic
   delegate_to: localhost
   loop: "{{ [vm_vid] | flatten }}"
   loop_control:
     loop_var: item
-    index_var: idx
-    label: "Configuring NIC{{ idx }} with VLAN {{ item }}"
+    index_var: nic_num
+    label: "Configuring NIC{{ nic_num }} with VLAN {{ item }}"
   vars:
     ansible_python_interpreter: "{{ mgmt_pi_ansible_python }}"
   community.proxmox.proxmox_nic:
@@ -93,7 +94,7 @@
     api_token_id: "{{ api_token_name }}"
     api_token_secret: "{{ proxmox_api_token_secret }}"
     vmid: "{{ vm_id }}"
-    interface: "net{{ idx }}"
+    interface: "net{{ nic_num }}"
     bridge: "vmbr{{ bridges.data_bridge }}"
     tag: "{{ item | default(omit) }}"
 
@@ -110,3 +111,21 @@
     vmid: "{{ vm_id }}"
     interface: "net{{ ([vm_id] | flatten | length) + 1 }}"
     bridge: "vmbr{{ bridges.mgmt_bridge }}"
+
+- name: add iso disk
+  when:
+  - vm_iso is defined
+  - was_created
+  delegate_to: localhost
+  vars:
+    ansible_python_interpreter: "{{ mgmt_pi_ansible_python }}"
+  community.proxmox.proxmox_disk:
+    api_host: "{{ ansible_host }}"
+    api_user: "{{ api_username }}"
+    api_token_id: "{{ api_token_name }}"
+    api_token_secret: "{{ proxmox_api_token_secret }}"
+    vmid: "{{ vm_id }}"
+    disk: ide2
+    media: cdrom
+    iso_image: "local:iso/{{ vm_iso }}"
+    state: present

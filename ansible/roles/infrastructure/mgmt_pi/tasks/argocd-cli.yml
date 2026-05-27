@@ -1,0 +1,8 @@
+# Installs the argocd cli tool
+
+- name: download and install argocd cli
+  become: true
+  ansible.builtin.shell: |
+    curl -sSL -o argocd-linux-arm64 https://github.com/argoproj/argo-cd/releases/download/v{{ versions.argocd }}/argocd-linux-arm64
+    sudo install -m 555 argocd-linux-arm64 /usr/local/bin/argocd
+    rm argocd-linux-arm64

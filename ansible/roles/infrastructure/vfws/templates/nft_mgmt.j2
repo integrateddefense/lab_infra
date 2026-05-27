@@ -9,11 +9,15 @@ add rule inet filter fwd_v{{ vlans.mgmt.id }} oifname "{{ trunk_iface }}.{{ vlan
 add rule inet filter fwd_v{{ vlans.mgmt.id }} oifname "{{ trunk_iface }}.{{ vlans.core.id }}" tcp dport { 22,53,443,5986 } accept
 add rule inet filter fwd_v{{ vlans.mgmt.id }} oifname "{{ trunk_iface }}.{{ vlans.core.id }}" udp dport { 53 } accept
 add rule inet filter fwd_v{{ vlans.mgmt.id }} oifname "{{ trunk_iface }}.{{ vlans.core.id }}" ip protocol icmp accept
+## Talos/k8s Rules
+add rule inet filter fwd_v{{ vlans.mgmt.id }} oifname "{{ trunk_iface }}.{{ vlans.core.id }}" tcp dport { 6443,10250,50000,50001 } accept
 
 # MGMT -> Core_Protected
 add rule inet filter fwd_v{{ vlans.mgmt.id }} oifname "{{ trunk_iface }}.{{ vlans.core_protected.id }}" tcp dport { 22,88,443,445,5986 } accept
 add rule inet filter fwd_v{{ vlans.mgmt.id }} oifname "{{ trunk_iface }}.{{ vlans.core_protected.id }}" udp dport { 53 } accept
 add rule inet filter fwd_v{{ vlans.mgmt.id }} oifname "{{ trunk_iface }}.{{ vlans.core_protected.id }}" ip protocol icmp accept
+## Talos/k8s Rules
+add rule inet filter fwd_v{{ vlans.mgmt.id }} oifname "{{ trunk_iface }}.{{ vlans.core_protected.id }}" tcp dport { 6443,50000,50001 } accept
 
 # MGMT -> Users
 add rule inet filter fwd_v{{ vlans.mgmt.id }} oifname "{{ trunk_iface }}.{{ vlans.user.id }}" tcp dport { 22,443 } accept

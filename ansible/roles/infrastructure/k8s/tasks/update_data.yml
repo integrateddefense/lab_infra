@@ -1,0 +1,39 @@
+# Reads an existing data plane config and calls merge_data
+
+- name: locate node spec
+  ansible.builtin.set_fact:
+    target: "{{ components.talos.primary_cluster.data_plane | selectattr('ip.service','equalto',item) }}"
+
+- name: check variables
+  ansible.builtin.assert:
+    that:
+    - target is defined
+    - target is sequence
+    - target | length == 1
+
+- name: normalize
+  ansible.builtin.set_fact:
+    target: "{{ target[0] }}"
+
+- name: grab existing config
+  ansible.builtin.command: "cat {{ k8s_root }}/{{ target.hostname }}.yaml"
+  register: raw_control
+  changed_when: false
+
+- name: parse data plane config
+  ansible.builtin.set_fact:
+    control_plane_config: "{{ raw_control.stdout | from_yaml_all }}"
+
+- name: select OS disk
+  ansible.builtin.include_tasks:
+    file: select_disk.yml
+  vars:
+    target: "{{ item }}"
+    options: "--talosconfig {{ talosconfig_path }}"
+
+- name: merge config spec
+  ansible.builtin.include_tasks:
+    file: merge_data.yml
+
+- name: apply config to node
+  ansible.builtin.command: "talosctl apply-config --talosconfig {{ talosconfig_path }} --nodes {{ target.fqdn }} --endpoints {{ components.talos.primary_cluster.cluster_dns }} --file {{ k8s_root }}/{{ target.hostname }}.yaml"

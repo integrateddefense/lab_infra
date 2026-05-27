@@ -1,0 +1,64 @@
+# Configures the Talos/k8s cluster
+## All commands are executed via API calls, so the playbook targets the localhost to avoid constant delegate_to
+
+- name: configure k8s cluster
+  hosts: localhost
+  gather_facts: false
+
+  pre_tasks:
+  - name: get talosctl version
+    tags: ['always']
+    ansible.builtin.command: talosctl version --client --short
+    register: talosctl_version_raw
+    failed_when: false
+    changed_when: false
+
+  - name: parse talosctl
+    tags: ['always']
+    ansible.builtin.set_fact:
+      parsed: "Talos v{{ versions.talos }}"
+
+  - name: ensure talosctl matches pinned version
+    tags: ['always']
+    ansible.builtin.assert:
+      that:
+      - talosctl_version_raw.stdout_lines[1] == parsed
+
+  tasks:
+
+  - name: configure control plane
+    tags: ['control']
+    ansible.builtin.import_role:
+      name: infrastructure/k8s
+      tasks_from: control.yml
+
+  - name: configure data plane
+    tags: ['data']
+    ansible.builtin.import_role:
+      name: infrastructure/k8s
+      tasks_from: data.yml
+
+  - name: install and configure cilium
+    tags: ['cilium']
+    ansible.builtin.import_role:
+      name: infrastructure/k8s
+      tasks_from: cilium.yml
+    vars:
+      cluster_name: "{{ components.talos.primary_cluster.cluster_name }}"
+
+  - name: configure argocd
+    tags: ['argo']
+    ansible.builtin.import_role:
+      name: infrastructure/k8s
+      tasks_from: argocd.yml
+    vars:
+      cluster_name: "{{ components.talos.primary_cluster.cluster_name }}"
+    ## To configure the argocd service, see repo root/docs/Infrastructure/k8s/runbooks/argocd.md
+
+  - name: configure democratic-csi
+    tags: ['csi']
+    ansible.builtin.import_role:
+      name: infrastructure/k8s
+      tasks_from: csi.yml
+    vars:
+      cluster_name: "{{ components.talos.primary_cluster.cluster_name }}"

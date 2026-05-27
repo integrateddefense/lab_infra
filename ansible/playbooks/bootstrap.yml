@@ -106,3 +106,24 @@
       vm_vid: "{{ git.vm.vid }}"
 
 ## To configure the service, see playbooks/git.yml
+
+# K8s
+  - name: create k8s node
+    tags: ['infrastructure','k8s','control','k8s/control']
+    ansible.builtin.import_role:
+      name: portable/vm
+    vars:
+      hypervisor_target: "bootstrap"
+      vm_name: "{{ talos.vm.name }}"
+      vm_id: "{{ talos.vm.id }}"
+      vm_description: "{{ talos.vm.description }}"
+      vm_storage: "{{ talos.vm.storage }}"
+      vm_storage_size: "{{ talos.vm.size }}"
+      vm_sockets: "{{ talos.vm.sockets }}"
+      vm_cores: "{{ talos.vm.cores }}"
+      vm_mem: "{{ talos.vm.mem }}"
+      vm_vid: "{{ talos.vm.vid }}"
+      vm_iso:  "{{ talos.vm.iso }}"
+      vm_start: true
+      vm_bios: "{{ talos.vm.bios }}"
+      vm_cpu_type: "{{ talos.vm.cpu_type }}"

@@ -22,3 +22,15 @@
       name: infrastructure/mgmt_pi
       tasks_from: deployexec.yml
     tags: ['baseline','deployexec']
+
+  - name: configure k8s
+    ansible.builtin.import_role:
+      name: infrastructure/mgmt_pi
+      tasks_from: k8s.yml
+    tags: ['baseline','k8s']
+
+  - name: download argocd cli tool
+    ansible.builtin.import_role:
+      name: infrastructure/mgmt_pi
+      tasks_from: argocd-cli.yml
+    tags: ['baseline','argo']

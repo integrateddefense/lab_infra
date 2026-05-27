@@ -1,0 +1,37 @@
+# Installs and configures talosctl
+
+- name: download talosctl binary
+  become: true
+  ansible.builtin.get_url:
+    url: "https://github.com/siderolabs/talos/releases/download/v{{ versions.talos }}/talosctl-linux-arm64"
+    dest: /usr/local/bin/talosctl
+    mode: 0755
+    owner: root
+    group: root
+
+- name: download kubectl binary
+  become: true
+  ansible.builtin.get_url:
+    url: "https://dl.k8s.io/release/v{{ versions.kubectl }}/bin/linux/arm64/kubectl"
+    dest: /usr/local/bin/kubectl
+    mode: 0755
+    owner: root
+    group: root
+
+- name: download helm binary
+  become: true
+  ansible.builtin.get_url:
+    url: "https://get.helm.sh/helm-v{{ versions.helm }}-linux-arm64.tar.gz"
+    dest: "/tmp/helm-v{{ versions.helm }}-linux-arm64.tar.gz"
+    mode: 0755
+    owner: root
+    group: root
+
+- name: unpack helm
+  become: true
+  ansible.builtin.shell: |
+    cd /tmp/
+    tar -zxvf helm-v{{ versions.helm }}-linux-arm64.tar.gz
+    mv linux-arm64/helm /usr/local/bin/helm
+    rm -rf /tmp/helm*
+    rm -rf /tmp/linux-arm64

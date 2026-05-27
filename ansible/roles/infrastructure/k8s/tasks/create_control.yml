@@ -1,0 +1,39 @@
+# Creates a new config from the generic controlplane.yaml
+
+- name: locate node spec
+  ansible.builtin.set_fact:
+    target: "{{ components.talos.primary_cluster.control_plane | selectattr('ip.service','equalto',item) }}"
+
+- name: check variables
+  ansible.builtin.assert:
+    that:
+    - target is defined
+    - target is sequence
+    - target | length == 1
+
+- name: normalize
+  ansible.builtin.set_fact:
+    target: "{{ target[0] }}"
+
+- name: grab generic config
+  ansible.builtin.command: "cat {{ k8s_root }}/controlplane.yaml"
+  register: raw_control
+  changed_when: false
+
+- name: parse control plane config
+  ansible.builtin.set_fact:
+    control_plane_config: "{{ raw_control.stdout | from_yaml_all }}"
+
+- name: select OS disk
+  ansible.builtin.include_tasks:
+    file: select_disk.yml
+  vars:
+    target: "{{ item }}"
+    options: "--insecure"
+
+- name: merge config spec
+  ansible.builtin.include_tasks:
+    file: merge_control.yml
+
+- name: apply config to node
+  ansible.builtin.command: "talosctl apply-config --insecure --nodes {{ target.fqdn }} --file {{ k8s_root }}/{{ target.hostname }}.yaml"

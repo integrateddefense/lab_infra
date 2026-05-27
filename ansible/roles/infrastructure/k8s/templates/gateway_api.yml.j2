@@ -1,0 +1,23 @@
+{# Manifest for the Cilium GatewayAPI object #}
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+{# Change serviceSelector in L2 announcement policy if name is changed below #}
+  name: {{ cluster_name }}-gateway
+  namespace: gateway
+spec:
+  gatewayClassName: cilium
+  listeners:
+  - name: {{ cluster_name }}-https
+    protocol: HTTPS
+    port: 443
+    hostname: "*.{{ cluster_name }}.ops.indef.space"
+    allowedRoutes:
+      namespaces:
+        from: All
+    tls:
+      mode: Terminate
+      certificateRefs:
+      - name: {{ cluster_name }}-gateway-tls-ss
+        kind: Secret
+        group: ""

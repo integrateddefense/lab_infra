@@ -1,0 +1,212 @@
+# Merges a provided control plane specification with the selected cluster variables
+- name: check variables
+  ansible.builtin.assert:
+    that:
+    - control_plane_config is defined
+    - control_plane_config is sequence
+    - control_plane_config | length == 2
+    - target is defined
+    - target is mapping
+
+- name: set hostname
+  ansible.builtin.set_fact:
+    updated_hostname_doc: "{{ control_plane_config[1] | combine({'hostname': target.hostname}) | dict2items | rejectattr('key','equalto','auto') | items2dict}}"
+    updated_main_doc: "{{ control_plane_config[0]}}"
+
+- name: set cert SANs
+  ansible.builtin.set_fact:
+    updated_main_doc: |
+      {{
+        updated_main_doc | combine(
+          {'machine':
+            {'certSANs': [
+              target.fqdn,
+              target.hostname,
+              target.ip.service,
+              components.talos.primary_cluster.cluster_dns,
+              components.talos.primary_cluster.cluster_ip
+            ]}
+          }, recursive=True)
+      }}
+
+- name: set control node taint
+  ansible.builtin.set_fact:
+    updated_main_doc: |
+      {{
+        updated_main_doc | combine(
+          {'machine':
+            {'nodeTaints':
+              {
+                'node-role.kubernetes.io/control-plane': ':NoSchedule'
+              }
+            }
+          },
+        recursive=True)
+      }}
+
+- name: set machine network settings
+  ansible.builtin.set_fact:
+    updated_main_doc: |
+      {{
+        updated_main_doc | combine(
+          {'machine':
+            {'network':
+              {
+                'interfaces':
+                [
+                  {
+                    'interface': 'ens18',
+                    'addresses':
+                    [
+                      target.ip.service_cidr
+                    ],
+                    'vip':
+                    {
+                      'ip': components.talos.primary_cluster.cluster_ip
+                    },
+                    'routes':
+                    [
+                      {
+                        'network': '0.0.0.0/0',
+                        'gateway': vlans.core_protected.gateway
+                      }
+                    ]
+                  }
+                ],
+                'nameservers':
+                [
+                  components.identity.rwdcs.ip[0],
+                  components.identity.rodcs.ip
+                ]
+              }
+            }
+          },
+        recursive=True)
+      }}
+
+- name: set cluster network settings
+  ansible.builtin.set_fact:
+    updated_main_doc: |
+      {{
+        updated_main_doc | combine(
+          {
+            'cluster':
+            {
+              'network':
+              {
+                'podSubnets': [components.talos.primary_cluster.pod_subnet],
+                'serviceSubnets': [components.talos.primary_cluster.service_subnet]
+              }
+            }
+          },
+          recursive=True
+        )
+      }}
+
+- name: set cilium CNI
+  ansible.builtin.set_fact:
+    updated_main_doc: |
+      {{
+        updated_main_doc | combine(
+          {
+            'cluster':
+            {
+              'network':
+              {
+                'cni':
+                  {
+                    'name': 'none'
+                  }
+              },
+              'proxy':
+              {
+                'disabled': true
+              }
+            }
+          },
+          recursive=True
+        )
+      }}
+
+- name: set machine sysctls for network
+  ansible.builtin.set_fact:
+    updated_main_doc: |
+      {{
+        updated_main_doc | combine(
+          {
+            'machine':
+            {
+              'sysctls':
+              {
+                'net.ipv6.conf.all.disable_ipv6': '1'
+              }
+            }
+          },
+          recursive=True
+        )
+      }}
+
+- name: set ntp sources
+  ansible.builtin.set_fact:
+    updated_main_doc: |
+      {{
+        updated_main_doc | combine
+        (
+          {
+            'machine':
+            {
+              'time':
+              {
+                'servers':
+                [
+                  components.identity.rwdcs.ip[0],
+                  components.identity.rodcs.ip
+                ]
+              }
+            }
+          },
+          recursive=True
+        )
+      }}
+
+- name: enable talos host-dns service
+  ansible.builtin.set_fact:
+    updated_main_doc: |
+      {{
+        updated_main_doc | combine
+        (
+          {
+            'machine':
+            {
+              'features':
+              {
+                'hostDNS':
+                {
+                  'enabled': true,
+                  'forwardKubeDNSToHost': true
+                }
+              }
+            }
+          },
+          recursive=True
+        )
+      }}
+
+- name: build new config
+  become: true
+  ansible.builtin.copy:
+    content: "{{ [updated_main_doc,updated_hostname_doc] | map('to_nice_yaml') | join('---\n') }}"
+    dest: "{{ k8s_root }}/{{ target.hostname }}.yaml"
+    owner: root
+    group: ansible
+    mode: 0750
+
+- name: validate config
+  changed_when: false
+  ansible.builtin.command: "talosctl validate --config {{ k8s_root }}/{{ target.hostname }}.yaml --mode metal"
+  register: validate_result
+
+- name: fail if invalid
+  ansible.builtin.assert:
+    that:
+    - validate_result.rc == 0

@@ -23,3 +23,5 @@ collections:
 - name: cisco.ios
 # Added by infrastructure/mgmt_pi role
 - name: community.crypto
+# Added by services/argocd role
+- name: kubernetes.core

@@ -1,0 +1,207 @@
+# Installs and Configures ArgoCD
+
+- name: create argocd namespace
+  kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig_path }}"
+    name: 'argocd'
+    api_version: v1
+    kind: Namespace
+    state: present
+
+- name: deploy argocd
+  kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig_path }}"
+    src: 'https://raw.githubusercontent.com/argoproj/argo-cd/v{{ versions.argocd }}/manifests/ha/install.yaml'
+    namespace: argocd
+    apply: true
+    server_side_apply:
+      field_manager: ansible
+      force_conflicts: true
+
+- name: wait for argocd-server to finish deploying
+  kubernetes.core.k8s_info:
+    kubeconfig: "{{ kubeconfig_path }}"
+    api_version: v1
+    kind: Deployment
+    namespace: argocd
+    name: argocd-server
+  register: deploy_status
+  until: deploy_status.resources[0].status.readyReplicas == deploy_status.resources[0].status.replicas
+  retries: 20
+  delay: 5
+
+- name: wait for argocd-repo-server to finish deploying
+  kubernetes.core.k8s_info:
+    kubeconfig: "{{ kubeconfig_path }}"
+    api_version: v1
+    kind: Deployment
+    namespace: argocd
+    name: argocd-repo-server
+  register: deploy_status
+  until: deploy_status.resources[0].status.readyReplicas == deploy_status.resources[0].status.replicas
+  retries: 20
+  delay: 5
+
+- name: wait for argocd-applicationset-controller to finish deploying
+  kubernetes.core.k8s_info:
+    kubeconfig: "{{ kubeconfig_path }}"
+    api_version: v1
+    kind: Deployment
+    namespace: argocd
+    name: argocd-applicationset-controller
+  register: deploy_status
+  until: deploy_status.resources[0].status.readyReplicas == deploy_status.resources[0].status.replicas
+  retries: 20
+  delay: 5
+
+- name: wait for argocd-notifications-controller to finish deploying
+  kubernetes.core.k8s_info:
+    kubeconfig: "{{ kubeconfig_path }}"
+    api_version: v1
+    kind: Deployment
+    namespace: argocd
+    name: argocd-notifications-controller
+  register: deploy_status
+  until: deploy_status.resources[0].status.readyReplicas == deploy_status.resources[0].status.replicas
+  retries: 20
+  delay: 5
+
+- name: wait for argocd-dex-server to finish deploying
+  kubernetes.core.k8s_info:
+    kubeconfig: "{{ kubeconfig_path }}"
+    api_version: v1
+    kind: Deployment
+    namespace: argocd
+    name: argocd-dex-server
+  register: deploy_status
+  until: deploy_status.resources[0].status.readyReplicas == deploy_status.resources[0].status.replicas
+  retries: 20
+  delay: 5
+
+- name: wait for argocd-application-controller to finish deploying
+  kubernetes.core.k8s_info:
+    kubeconfig: "{{ kubeconfig_path }}"
+    api_version: v1
+    kind: StatefulSet
+    namespace: argocd
+    name: argocd-application-controller
+  register: deploy_status
+  until: deploy_status.resources[0].status.readyReplicas == deploy_status.resources[0].status.replicas
+  retries: 20
+  delay: 5
+
+- name: patch argo for TLS termination at gateway
+  kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig_path }}"
+    state: present
+    definition:
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: argocd-cmd-params-cm
+        namespace: argocd
+      data:
+        server.insecure: "true"
+  register: tls_patch
+
+- name: restart argo pods
+  when: tls_patch.changed
+  ansible.builtin.command: kubectl --kubeconfig {{ kubeconfig_path }}-n argocd rollout restart deployment/argocd-server
+  changed_when: false
+
+- name: wait for argo to restart
+  when: tls_patch.changed
+  kubernetes.core.k8s_info:
+    kubeconfig: "{{ kubeconfig_path }}"
+    api_version: v1
+    kind: Deployment
+    name: argocd-server
+    namespace: argocd
+  register: deploy_status
+  until: deploy_status.resources[0].status.readyReplicas == deploy_status.resources[0].status.replicas
+  retries: 20
+  delay: 5
+
+- name: add ReferenceGrant for gateway object
+  kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig_path }}"
+    state: present
+    definition:
+      apiVersion: gateway.networking.k8s.io/v1beta1
+      kind: ReferenceGrant
+      metadata:
+        name: argocd-gateway-access
+        namespace: argocd
+      spec:
+        from:
+        - group: gateway.networking.k8s.io
+          kind: Gateway
+          namespace: gateway
+        to:
+        - group: ""
+          kind: Service
+
+- name: add HTTPRoute for argo access
+  kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig_path }}"
+    state: present
+    definition:
+      apiVersion: gateway.networking.k8s.io/v1
+      kind: HTTPRoute
+      metadata:
+        name: argocd-http-route
+        namespace: argocd
+      spec:
+        parentRefs:
+        - name: "{{ cluster_name }}-gateway"
+          namespace: gateway
+        hostnames:
+        - "argo.primary.ops.indef.space"
+        rules:
+        - backendRefs:
+          - name: argocd-server
+            port: 80
+          matches:
+          - path:
+              type: PathPrefix
+              value: /
+
+- name: add GRPCRoute for argo API access
+  kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig_path }}"
+    state: present
+    definition:
+      apiVersion: gateway.networking.k8s.io/v1
+      kind: GRPCRoute
+      metadata:
+        name: argocd-grpc-route
+        namespace: argocd
+      spec:
+        parentRefs:
+        - name: "{{ cluster_name }}-gateway"
+          namespace: gateway
+        hostnames:
+        - "argo-api.primary.ops.indef.space"
+        rules:
+        - backendRefs:
+          - name: argocd-server
+            port: 80
+
+- name: load credentials
+  run_once: true
+  ansible.builtin.include_vars:
+    file: "../inventories/{{ site.segment }}/identity/group_vars/all/vault.yml"
+  no_log: true
+
+- name: create secret for argocd LDAP bind account
+  kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig_path }}"
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: argocd-secret
+        namespace: argocd
+      stringData:
+        dex.ldap.bindPW: "{{ credentials | dict2items | selectattr('key','equalto','kbargo01') | map(attribute='value') | first}}"

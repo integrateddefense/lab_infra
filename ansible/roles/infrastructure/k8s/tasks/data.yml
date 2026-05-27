@@ -1,0 +1,46 @@
+# Configures Data Plane nodes
+
+- name: identify node states
+  block:
+  - name: ping cluster nodes
+    block:
+    - name: ping target nodes
+      loop: "{{ components.talos.primary_cluster.data_plane | map(attribute='ip.service') }}"
+      ansible.builtin.command: "ping {{ item }} -c 2"
+      changed_when: false
+      failed_when: false
+      register: ping_results
+
+    - name: remove cluster nodes that are offline
+      ansible.builtin.set_fact:
+        hosts_up: "{{ ping_results.results | selectattr('rc','equalto',0) | map(attribute='item') }}"
+
+    - name: get machine status
+      loop: "{{ hosts_up }}"
+      loop_control:
+        label: "Checking cluster status for {{ item }}"
+      ansible.builtin.command: "talosctl get machinestatus --nodes {{ item }} --endpoints {{ item }} -o yaml --talosconfig {{ talosconfig_path }}"
+      register: status_raw
+      failed_when: false
+      changed_when: false
+
+    - name: set updates vs creates
+      ansible.builtin.set_fact:
+        updates: "{{ status_raw.results | selectattr('rc','equalto',0) | map(attribute='item') }}"
+        creates: "{{ status_raw.results | selectattr('rc','equalto',1) | map(attribute='item') }}"
+
+- name: update data nodes
+  when: updates | length > 0
+  loop: "{{ updates }}"
+  loop_control:
+    label: "Updating data node config for {{ item }}"
+  ansible.builtin.include_tasks:
+    file: update_data.yml
+
+- name: create data nodes
+  when: creates | length > 0
+  loop: "{{ creates }}"
+  loop_control:
+    label: "Creating new data node config for {{ item }}"
+  ansible.builtin.include_tasks:
+    file: create_data.yml
