@@ -11,6 +11,11 @@
   no_log: true
   run_once: true
 
+- name: load domain vars
+  ansible.builtin.include_vars:
+    file: "../inventories/{{ site.segment }}/identity/group_vars/identity_authority/misc.yml"
+  run_once: true
+
 - name: render configuration template
   become: true
   ansible.builtin.blockinfile:
