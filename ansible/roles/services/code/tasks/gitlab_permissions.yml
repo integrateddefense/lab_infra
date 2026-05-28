@@ -2,7 +2,7 @@
 ## GitLab provides this service via paid subscriptions; this role imitates this functionality for the free tier
 - name: load accounts vars
   ansible.builtin.include_vars:
-    file: "../inventories/{{ site.segment }}/identity/group_vars/identity_authority/accounts..yml"
+    file: "../inventories/{{ site.segment }}/identity/group_vars/identity_authority/accounts.yml"
   no_log: true
 
 - name: load credentials
