@@ -31,9 +31,9 @@
 
 - name: install dependencies
   become: true
-  ansible.builtin.package:
+  ansible.builtin.dnf:
     name:
-    - gitlab-runner
+    - "gitlab-runner-{{ versions.gitlab }}"
     - docker-ce
     - docker-ce-cli
     - containerd.io
@@ -108,9 +108,27 @@
     tag_list: "{{ tag_list }}"
   register: runner
 
-- when: scope != "project"
+- name: create instance level runner
+  when: scope == "instance"
+  delegate_to: localhost
+  vars:
+    ansible_python_interpreter: "{{ mgmt_pi_ansible_python }}"
+  community.general.gitlab_runner:
+    api_url: "{{ external_url }}"
+    api_token: "{{ credentials['coglab02'] }}"
+    validate_certs: false ## TODO - remove once enterprise CA is available
+    description: "{{ description }}"
+    state: present
+    active: true
+    locked: false
+    run_untagged: false
+    maximum_timeout: 600
+
+- when:
+  - scope != "project"
+  - scope != "instance"
   ansible.builtin.fail:
-    msg: "Scope not equal to project has not been implemented yet"
+    msg: "Scope not equal to project or instance has not been implemented yet"
 
 - name: write runner-side config
   become: true
