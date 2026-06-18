@@ -33,7 +33,7 @@
   become: true
   ansible.builtin.dnf:
     name:
-    - "gitlab-runner-{{ versions.gitlab }}"
+    - gitlab-runner
     - docker-ce
     - docker-ce-cli
     - containerd.io
