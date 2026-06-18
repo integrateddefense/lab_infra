@@ -124,6 +124,7 @@
     locked: false
     run_untagged: false
     maximum_timeout: 600
+  register: runner
 
 - when:
   - scope != "project"
