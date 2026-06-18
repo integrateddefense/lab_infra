@@ -151,6 +151,7 @@
       vm_sockets: "{{ code.glab.sockets }}"
       vm_cores: "{{ code.glab.cores }}"
       vm_mem: "{{ code.glab.mem }}"
+      vm_vid: "{{ code.glab.vid }}"
       ## To configure the service, see playbooks/code.yml
 
   - name: create Code/Runner subsystem VMs
@@ -179,6 +180,7 @@
       vm_sockets: "{{ code.runr.sockets }}"
       vm_cores: "{{ code.runr.cores }}"
       vm_mem: "{{ code.runr.mem }}"
+      vm_vid: "{{ core.runr.vid }}"
       ## To configure the service, see playbooks/code.yml
 
   - name: create k8s/control subsystem
