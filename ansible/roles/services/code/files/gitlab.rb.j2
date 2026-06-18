@@ -34,3 +34,7 @@ gitlab_rails['ldap_servers'] = YAML.load <<-'EOS'
     base: 'OU=Identities,{{ root_dn }}'
     user_filter: '(memberOf=CN=OPS-Code-Users,{{ (ad_groups | selectattr('name','equalto','OPS-Code-Users'))[0].path }})'
 EOS
+
+## Container Registry Settings
+gitlab_rails['registry_enabled'] = true
+registry_external_url 'https://gitlab.ops.indef.space:5050'
