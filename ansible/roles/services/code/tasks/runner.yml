@@ -118,6 +118,7 @@
     api_token: "{{ credentials['coglab02'] }}"
     validate_certs: false ## TODO - remove once enterprise CA is available
     description: "{{ description }}"
+    tag_list: "{{ tag_list }}"
     state: present
     active: true
     locked: false
