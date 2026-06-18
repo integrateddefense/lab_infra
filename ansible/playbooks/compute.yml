@@ -180,7 +180,7 @@
       vm_sockets: "{{ code.runr.sockets }}"
       vm_cores: "{{ code.runr.cores }}"
       vm_mem: "{{ code.runr.mem }}"
-      vm_vid: "{{ core.runr.vid }}"
+      vm_vid: "{{ code.runr.vid }}"
       ## To configure the service, see playbooks/code.yml
 
   - name: create k8s/control subsystem
