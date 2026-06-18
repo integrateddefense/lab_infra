@@ -74,7 +74,7 @@
 
 - name: load gitlab vars
   ansible.builtin.include_vars:
-    dir: "../../../../../inventories/{{ site.segment }}/{{ site.name }}/group_vars/gitlab/"
+    dir: ../../../../inventories/{{ site.segment }}/{{ site.name }}/group_vars/gitlab/"
 
 - name: resolve project_id
   when: scope == "project"
