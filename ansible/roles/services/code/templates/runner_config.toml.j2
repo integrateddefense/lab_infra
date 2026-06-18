@@ -29,6 +29,7 @@ shutdown_timeout = 0
     volumes = ['/cache']
     memory = "1024m"
     memory_swap = "1024m"
+    security_opt = ["seccomp:unconfined"]
 
   [runners.cache]
     MaxUploadedArchiveSize = 0
