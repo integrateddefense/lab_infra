@@ -101,6 +101,7 @@
       enabled: true
 
   - name: allow configured services
+    when: firewalld_services is defined
     become: true
     loop: "{{ firewalld_services }}"
     loop_control:
@@ -111,5 +112,19 @@
       permanent: true
       immediate: true
       zone: public
+
+  - name: allow custom port/protocols
+    when: firewalld_ports is defined
+    become: true
+    loop: "{{ firewalld_ports }}"
+    loop_control:
+      label: "Allowing {{ item.proto }} {{ item.port }}"
+    ansible.posix.firewalld:
+      port: "{{ item.port }}/{{ item.proto }}"
+      state: enabled
+      permanent: true
+      immediate: true
+      zone: public
+
 
 # TODO: add log forwarding and default services
