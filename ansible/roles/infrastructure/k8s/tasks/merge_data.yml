@@ -190,7 +190,7 @@
                   'path': '/etc/iscsi/initiatorname.iscsi',
                   'permissions': 0o644,
                   'op': 'overwrite',
-                  'content': "InitiatorName=iqn.2025-07.space.indef.ops:{{ components.talos.primary_cluster.cluster_name }}-{{ target.hostname }}"
+                  'content': "InitiatorName=iqn.2025-07.space.indef.ops:" ~ components.talos.primary_cluster.cluster_name ~ "-" ~ target.hostname
                 }
               ]
             }
