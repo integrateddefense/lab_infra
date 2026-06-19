@@ -232,11 +232,11 @@
               {
                 'config':
                 {
-                  (gitlab_url ~ ':5050'):
+                  gitlab_registry:
                   {
                     'tls':
                     {
-                      'ca': lookup('file',role_path ~ '/files/gitlab.crt')
+                      'ca': lookup('file',role_path ~ '/files/gitlab.crt') | b64encode
                     }
                   }
                 }
