@@ -218,6 +218,35 @@
         )
       }}
 
+## TODO - replace with root CA cert once available
+- name: trust gitlab self-signed cert
+  ansible.builtin.set_fact:
+    updated_main_doc: |
+      {{
+        updated_main_doc | combine
+        (
+          {
+            'machine':
+            {
+              'registries':
+              {
+                'config':
+                {
+                  (gitlab_url ~ ':5050'):
+                  {
+                    'tls':
+                    {
+                      'ca': lookup('file',role_path ~ '/files/gitlab.crt')
+                    }
+                  }
+                }
+              }
+            }
+          },
+          recursive=True
+        )
+      }}
+
 - name: enable talos host-dns service
   ansible.builtin.set_fact:
     updated_main_doc: |
