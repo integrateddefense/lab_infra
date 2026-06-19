@@ -199,6 +199,25 @@
         )
       }}
 
+- name: set image to schematic
+  ansible.builtin.set_fact:
+    updated_main_doc: |
+      {{
+        updated_main_doc | combine
+        (
+          {
+            'machine':
+            {
+              'install':
+              {
+                'image': "factory.talos.dev/installer/c9078f9419961640c712a8bf2bb9174933dfcf1da383fd8ea2b7dc21493f8bac:v1.12.5"
+              }
+            }
+          },
+          recursive=True
+        )
+      }}
+
 - name: enable talos host-dns service
   ansible.builtin.set_fact:
     updated_main_doc: |
