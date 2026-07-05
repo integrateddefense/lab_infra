@@ -16,7 +16,7 @@
 
 - name: select OS disk
   ansible.builtin.set_fact:
-    os_disk: "{{ disks | selectattr('spec.readonly','equalto',false) | rejectattr('spec.cdrom','equalto',true) | selectattr('spec.transport','equalto','ata') }}"
+    os_disk: "{{ disks | selectattr('spec.readonly','equalto',false) | rejectattr('spec.cdrom','equalto',true) | selectattr('spec.transport','equalto','virtio') }}"
 
 - name: error check for disk selection
   ansible.builtin.assert:
