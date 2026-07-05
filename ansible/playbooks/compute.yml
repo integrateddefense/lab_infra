@@ -270,4 +270,5 @@
       vm_cores: "{{ storage.tnas.cores }}"
       vm_mem: "{{ storage.tnas.mem }}"
       vm_vid: "{{ storage.tnas.vid }}"
+      vm_start: true
       ## To configure the service, see playbooks/code.yml
