@@ -34,9 +34,14 @@
       {{
         updated_main_doc | combine(
           {'machine':
-            {'nodeTaints':
+            {
+            'nodeTaints':
               {
                 'node-class': target.taint + ':NoSchedule'
+              },
+            'nodeLabels':
+              {
+                'node-class': target.taint
               }
             }
           },

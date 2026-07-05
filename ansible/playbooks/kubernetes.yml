@@ -63,6 +63,12 @@
     vars:
       cluster_name: "{{ components.talos.primary_cluster.cluster_name }}"
 
+  - name: setup splunk pre-requisites
+    tags: ['splunk']
+    ansible.builtin.import_role:
+      name: infrastructure/k8s
+      tasks_from: splunk.yml
+
   - name: deploy secrets for observer
     tags: ['observer']
     ansible.builtin.import_role:
@@ -72,3 +78,4 @@
       observer_instances:
       - namespace: "observer-dev"
       - namespace: "observer-prod"
+

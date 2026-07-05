@@ -1,0 +1,8 @@
+# Configures Splunk pre-requisites on the k8s cluster
+- name: deploy splunk CRDs
+  kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig_path }}"
+    src: 'https://github.com/splunk/splunk-operator/releases/download/{{ versions.splunk_operator }}/splunk-operator-crds.yaml'
+    apply: true
+    server_side_apply:
+      field_manager: ansible
