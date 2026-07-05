@@ -193,11 +193,10 @@
       }}
 
 - name: build new config
-  become: true
   ansible.builtin.copy:
     content: "{{ [updated_main_doc,updated_hostname_doc] | map('to_nice_yaml') | join('---\n') }}"
     dest: "{{ k8s_root }}/{{ target.hostname }}.yaml"
-    owner: root
+    owner: deployexec
     group: ansible
     mode: 0750
 
