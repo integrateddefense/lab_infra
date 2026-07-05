@@ -198,7 +198,7 @@
     dest: "{{ k8s_root }}/{{ target.hostname }}.yaml"
     owner: deployexec
     group: ansible
-    mode: 0750
+    mode: 0770
 
 - name: validate config
   changed_when: false
