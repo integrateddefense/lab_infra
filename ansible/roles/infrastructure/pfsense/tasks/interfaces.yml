@@ -80,6 +80,17 @@
     blockbogons: "true"
     blockpriv: "true"
 
+- name: configure wireguard interfaces
+  become: true
+  loop: "{{ ifaces | selectattr('type','equalto','wireguard') }}"
+  pfsensible.core.pfsense_interface:
+    interface: "{{ item.iface }}"
+    descr: "{{ item.name }}"
+    enable: true
+    ipv4_type: none
+    ipv6_type: none
+    state: present
+
 - name: configure dhcp server
   become: true
   loop: "{{ ifaces | selectattr('dhcp','defined') }}"
