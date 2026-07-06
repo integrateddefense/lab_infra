@@ -1,5 +1,10 @@
 # Transit DMZ -> DMZ
 add rule inet filter fwd_v{{ vlans.transit.dmz.id }} oifname "{{ trunk_iface }}.{{ vlans.dmz.id }}" tcp dport { 443 } accept
 
+# Transit DMZ / WireGuard Clients -> Core
+add rule inet filter fwd_v{{ vlans.transit.dmz.id }} ip saddr {{ vlans.vpn_clients.cidr }} oifname "{{ trunk_iface }}.{{ vlans.core.id }}" tcp dport { 88,443,445 } accept
+add rule inet filter fwd_v{{ vlans.transit.dmz.id }} ip saddr {{ vlans.vpn_clients.cidr }} oifname "{{ trunk_iface }}.{{ vlans.core.id }}" udp dport { 53,88,123 } accept
+add rule inet filter fwd_v{{ vlans.transit.dmz.id }} ip saddr {{ vlans.vpn_clients.cidr }} oifname "{{ trunk_iface }}.{{ vlans.core.id }}" ip protocol icmp accept
+
 # Default Rule for the Transit-DMZ VLAN
 add rule inet filter fwd_v{{ vlans.transit.dmz.id }} drop
