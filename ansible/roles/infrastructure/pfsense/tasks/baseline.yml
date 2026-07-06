@@ -28,3 +28,10 @@
   changed_when: false
 
 # TODO: configure DNSSEC and forwarding
+
+- name: install wireguard package
+  become: true
+  ansible.builtin.package:
+    name: pfSense-pkg-WireGuard
+    state: present
+    update_cache: true
