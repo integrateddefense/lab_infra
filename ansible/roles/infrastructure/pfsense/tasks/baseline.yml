@@ -34,4 +34,3 @@
   ansible.builtin.package:
     name: pfSense-pkg-WireGuard
     state: present
-    update_cache: true
