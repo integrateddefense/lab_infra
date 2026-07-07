@@ -5,13 +5,13 @@
     kind: Pod
   register: pod_list
 
+- debug:
+    var: pod_list
+
 - name: validate only one running pod
   ansible.builtin.assert:
     that:
     - pod_list | length == 1
-
-- debug:
-    var: pod_list[0]
 
 - name: extract pod name
   ansible.builtin.set_fact:
