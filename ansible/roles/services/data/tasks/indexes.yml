@@ -13,7 +13,7 @@
 
 - name: extract pod name
   ansible.builtin.set_fact:
-    splunk_pod: "{{pod_list.resources[0].name}}"
+    splunk_pod: "{{pod_list.resources[0].metadata.name }}"
 
 - meta: end_play
 
