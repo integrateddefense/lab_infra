@@ -6,3 +6,51 @@
     apply: true
     server_side_apply:
       field_manager: ansible
+
+# Deploy secret for the secondary gateway
+## TODO - refactor below once enterprise CA is available; should pull from CA
+- name: generate private key for data gateway
+  become: true
+  community.crypto.openssl_privatekey:
+    path: "{{ gateway_root }}/data_priv_key.pem"
+    owner: deployexec
+    group: ansible
+    mode: 0760
+
+- name: generate CSR for data gateway
+  become: true
+  community.crypto.openssl_csr:
+    path: "{{ gateway_root }}/data_gateway.csr"
+    privatekey_path: "{{ gateway_root }}/data_priv_key.pem"
+    common_name: "*.{{ components.analysis.data.cluster_name }}.ops.indef.space"
+    subject_alt_name: 'DNS:{{ components.analysis.data.cluster_name }}.ops.indef.space;DNS:*.{{ components.analysis.data.cluster_name }}.ops.indef.space'
+    owner: deployexec
+    group: ansible
+    mode: 0764
+
+- name: generate self signed cert for data gateway
+  become: true
+  community.crypto.x509_certificate:
+    path: "{{ gateway_root}}/data_gateway.crt"
+    csr_path: "{{ gateway_root }}/data_gateway.csr"
+    privatekey_path: "{{ gateway_root }}/data_priv_key.pem"
+    provider: selfsigned
+    owner: deployexec
+    group: ansible
+    mode: 0764
+
+- name: deploy k8s secret for data gateway
+  kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig_path }}"
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: "date-gateway-tls-ss"
+        namespace: gateway
+      type: kubernetes.io/tls
+      data:
+        tls.crt: "{{ lookup('file',gateway_root ~ '/data_gateway.crt') | b64encode }}"
+        tls.key: "{{ lookup('file',gateway_root ~ '/data_priv_key.pem') | b64encode }}"
+## TODO - refactor above once enterprise CA is available; should pull from CA
