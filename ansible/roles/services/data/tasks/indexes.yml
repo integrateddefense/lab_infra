@@ -1,0 +1,22 @@
+# Renders the indexes.conf.j2 template and copies it into the pod
+- name: get pod name for splunk standalone
+  kubernetes.core.k8s_info:
+    kind: Pod
+  register: pod_list
+
+- name: validate only one running pod
+  ansible.builtin.assert:
+    that:
+    - pod_list | length == 1
+
+- debug:
+    var: pod_list[0]
+
+- name: extract pod name
+  ansible.builtin.set_fact:
+    splunk_pod: "{{pod_list[0].name}}"
+
+- name: render indexes configuration
+  kubernetes.core.k8s_cp:
+    namespace: "{{ components.analysis.data.namespace }}"
+    pod: 
