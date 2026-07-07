@@ -1,6 +1,7 @@
 # Renders the indexes.conf.j2 template and copies it into the pod
 - name: get pod name for splunk standalone
   kubernetes.core.k8s_info:
+    kubeconfig: "{{ kubeconfig_path }}"
     kind: Pod
   register: pod_list
 
@@ -18,5 +19,6 @@
 
 - name: render indexes configuration
   kubernetes.core.k8s_cp:
+    kubeconfig: "{{ kubeconfig_path }}"
     namespace: "{{ components.analysis.data.namespace }}"
     pod: 
