@@ -3,6 +3,7 @@
   kubernetes.core.k8s_info:
     kubeconfig: "{{ kubeconfig_path }}"
     kind: Pod
+    namespace: "{{ components.analysis.data.namespace }}"
   register: pod_list
 
 - debug:
