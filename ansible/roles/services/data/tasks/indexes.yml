@@ -6,17 +6,16 @@
     namespace: "{{ components.analysis.data.namespace }}"
   register: pod_list
 
-- debug:
-    var: pod_list
-
 - name: validate only one running pod
   ansible.builtin.assert:
     that:
-    - pod_list | length == 1
+    - pod_list.resources | length == 1
 
 - name: extract pod name
   ansible.builtin.set_fact:
-    splunk_pod: "{{pod_list[0].name}}"
+    splunk_pod: "{{pod_list.resources[0].name}}"
+
+- meta: end_play
 
 - name: render indexes configuration
   kubernetes.core.k8s_cp:
