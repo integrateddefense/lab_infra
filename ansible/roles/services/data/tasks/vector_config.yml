@@ -54,7 +54,7 @@
   become: true
   ansible.builtin.file:
     path: "{{ vector_tls_root }}"
-    directory: true
+    state: directory
     owner: vector
     group: vector
     mode: '0640'
