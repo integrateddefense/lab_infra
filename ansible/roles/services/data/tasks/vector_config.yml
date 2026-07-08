@@ -7,6 +7,10 @@
 ## TODO - refactor below tasks once enterprise CA is available; should pull from CA
 ## Generate key material for tls endpoint
 
+- name: save destination interpreter path
+  ansible.builtin.set_fact:
+    old_ansible_python_interpreter: "{{ ansible_python_interpreter }}"
+
 - name: load mgmt pi vars
   ansible.builtin.include_vars:
     file: '../inventories/{{ site.segment }}/{{ site.name }}/group_vars/mgmt_pi.yml'
@@ -43,6 +47,10 @@
     owner: deployexec
     group: ansible
     mode: 0764
+
+- name: unset mgmt pi interpreter path
+  ansible.builtin.set_fact:
+    ansible_python_interpreter: old_ansible_python_interpreter
 
 ## TODO - refactor below tasks once enterprise CA is available; should pull from CA
 
