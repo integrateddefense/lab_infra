@@ -7,18 +7,20 @@
 ## TODO - refactor below tasks once enterprise CA is available; should pull from CA
 ## Generate key material for tls endpoint
 - name: generate private key
+  delegate_to: localhost
   become: true
   community.crypto.openssl_privatekey:
-    path: "{{ role_path ~ '/files/' ~ ansible_host ~ '_key.pem' }}"
+    path: "{{ collectors_root ~ '/' ~ ansible_host ~ '_key.pem' }}"
     owner: deployexec
     group: ansible
     mode: 0760
 
 - name: generate CSR
+  delegate_to: localhost
   become: true
   community.crypto.openssl_csr:
-    path: "{{ role_path ~ '/files/' ~ ansible_host ~ '_request.csr' }}"
-    privatekey_path: "{{ role_path ~ '/files/' ~ ansible_host ~ '_key.pem' }}"
+    path: "{{ collectors_root ~ '/' ~ ansible_host ~ '_request.csr' }}"
+    privatekey_path: "{{ collectors_root ~ '/' ~ ansible_host ~ '_key.pem' }}"
     common_name: '{{ dns_spec.records | selectattr("value","equalto",ansible_host) | map(attribute="name") | first }}.ops.indef.space'
     subject_alt_name: 'DNS:{{ dns_spec.records | selectattr("value","equalto",ansible_host) | map(attribute="name") | first }}.ops.indef.space'
     owner: deployexec
@@ -26,18 +28,36 @@
     mode: 0764
 
 - name: generate self signed cert
+  delegate_to: localhost
   become: true
   community.crypto.x509_certificate:
-    path: "{{ role_path ~ '/files/' ~ ansible_host ~ '_cert.crt' }}"
-    csr_path: "{{ role_path ~ '/files/' ~ ansible_host ~ '_request.csr' }}"
-    privatekey_path: "{{ role_path ~ '/files/' ~ ansible_host ~ '_key.pem' }}"
+    path: "{{ collectors_root ~ '/' ~ ansible_host ~ '_cert.crt' }}"
+    csr_path: "{{ collectors_root ~ '/' ~ ansible_host ~ '_request.csr' }}"
+    privatekey_path: "{{ collectors_root ~ '/' ~ ansible_host ~ '_key.pem' }}"
     provider: selfsigned
     owner: deployexec
     group: ansible
     mode: 0764
 
-
 ## TODO - refactor below tasks once enterprise CA is available; should pull from CA
+
+- name: copy cert to collector
+  ansible.builtin.copy:
+    src: "{{ collectors_root ~ '/' ~ ansible_host ~ '_cert.crt' }}"
+    dest: "{{ vector_cert_path }}"
+    owner: vector
+    group: vector
+    mode: '0640'
+  notify: reload vector
+
+- name: copy key material to collector
+  ansible.builtin.copy:
+    src: "{{ collectors_root ~ '/' ~ ansible_host ~ '_key.pem' }}"
+    dest: "{{ vector_key_path }}"
+    owner: vector
+    group: vector
+    mode: '0640'
+  notify: reload vector
 
 - name: render config template
   become: true
