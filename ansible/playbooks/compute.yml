@@ -210,7 +210,7 @@
       vm_start: true
       vm_bios: "{{ talos.control_plane.bios }}"
       vm_cpu_type: "{{ talos.control_plane.cpu_type }}"
-      ## To configure the service, see playbooks/kube.yml
+      ## To configure the service, see playbooks/kubernetes.yml
 
   - name: precompute servers
     tags: ["vms","infrastructure","k8s","data","infrastructure/k8s","k8s/data"]
@@ -244,7 +244,7 @@
       vm_start: true
       vm_bios: "{{ talos.data_plane.bios }}"
       vm_cpu_type: "{{ talos.data_plane.cpu_type }}"
-      ## To configure the service, see playbooks/kube.yml
+      ## To configure the service, see playbooks/kubernetes.yml
 
   - name: create temporary storage controller
     tags: ['vms','services','storage']
@@ -272,3 +272,32 @@
       vm_vid: "{{ storage.tnas.vid }}"
       vm_start: true
       ## To configure the service, see playbooks/code.yml
+
+  - name: create Code/Runner subsystem VMs
+    tags: ["vms","services","analysis","syslog","analysis/syslog"]
+    run_once: true
+    ansible.builtin.include_role:
+      name: portable/vm
+      apply:
+        tags: ["vms","services","analysis","syslog","analysis/syslog"]
+    loop: "{{ (groups['compute_nodes'] | sort | list)[0:(analysis.syslog.name | length)] }}"
+    loop_control:
+      loop_var: server
+      index_var: iteration
+      label: "Creating Code VM on {{ server }}"
+    vars:
+      hypervisor_target: "{{ server }}"
+      template_name: "{{ templates.alma9.name }}"
+      template_id: "{{ templates.alma9.id }}"
+      template_storage: "{{ templates.alma9.storage.type }}"
+      template_storage_size: "{{ templates.alma9.storage.size }}"
+      vm_name: "{{ analysis.syslog.name[iteration] }}"
+      vm_id: "{{ analysis.syslog.id[iteration] }}"
+      vm_description: "{{ analysis.syslog.description[iteration] }}"
+      vm_storage: "{{ analysis.syslog.storage }}"
+      vm_storage_size: "{{ analysis.syslog.size }}"
+      vm_sockets: "{{ analysis.syslog.sockets }}"
+      vm_cores: "{{ analysis.syslog.cores }}"
+      vm_mem: "{{ analysis.syslog.mem }}"
+      vm_vid: "{{ analysis.syslog.vid }}"
+      vm_start: true
