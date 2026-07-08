@@ -17,7 +17,7 @@
   ansible.builtin.lineinfile:
     path: /etc/sudoers.d/{{ ansible_user }}
     line: "{{ ansible_user }} ALL=(ALL) NOPASSWD:ALL"
-    mode: "0440"
+    mode: "0640"
     create: yes
 
 - name: Require Terminal Access
