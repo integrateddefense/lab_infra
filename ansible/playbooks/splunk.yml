@@ -35,16 +35,22 @@
     tags: ['indexes']
     ansible.builtin.import_role:
       name: services/data
-      tasks_from: indexes.yml
+      tasks_from: render.yml
+    vars:
+      config: indexes
 
   - name: configure inputs
     tags: ['inputs']
     ansible.builtin.import_role:
       name: services/data
-      tasks_from: inputs.yml
+      tasks_from: render.yml
+    vars:
+      config: inputs
 
   - name: configure props
     tags: ['props']
     ansible.builtin.import_role:
       name: services/data
-      tasks_from: props.yml
+      tasks_from: render.yml
+    vars:
+      config: props

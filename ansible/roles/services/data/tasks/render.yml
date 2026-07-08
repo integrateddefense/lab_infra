@@ -1,28 +1,33 @@
-# Renders the indexes.conf.j2 template and copies it into the pod
+# Renders the template identified by the provided 'config' variable
+- name: check for config name
+  when: config is not defined
+  ansible.builtin.fail:
+    msg: "Must specify a configuration name to apply"
+
 - name: capture current config for idempotency check
   kubernetes.core.k8s_exec:
     kubeconfig: "{{ kubeconfig_path }}"
     namespace: "{{ components.analysis.data.namespace }}"
     pod: "{{ splunk_pod }}"
-    command: cat /opt/splunk/etc/system/local/indexes.conf
+    command: "cat /opt/splunk/etc/system/local/{{config}}.conf"
   register: old_config
   failed_when: false
   changed_when: false
 
 - name: render new config
   ansible.builtin.set_fact:
-    rendered_config: "{{ lookup('template','indexes.conf.j2') }}"
+    rendered_config: "{{ lookup('template', config ~ '.conf.j2') }}"
 
 - name: compare old and new config
   ansible.builtin.set_fact:
     config_changed: "{{ old_config.rc != 0 or old_config.stdout != rendered_config }}"
 
-- name: render indexes configuration
+- name: "render {{ config }} configuration to pod"
   when: config_changed
   kubernetes.core.k8s_cp:
     kubeconfig: "{{ kubeconfig_path }}"
     namespace: "{{ components.analysis.data.namespace }}"
     pod: "{{ splunk_pod }}"
     content: "{{ rendered_config }}"
-    remote_path: /opt/splunk/etc/system/local/indexes.conf
+    remote_path: "/opt/splunk/etc/system/local/{{config}}.conf"
   notify: restart splunkd
