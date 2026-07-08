@@ -12,7 +12,6 @@ transforms:
   route_by_source:
     type: route
     inputs: [syslog_relay]
-    reroute_dropped: true
     route:
 {% for key,value in components.analysis.data.sources.items() %}
       {{ key }}: '{{ value.route_conditional }}'
