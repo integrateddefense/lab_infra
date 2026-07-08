@@ -41,11 +41,4 @@
     pod: "{{ splunk_pod }}"
     content: "{{ rendered_config }}"
     remote_path: /opt/splunk/etc/system/local/indexes.conf
-
-- name: trigger restart
-  when: config_changed
-  kubernetes.core.k8s_exec:
-    kubeconfig: "{{ kubeconfig_path }}"
-    namespace: "{{ components.analysis.data.namespace }}"
-    pod: "{{ splunk_pod }}"
-    command: /opt/splunk/bin/splunk restart
+  notify: restart splunkd
