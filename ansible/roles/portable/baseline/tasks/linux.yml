@@ -8,6 +8,7 @@
 
 - name: install system-specific packages
   become: true
+  when: packages is defined
   ansible.builtin.package:
     name: "{{ packages }}"
     state: present
