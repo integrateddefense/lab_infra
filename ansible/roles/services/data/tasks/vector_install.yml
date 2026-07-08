@@ -17,6 +17,6 @@
 - name: install vector
   become: true
   ansible.builtin.package:
-    name: "vector={{ versions.vector }}"
+    name: "vector-{{ versions.vector }}"
     state: present
     update_cache: true
