@@ -4,6 +4,12 @@
   ansible.builtin.include_vars:
     file: '../inventories/{{ site.segment }}/identity/group_vars/all/dns.yml'
 
+- name: load cred vars
+  ansible.builtin.include_vars:
+    file: '../inventories/{{ site.segment }}/identity/group_vars/all/vault.yml'
+  run_once: true
+  no_log: true
+
 ## TODO - refactor below tasks once enterprise CA is available; should pull from CA
 ## Generate key material for tls endpoint
 

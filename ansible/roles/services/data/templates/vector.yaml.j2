@@ -58,3 +58,4 @@ sinks:
 {% for key,value in components.analysis.data.sources.items() %}
     - enrich_{{key}}
 {% endfor %}
+    default_token: {{ splunk.primary.syslog }}
