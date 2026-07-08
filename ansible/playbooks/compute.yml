@@ -294,6 +294,7 @@
       vm_name: "{{ analysis.syslog.name[iteration] }}"
       vm_id: "{{ analysis.syslog.id[iteration] }}"
       vm_description: "{{ analysis.syslog.description[iteration] }}"
+      vm_storage: "{{ analysis.syslog.storage }}"
       vm_sockets: "{{ analysis.syslog.sockets }}"
       vm_cores: "{{ analysis.syslog.cores }}"
       vm_mem: "{{ analysis.syslog.mem }}"
