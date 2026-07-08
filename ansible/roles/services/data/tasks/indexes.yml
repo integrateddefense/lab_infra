@@ -22,10 +22,15 @@
     pod: "{{ splunk_pod }}"
     command: cat /opt/splunk/etc/system/local/indexes.conf
   register: old_config
+  failed_when: false
+
+- name: render new config
+  ansible.builtin.set_fact:
+    rendered_config: "{{ lookup('template','indexes.conf.j2') }}"
 
 - name: compare old and new config
   ansible.builtin.set_fact:
-    config_changed: "{{ old_config == lookup('template','indexes.conf.j2') }}"
+    config_changed: "{{ old_config.rc != 0 or old_config.stdout != rendered_config }}"
 
 - name: render indexes configuration
   when: config_changed
@@ -33,5 +38,5 @@
     kubeconfig: "{{ kubeconfig_path }}"
     namespace: "{{ components.analysis.data.namespace }}"
     pod: "{{ splunk_pod }}"
-    content: "{{ lookup('template','indexes.conf.j2') }}"
+    content: "{{ rendered_config }}"
     remote_path: /opt/splunk/etc/system/local/indexes.conf
