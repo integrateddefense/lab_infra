@@ -9,7 +9,7 @@
 
 - name: save destination interpreter path
   ansible.builtin.set_fact:
-    old_ansible_python_interpreter: "{{ ansible_discovered_python_interpreter }}"
+    old_ansible_python_interpreter: "{{ ansible_discovered_interpreter_python }}"
 
 - name: load mgmt pi vars
   ansible.builtin.include_vars:
