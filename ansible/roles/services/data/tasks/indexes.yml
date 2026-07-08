@@ -21,4 +21,4 @@
     namespace: "{{ components.analysis.data.namespace }}"
     pod: "{{ splunk_pod }}"
     content: "{{ lookup('template','indexes.conf.j2') }}"
-    remote_path: /opt/splunk/etc/system/local/inputs.conf
+    remote_path: /opt/splunk/etc/system/local/indexes.conf
