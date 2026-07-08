@@ -1,12 +1,5 @@
 # Applies the configuration for the Vector application
 
-- name: start vector service
-  become: true
-  ansible.builtin.systemd_service:
-    name: vector
-    state: started
-    enabled: true
-
 - name: render config template
   become: true
   ansible.builtin.template:
@@ -16,3 +9,10 @@
     group: vector
     mode: '0640'
   notify: reload vector
+
+- name: start vector service
+  become: true
+  ansible.builtin.systemd_service:
+    name: vector
+    state: started
+    enabled: true
