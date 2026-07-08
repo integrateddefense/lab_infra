@@ -1,0 +1,20 @@
+# Installs the Vector package
+
+- name: add the vector repository
+  become: true
+  ansible.builtin.deb822_repository:
+    name: vector
+    types: deb
+    uris: https://apt.vector.dev
+    suites: stable
+    components: vector-0
+    architectures: amd64
+    signed_by: https://keys.datadoghq.com/DATADOG_APT_KEY_CURRENT.public
+    state: present
+
+- name: install vector
+  become: true
+  ansible.builtin.apt:
+    name: "vector={{ versions.vector }}"
+    state: present
+    update_cache: true

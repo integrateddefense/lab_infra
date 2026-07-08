@@ -1,0 +1,93 @@
+# Configure the Data Analysis Ecosystem
+
+## Configure Syslog Collectors
+- name: configure syslog collectors
+  hosts: syslog_collectors
+  gather_facts: false
+  tags: ['syslog']
+
+  pre_tasks:
+  - name: probe for connection status
+    ansible.builtin.import_role:
+      name: portable/ssh
+      tasks_from: linux_check.yml
+
+  tasks:
+  # Baseline
+  - name: Configure SSH
+    tags: ["baseline","ssh"]
+    ansible.builtin.import_role:
+      name: portable/ssh
+      tasks_from: linux.yml
+
+  - name: apply linux baseline
+    tags: ["baseline","host"]
+    ansible.builtin.import_role:
+      name: portable/baseline
+      tasks_from: linux.yml
+
+  # Service
+  - name: install vector
+    tags: ['baseline','host','vector']
+    ansible.builtin.import_role:
+      name: services/data
+      tasks_from: vector_install.yml
+
+  - name: configure vector
+    tags: ['vector','configure']
+    ansible.builtin.import_role:
+      name: services/data
+      tasks_from: vector_config.yml
+
+## Configure Splunk Service
+### All commands are executed via API calls, so the playbook targets the localhost to avoid constant delegate_to
+- name: configure splunk service
+  hosts: localhost
+  gather_facts: false
+  tags: ['splunk']
+
+  pre_tasks:
+  - name: get talosctl version
+    ansible.builtin.command: talosctl version --client --short
+    register: talosctl_version_raw
+    failed_when: false
+    changed_when: false
+
+  - name: parse talosctl
+    ansible.builtin.set_fact:
+      parsed: "Talos v{{ versions.talos }}"
+
+  - name: ensure talosctl matches pinned version
+    ansible.builtin.assert:
+      that:
+      - talosctl_version_raw.stdout_lines[1] == parsed
+
+  - name: load pod name
+    ansible.builtin.import_role:
+      name: services/data
+      tasks_from: prep.yml
+
+  tasks:
+  - name: configure splunk indexes
+    tags: ['indexes']
+    ansible.builtin.import_role:
+      name: services/data
+      tasks_from: render.yml
+    vars:
+      config: indexes
+
+  - name: configure splunk inputs
+    tags: ['inputs']
+    ansible.builtin.import_role:
+      name: services/data
+      tasks_from: render.yml
+    vars:
+      config: inputs
+
+  - name: configure splunk props
+    tags: ['props']
+    ansible.builtin.import_role:
+      name: services/data
+      tasks_from: render.yml
+    vars:
+      config: props
