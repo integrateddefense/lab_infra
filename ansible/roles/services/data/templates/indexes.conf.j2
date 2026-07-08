@@ -1,0 +1,10 @@
+{% for item in components.analysis.data.indexes %}
+[{{ item.name }}]
+homePath=$SPLUNK_DB/{{item.name}}/db
+coldPath=$SPLUNK_DB/{{item.name}}/colddb
+thawedPath=$SPLUNK_DB/{{item.name}}/thaweddb
+maxTotalDataSizeMB={{item.size_mb}}
+frozenTimePeriodInSecs={{item.retention_seconds}}
+maxDataSize=auto
+
+{% endfor %}

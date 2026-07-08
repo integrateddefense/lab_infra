@@ -15,11 +15,6 @@
   ansible.builtin.set_fact:
     splunk_pod: "{{pod_list.resources[0].metadata.name }}"
 
-- debug:
-    var: splunk_pod
-
-- meta: end_play
-
 - name: render indexes configuration
   kubernetes.core.k8s_cp:
     kubeconfig: "{{ kubeconfig_path }}"
