@@ -59,3 +59,11 @@ sinks:
     - enrich_{{key}}
 {% endfor %}
     default_token: {{ splunk.primary.syslog }}
+    endpoint: {{ components.analysis.data.hec_ingest_url }}
+    timestamp_key: timestamp
+    index: "{{ '{{ index }}' }}"
+    sourcetype: "{{ '{{ sourcetype }}' }}"
+    encoding:
+      codec: json
+    tls:
+      ca_file: {{ vector_ca_path }}

@@ -85,6 +85,17 @@
     mode: '0640'
   notify: reload vector
 
+## TODO - replace with enterprise CA root cert
+- name: copy key material to collector
+  become: true
+  ansible.builtin.copy:
+    src: "{{ gateway_root ~ 'data_gateway.crt'}}"
+    dest: "{{ vector_ca_path }}"
+    owner: vector
+    group: vector
+    mode: '0640'
+  notify: reload vector
+
 - name: render config template
   become: true
   ansible.builtin.template:
