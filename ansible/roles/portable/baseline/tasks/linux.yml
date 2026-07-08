@@ -73,7 +73,7 @@
 
 # Configure Data Disk if specified
 - name: configure data disk
-  when: "'mountpoint' is defined"
+  when: mountpoint is defined
   ansible.builtin.import_role:
     name: portable/disks
     tasks_from: linux.yml
