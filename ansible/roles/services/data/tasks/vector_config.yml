@@ -6,6 +6,11 @@
 
 ## TODO - refactor below tasks once enterprise CA is available; should pull from CA
 ## Generate key material for tls endpoint
+
+- name: load mgmt pi vars
+  ansible.builtin.include_vars:
+    file: '../inventories/{{ site.segment }}/{{ site.name }}/group_vars/mgmt_pi.yml'
+
 - name: generate private key
   delegate_to: localhost
   become: true
