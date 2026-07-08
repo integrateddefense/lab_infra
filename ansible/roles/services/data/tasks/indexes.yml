@@ -23,6 +23,7 @@
     command: cat /opt/splunk/etc/system/local/indexes.conf
   register: old_config
   failed_when: false
+  changed_when: false
 
 - name: render new config
   ansible.builtin.set_fact:
