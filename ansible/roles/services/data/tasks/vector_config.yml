@@ -1,1 +1,18 @@
 # Applies the configuration for the Vector application
+
+- name: start vector service
+  become: true
+  ansible.builtin.systemd_service:
+    name: vector
+    state: started
+    enabled: true
+
+- name: render config template
+  become: true
+  ansible.builtin.template:
+    src: vector.yaml.j2
+    dest: /etc/vector/vector.yaml
+    owner: vector
+    group: vector
+    mode: '0640'
+  notify: reload vector

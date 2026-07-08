@@ -1,0 +1,60 @@
+sources:
+  syslog_relay:
+    type: syslog
+    mode: tcp
+    address: 0.0.0.0:6514
+    tls:
+      enabled: true
+      crt_file: {{ vector_cert_path }}
+      key_file: {{ vector_key_path }}
+
+transforms:
+  route_by_source:
+    type: route
+    inputs: [syslog_relay]
+    reroute_dropped: true
+    route:
+{% for key,value in components.analysis.data.sources.items() %}
+      {{ key }}: '{{ value.route_conditional }}'
+{% endfor %}
+
+{% for key, value in components.analysis.data.sources.items() %}
+  enrich_{{ key }}:
+    type: remap
+    inputs: [route_by_source.{{ key }}]
+    reroute_dropped: true
+    source: |
+      .sourcetype = "{{ value.name.splunk }}"
+      .index = "{{ value.index }}"
+{% if value.timestamp_extractor %}
+      .timestamp = {{ value.timestamp_extractor }}
+{% endif %}
+
+{% endfor %}
+  tag_dropped:
+    type: remap
+    inputs:
+{% for key, value in components.analysis.data.sources.items() %}
+    - enrich_{{key}}.dropped
+{% endfor %}
+    source: |
+      .sourcetype = "vector:parse_error"
+      .index = "dlq"
+
+  tag_unmatched:
+    type: remap
+    inputs:
+    - route_by_source._unmatched
+    source: |
+      .sourcetype = "vector:unmatched"
+      .index = "dlq"
+
+sinks:
+  splunk:
+    type: splunk_hec_logs
+    inputs:
+    - tag_unmatched
+    - tag_dropped
+{% for key,value in components.analysis.data.sources.items() %}
+    - enrich_{{key}}
+{% endfor %}

@@ -1,4 +1,4 @@
-{% for item in components.analysis.data.sources %}
+{% for key, item in components.analysis.data.sources.items() %}
 [{{item.name.splunk}}]
 INDEXED_EXTRACTIONS = json
 KV_MODE = none
