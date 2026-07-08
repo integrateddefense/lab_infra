@@ -1,0 +1,14 @@
+[http]
+disabled = 0
+enableSSL = 0
+port = 8088
+
+[http://syslog-relay]
+token = {{ splunk.primary.syslog }}
+indexes = {{ components.analysis.data.indexes | map(attribute='name') | join(',') }}
+disabled = 0
+
+[http://wef-relay]
+token = {{ splunk.primary.wef }}
+indexes = {{ components.analysis.data.indexes | map(attribute='name') | join(',') }}
+disabled = 0
