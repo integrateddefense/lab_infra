@@ -1,5 +1,44 @@
 # Applies the configuration for the Vector application
 
+- name: load dns vars
+  ansible.builtin.include_vars:
+    file: '../inventories/{{ site.segment }}/identity/group_vars/all/dns.yml'
+
+## TODO - refactor below tasks once enterprise CA is available; should pull from CA
+## Generate key material for tls endpoint
+- name: generate private key
+  become: true
+  community.crypto.openssl_privatekey:
+    path: "{{ role_path ~ '/files/key.pem' }}"
+    owner: deployexec
+    group: ansible
+    mode: 0760
+
+- name: generate CSR
+  become: true
+  community.crypto.openssl_csr:
+    path: "{{ role_path ~ '/files/request.csr' }}"
+    privatekey_path: "{{ role_path ~ '/files/key.pem' }}"
+    common_name: '{{ dns_spec.records | selectattr("value","equalto",ansible_host) | map(attribute="name") | first }}.ops.indef.space'
+    subject_alt_name: 'DNS:{{ dns_spec.records | selectattr("value","equalto",ansible_host) | map(attribute="name") | first }}.ops.indef.space'
+    owner: deployexec
+    group: ansible
+    mode: 0764
+
+- name: generate self signed cert
+  become: true
+  community.crypto.x509_certificate:
+    path: "{{ role_path ~ '/files/cert.crt' }}"
+    csr_path: "{{ role_path ~ '/files/request.csr' }}"
+    privatekey_path: "{{ role_path ~ '/files/key.pem' }}"
+    provider: selfsigned
+    owner: deployexec
+    group: ansible
+    mode: 0764
+
+
+## TODO - refactor below tasks once enterprise CA is available; should pull from CA
+
 - name: render config template
   become: true
   ansible.builtin.template:

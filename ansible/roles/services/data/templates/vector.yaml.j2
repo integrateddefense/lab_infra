@@ -26,7 +26,7 @@ transforms:
     source: |
       .sourcetype = "{{ value.name.splunk }}"
       .index = "{{ value.index }}"
-{% if value.timestamp_extractor %}
+{% if value.timestamp_extractor is defined %}
       .timestamp = {{ value.timestamp_extractor }}
 {% endif %}
 
