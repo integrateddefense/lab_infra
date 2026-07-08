@@ -46,6 +46,15 @@
 
 ## TODO - refactor below tasks once enterprise CA is available; should pull from CA
 
+- name: create cert directory
+  become: true
+  ansible.builtin.file:
+    path: "{{ vector_tls_root }}"
+    directory: true
+    owner: vector
+    group: vector
+    mode: '0640'
+
 - name: copy cert to collector
   ansible.builtin.copy:
     src: "{{ collectors_root ~ '/' ~ ansible_host ~ '_cert.crt' }}"
