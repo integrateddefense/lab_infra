@@ -60,6 +60,7 @@
     mode: '0640'
 
 - name: copy cert to collector
+  become: true
   ansible.builtin.copy:
     src: "{{ collectors_root ~ '/' ~ ansible_host ~ '_cert.crt' }}"
     dest: "{{ vector_cert_path }}"
@@ -69,6 +70,7 @@
   notify: reload vector
 
 - name: copy key material to collector
+  become: true
   ansible.builtin.copy:
     src: "{{ collectors_root ~ '/' ~ ansible_host ~ '_key.pem' }}"
     dest: "{{ vector_key_path }}"
