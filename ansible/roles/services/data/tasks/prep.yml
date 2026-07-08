@@ -1,0 +1,16 @@
+# Resolves the pod name for the splunk standalone pod
+- name: get pod name for splunk standalone
+  kubernetes.core.k8s_info:
+    kubeconfig: "{{ kubeconfig_path }}"
+    kind: Pod
+    namespace: "{{ components.analysis.data.namespace }}"
+  register: pod_list
+
+- name: validate only one running pod
+  ansible.builtin.assert:
+    that:
+    - pod_list.resources | length == 1
+
+- name: extract pod name
+  ansible.builtin.set_fact:
+    splunk_pod: "{{pod_list.resources[0].metadata.name }}"

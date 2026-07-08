@@ -24,6 +24,12 @@
       that:
       - talosctl_version_raw.stdout_lines[1] == parsed
 
+  - name: load pod name
+    tags: ['always']
+    ansible.builtin.import_role:
+      name: services/data
+      tasks_from: prep.yml
+
   tasks:
   - name: configure indexes
     tags: ['indexes']
