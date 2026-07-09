@@ -63,7 +63,7 @@
     state: directory
     owner: vector
     group: vector
-    mode: '0640'
+    mode: '0750'
 
 - name: copy cert to collector
   become: true
@@ -86,7 +86,7 @@
   notify: reload vector
 
 ## TODO - replace with enterprise CA root cert
-- name: copy key material to collector
+- name: copy root CA to collector
   become: true
   ansible.builtin.copy:
     src: "{{ gateway_root ~ '/data_gateway.crt'}}"
