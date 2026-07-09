@@ -47,5 +47,4 @@
     logformat: "rfc5424"
     nologbogons: true
     nologdefaultblock: true
-    nologlinklocal4: true
     nologprivatenets: true
