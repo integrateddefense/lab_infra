@@ -6,5 +6,8 @@ add rule inet filter fwd_v{{ vlans.transit.dmz.id }} ip saddr {{ vlans.vpn_clien
 add rule inet filter fwd_v{{ vlans.transit.dmz.id }} ip saddr {{ vlans.vpn_clients.cidr }} oifname "{{ trunk_iface }}.{{ vlans.core.id }}" udp dport { 53,88,123 } accept
 add rule inet filter fwd_v{{ vlans.transit.dmz.id }} ip saddr {{ vlans.vpn_clients.cidr }} oifname "{{ trunk_iface }}.{{ vlans.core.id }}" ip protocol icmp accept
 
+# Transit DMZ / pfSense -> Core / DNS
+add rule inet filter fwd_v{{ vlans.transit.dmz.id }} ip saddr {{ components.network.pfsense.ip }} oifname {{ trunk_iface }}.{{ vlans.core.id }}" udp dport { 53 } accept
+
 # Default Rule for the Transit-DMZ VLAN
 add rule inet filter fwd_v{{ vlans.transit.dmz.id }} drop
