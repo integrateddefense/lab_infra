@@ -27,10 +27,16 @@
     dnslocalhost: false
   changed_when: false
 
-# TODO: configure DNSSEC and forwarding
+# TODO: configure DNSSEC
 
 - name: install wireguard package
   become: true
   ansible.builtin.package:
     name: pfSense-pkg-WireGuard
+    state: present
+
+- name: install stunnel package
+  become: true
+  ansible.builtin.package:
+    name: pfsense-pkg-stunnel
     state: present
