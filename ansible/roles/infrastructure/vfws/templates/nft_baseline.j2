@@ -26,7 +26,7 @@ table inet filter {
 		iifname {{ trunk_iface }}.{{ item.value.id }} udp dport 67 accept
 {% endfor %}
 
-		log prefix "nft-input-drop: " counter drop
+		log prefix "{{ nft_prefix }}" counter drop
 	}
 
 	chain forward {

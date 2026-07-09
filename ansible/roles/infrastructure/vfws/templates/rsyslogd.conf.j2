@@ -1,0 +1,3 @@
+# /etc/rsyslog.d/ewfw.conf
+:msg, contains, "{{ nft_prefix }}" /var/log/ewfw.log
+& stop
