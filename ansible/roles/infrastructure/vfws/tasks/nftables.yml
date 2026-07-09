@@ -75,3 +75,13 @@
   - check nftables config
   - nftables config check results
   - reload nftables
+
+- name: set rsyslog log splitting
+  become: true
+  ansible.builtin.template:
+    src: templates/rsyslogd.conf.j2
+    dest: /etc/rsyslog.d/ewfw.conf
+    owner: root
+    group: root
+    mode: "0600"
+  notify: reload rsyslogd
