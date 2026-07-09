@@ -92,7 +92,7 @@
 - name: configure firewalld on non-vfws
   when:
   - sub_platform != "vfw"
-  - firewalld_services is defined
+  - firewalld_services is defined or firewalld_ports is defined
   block:
   - name: enable and start firewalld
     become: true
