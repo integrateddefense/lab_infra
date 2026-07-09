@@ -22,9 +22,10 @@
 - name: set dns
   become: true
   pfsensible.core.pfsense_setup:
+    dns_gateways: TransitDMZ
     dns_addresses: "{{ dcs.rodc.ip }}"
     dnsallowoverride: false
-    dnslocalhost: false
+    dnslocalhost: remote
   changed_when: false
 
 # TODO: configure DNSSEC
