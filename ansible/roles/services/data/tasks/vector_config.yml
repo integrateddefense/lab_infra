@@ -74,7 +74,6 @@
     owner: vector
     group: vector
     mode: '0640'
-  notify: reload vector
 
 - name: copy key material to collector
   become: true
@@ -84,7 +83,6 @@
     owner: vector
     group: vector
     mode: '0640'
-  notify: reload vector
 
 ## TODO - replace with enterprise CA root cert
 - name: copy root CA to collector
@@ -95,7 +93,6 @@
     owner: vector
     group: vector
     mode: '0640'
-  notify: reload vector
 
 - name: render config template
   become: true
@@ -105,12 +102,11 @@
     owner: vector
     group: vector
     mode: '0640'
-  notify: reload vector
 
 - name: start vector service
   become: true
   ansible.builtin.systemd_service:
     name: vector
-    state: started
+    state: reloaded
     enabled: true
 
