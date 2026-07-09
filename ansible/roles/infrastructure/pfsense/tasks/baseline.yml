@@ -35,8 +35,17 @@
     name: pfSense-pkg-WireGuard
     state: present
 
-- name: install stunnel package
+- name: install syslog-ng package
   become: true
   ansible.builtin.package:
-    name: pfsense-pkg-stunnel
+    name: pfSense-pkg-syslog-ng
     state: present
+
+- name: configure system logging  
+  become: true
+  pfsensible.core.pfsense_log_settings:
+    logformat: "rfc5424"
+    nologbogons: true
+    nologdefaultblock: true
+    nologlinklocal4: true
+    nologprivatenets: true
