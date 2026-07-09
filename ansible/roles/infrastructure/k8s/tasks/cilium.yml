@@ -125,7 +125,9 @@
     path: "{{ gateway_root }}/gateway.csr"
     privatekey_path: "{{ gateway_root }}/priv_key.pem"
     common_name: "*.{{ cluster_name }}.ops.indef.space"
-    subject_alt_name: 'DNS:{{ cluster_name }}.ops.indef.space;DNS:*.{{ cluster_name }}.ops.indef.space'
+    subject_alt_name:
+    - 'DNS:{{ cluster_name }}.ops.indef.space'
+    - 'DNS:*.{{ cluster_name }}.ops.indef.space'
     owner: deployexec
     group: ansible
     mode: 0764

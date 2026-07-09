@@ -23,7 +23,9 @@
     path: "{{ gateway_root }}/data_gateway.csr"
     privatekey_path: "{{ gateway_root }}/data_priv_key.pem"
     common_name: "*.{{ components.analysis.data.cluster_name }}.ops.indef.space"
-    subject_alt_name: 'DNS:{{ components.analysis.data.cluster_name }}.ops.indef.space;DNS:*.{{ components.analysis.data.cluster_name }}.ops.indef.space'
+    subject_alt_name: 
+    - 'DNS:{{ components.analysis.data.cluster_name }}.ops.indef.space'
+    - 'DNS:*.{{ components.analysis.data.cluster_name }}.ops.indef.space'
     owner: deployexec
     group: ansible
     mode: 0764

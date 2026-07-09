@@ -33,7 +33,8 @@
     path: "{{ collectors_root ~ '/' ~ ansible_host ~ '_request.csr' }}"
     privatekey_path: "{{ collectors_root ~ '/' ~ ansible_host ~ '_key.pem' }}"
     common_name: '{{ dns_spec.records | selectattr("value","equalto",ansible_host) | map(attribute="name") | first }}.ops.indef.space'
-    subject_alt_name: 'DNS:{{ dns_spec.records | selectattr("value","equalto",ansible_host) | map(attribute="name") | first }}.ops.indef.space'
+    subject_alt_name:
+    - 'DNS:{{ dns_spec.records | selectattr("value","equalto",ansible_host) | map(attribute="name") | first }}.ops.indef.space'
     owner: deployexec
     group: ansible
     mode: 0764
