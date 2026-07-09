@@ -4,9 +4,3 @@
     namespace: "{{ components.analysis.data.namespace }}"
     pod: "{{ splunk_pod }}"
     command: /opt/splunk/bin/splunk restart
-
-- name: reload vector
-  tags: ['always']
-  ansible.builtin.systemd_service:
-    name: vector
-    state: reloaded
