@@ -105,7 +105,7 @@
     owner: vector
     group: vector
     mode: '0640'
-  notify: reload vector
+  register: render_step
 
 - name: start vector service
   become: true
@@ -113,3 +113,9 @@
     name: vector
     state: started
     enabled: true
+
+- name: reload vector
+  when: render_step.changed
+  ansible.builtin.systemd_service:
+    name: vector
+    state: reloaded
