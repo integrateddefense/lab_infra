@@ -3,3 +3,7 @@ if $syslogfacility-text == 'kern' and $msg contains '{{ nft_prefix }}' then {
   action(type="omfile" file="/var/log/ewfw.log")
   stop
 }
+if $programname == 'keepalived_vrrp' and $syslogfacility-text == 'daemon' then {
+  action(type="omfile" file="/var/log/keepalived.log")
+  stop
+}
