@@ -28,6 +28,9 @@ transforms:
 {% if value.timestamp_extractor is defined %}
       .timestamp = {{ value.timestamp_extractor }}
 {% endif %}
+{% if value.transforms is defined %}
+      {{ value.transforms | join("\n") | indent(6) }}
+{% endif %}
 
 {% endfor %}
   tag_dropped:
