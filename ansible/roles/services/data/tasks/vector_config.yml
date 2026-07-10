@@ -4,6 +4,10 @@
   ansible.builtin.include_vars:
     file: '../inventories/{{ site.segment }}/identity/group_vars/all/dns.yml'
 
+- name: load ewfw vars
+  ansible.builtin.include_vars:
+    file: '../inventories/{{ site.segment }}/identity/group_vars/vfws.yml'
+
 - name: load cred vars
   ansible.builtin.include_vars:
     file: '../inventories/{{ site.segment }}/identity/group_vars/all/vault.yml'
