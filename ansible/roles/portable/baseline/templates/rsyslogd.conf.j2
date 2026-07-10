@@ -24,7 +24,7 @@ input(
   File="{{ item.path }}"
   Tag="{{ item.tag }}"
   Severity="{{ item.severity | default('info') }}"
-  Facility="{{ item.facility | default('local0') }}"
+  Facility="{{ item.facility | default('local7') }}"
   ruleset="forward_to_collector"
 )
 {% endfor %}
