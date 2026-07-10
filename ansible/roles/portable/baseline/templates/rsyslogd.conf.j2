@@ -15,6 +15,7 @@ action(
 )
 
 {% endfor %}
+module(load="imfile")
 {% for item in monitored_paths %}
 input(
   type="imfile"
