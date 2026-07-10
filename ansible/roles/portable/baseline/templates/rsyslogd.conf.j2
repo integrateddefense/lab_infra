@@ -11,7 +11,7 @@ action(
   streamDriver.CaFile="{{ enterprise_ca_path }}"
   action.resumeRetryCount="-1"
   queue.type="linkedList"
-  queue.filename="{{ collector.name }}_primary_q
+  queue.filename="{{ collector.name }}_primary_q"
 )
 
 {% endfor %}
