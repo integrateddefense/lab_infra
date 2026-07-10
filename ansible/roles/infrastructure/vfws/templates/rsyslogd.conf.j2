@@ -1,3 +1,5 @@
 # /etc/rsyslog.d/ewfw.conf
-:msg, contains, "{{ nft_prefix }}" /var/log/ewfw.log
-& stop
+if $syslogfacility-text == 'kern' and $msg contains '{{ nft_prefix }}' then {
+  action(type="omfile" file="/var/log/ewfw.log")
+  stop
+}
