@@ -1,20 +1,22 @@
+ruleset(name="forward_to_collector"){
 {% for collector in components.analysis.syslog_collectors %}
-action(
-  type="omfwd"
-  name="{{ collector.name }}"
-  target="{{ collector.name }}"
-  port="6514"
-  protocol="tcp"
-  streamDriver="gtls"
-  streamDriverMode="1"
-  streamDriverAuthMode="x509/name"
-  streamDriver.CaFile="{{ enterprise_ca_path }}"
-  action.resumeRetryCount="-1"
-  queue.type="linkedList"
-  queue.filename="{{ collector.name }}_primary_q"
-)
-
+  action(
+    type="omfwd"
+    name="{{ collector.name }}"
+    target="{{ collector.name }}"
+    port="6514"
+    protocol="tcp"
+    streamDriver="gtls"
+    streamDriverMode="1"
+    streamDriverAuthMode="x509/name"
+    streamDriver.CaFile="{{ enterprise_ca_path }}"
+    action.resumeRetryCount="-1"
+    queue.type="linkedList"
+    queue.filename="{{ collector.name }}_primary_q"
+  )
 {% endfor %}
+}
+
 module(load="imfile")
 {% for item in monitored_paths %}
 input(
@@ -23,5 +25,6 @@ input(
   Tag="{{ item.tag }}"
   Severity="{{ item.severity | default('info') }}"
   Facility="{{ item.facility | default('local0') }}"
+  ruleset="forward_to_collector"
 )
 {% endfor %}
