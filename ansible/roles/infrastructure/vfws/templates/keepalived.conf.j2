@@ -44,6 +44,7 @@ vrrp_instance mgmt {
 {% for item in (vlans.transit | dict2items | rejectattr('value.vfw_ips','undefined')) %}
 vrrp_instance transit.{{ item.key }} {
   state BACKUP
+  priority {{ (10-node_index)*10 }}
   interface {{ trunk_iface }}.{{ item.value.id }}
   virtual_router_id {{ item.value.id }}
   nopreempt
