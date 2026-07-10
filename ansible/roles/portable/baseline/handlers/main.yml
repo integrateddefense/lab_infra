@@ -33,3 +33,9 @@
   ansible.builtin.systemd_service:
     state: restarted
     name: pveproxy
+
+- name: restart rsyslogd
+  become: true
+  ansible.builtin.systemd_service:
+    state: restarted
+    name: rsyslog

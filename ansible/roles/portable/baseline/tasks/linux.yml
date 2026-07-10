@@ -127,5 +127,26 @@
       immediate: true
       zone: public
 
+## TODO - replace task below with a pull from the enterprise root CA
+- name: copy collector CA
+  become: true
+  when: monitored_paths is defined
+  ansible.builtin.copy:
+    content: "{{ lookup('file',collectors_root ~ '/' ~ components.analysis.syslog_collectors[0].ip ~ '_cert.crt')}}\n{{lookup('file',collectors_root ~ '/' ~ components.analysis.syslog_collectors[1].ip ~ '_cert.crt')}}"
+    #src: "{{ }}"
+    dest: "{{ enterprise_ca_path }}"
+    owner: root
+    group: root
+    mode: '0644'
 
-# TODO: add log forwarding and default services
+# Configure rsyslogd
+- name: configure rsyslogd
+  become: true
+  when: monitored_paths is defined
+  ansible.builtin.template:
+    src: templates/rsyslogd.conf.j2
+    dest: /etc/rsyslog.d/10-baseline.conf
+    owner: root
+    group: root
+    mode: '0740'
+  notify: restart rsyslogd
