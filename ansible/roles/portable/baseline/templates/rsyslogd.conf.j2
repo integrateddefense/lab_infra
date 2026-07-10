@@ -5,7 +5,7 @@ action(
   target="{{ collector.name }}"
   port="6514"
   protocol="tcp"
-  streamDriver="ossl"
+  streamDriver="gtls"
   streamDriverMode="1"
   streamDriverAuthMode="x509/name"
   streamDriver.CaFile="{{ enterprise_ca_path }}"
