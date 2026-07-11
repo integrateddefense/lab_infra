@@ -30,7 +30,7 @@ transforms:
       .timestamp = {{ value.timestamp_extractor }}
 {% endif %}
 {% if value.transforms is defined %}
-      {{ value.transforms | join("\n") | indent(6) }}
+      {{ value.transforms | indent(6) }}
 {% endif %}
 
 {% endfor %}
