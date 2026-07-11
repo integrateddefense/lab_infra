@@ -139,6 +139,27 @@
     group: root
     mode: '0644'
 
+# Configure auditd
+- name: configure auditd
+  become: true
+  when: /var/log/audit/audit.log in monitored_paths | map(attribute="path")
+  block:
+  - name: install audispd plugins
+    become: true
+    ansible.builtin.package:
+      name: audispd-plugins
+      state: present
+
+  - name: configure audisp-syslog plugin
+    become: true
+    ansible.builtin.template:
+      src: temlates/audispd.j2
+      dest: /etc/audit/plugins.d/syslog.conf
+      owner: root
+      group: root
+      mode: 0740
+    notify: restart auditd
+
 # Configure rsyslogd
 - name: configure rsyslogd
   become: true

@@ -19,12 +19,19 @@ ruleset(name="forward_to_collector"){
 
 module(load="imfile")
 {% for item in monitored_paths %}
+{% if item.path == '/var/log/secure' %}
+if $syslogfacility-text == 'local7' then {
+  call forward_to_collector
+}
+{% else %}
 input(
   type="imfile"
   File="{{ item.path }}"
   Tag="{{ item.tag }}"
   Severity="{{ item.severity | default('info') }}"
-  Facility="{{ item.facility | default('local7') }}"
+  Facility="{{ item.facility | default('local0') }}"
   ruleset="forward_to_collector"
 )
+
+{% endif %}
 {% endfor %}
