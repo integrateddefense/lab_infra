@@ -43,5 +43,5 @@
 - name: restart auditd
   become: true
   ansible.builtin.systemd_service:
-    state: reloaded
+    state: restarted
     name: auditd
