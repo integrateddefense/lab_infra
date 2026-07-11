@@ -142,7 +142,7 @@
 # Configure auditd
 - name: configure auditd
   become: true
-  when: /var/log/audit/audit.log in monitored_paths | map(attribute="path")
+  when: "'/var/log/audit/audit.log' in monitored_paths | map(attribute='path')"
   block:
   - name: install audispd plugins
     become: true
