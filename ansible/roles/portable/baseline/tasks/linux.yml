@@ -158,7 +158,7 @@
       owner: root
       group: root
       mode: 0740
-    notify: restart auditd
+    notify: reload auditd configuration
 
 # Configure rsyslogd
 - name: configure rsyslogd
