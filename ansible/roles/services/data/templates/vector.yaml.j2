@@ -23,6 +23,7 @@ transforms:
     inputs: [route_by_source.{{ key }}]
     reroute_dropped: true
     drop_on_abort: true
+    drop_on_error: true
     source: |
       .sourcetype = "{{ value.name.splunk }}"
       .index = "{{ value.index }}"
