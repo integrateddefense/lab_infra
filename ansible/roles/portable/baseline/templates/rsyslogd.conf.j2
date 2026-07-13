@@ -23,7 +23,7 @@ module(load="imfile")
 if $syslogfacility-text == 'local7' and not ($msg contains 'type=CRYPTO_KEY_USER' or $msg contains 'type=CRYPTO_SESSION' or $msg contains 'type=CRED_DISP' or $msg contains 'type=CRED_REFR' or $msg contains 'type=BPF' or $msg contains 'type=EOE') then {
     call forward_to_collector
 }
-{% else if item.path != '/var/log/audit/audit.log' %}
+{% elif item.path != '/var/log/audit/audit.log' %}
 input(
   type="imfile"
   File="{{ item.path }}"
