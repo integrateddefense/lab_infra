@@ -1,3 +1,4 @@
+global(maxMessageSize="65536")
 ruleset(name="forward_to_collector"){
 {% for collector in components.analysis.syslog_collectors %}
   action(
