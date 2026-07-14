@@ -2,7 +2,7 @@ global(maxMessageSize="65536")
 ruleset(name="forward_to_collector"){
 {% for item in monitored_paths %}
 {% if item.path == '/var/log/secure' %}
-  if $syslogfacility-text == 'local7' and ($msg contains 'type=CRYPTO_KEY_USER' or $msg contains 'type=CRYPTO_SESSION' or $msg contains 'type=CRED_DISP' or $msg contains 'type=CRED_REFR' or $msg contains 'type=BPF' or $msg contains 'type=EOE') then {
+  if $syslogfacility-text == 'local7' and ($msg contains 'type=CRYPTO_KEY_USER' or $msg contains 'type=CRYPTO_SESSION' or $msg contains 'type=CRED_DISP' or $msg contains 'type=CRED_ACQ' or $msg contains 'type=CRED_REFR' or $msg contains 'type=BPF' or $msg contains 'type=EOE') then {
     stop
   }
 {% elif item.filter is defined %}
