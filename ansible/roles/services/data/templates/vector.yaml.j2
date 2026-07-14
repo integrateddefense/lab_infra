@@ -65,9 +65,13 @@ sinks:
     default_token: {{ splunk.primary.syslog }}
     endpoint: {{ components.analysis.data.hec_ingest_url }}
     timestamp_key: timestamp
-    index: "{{ '{{ index }}' }}"
-    sourcetype: "{{ '{{ sourcetype }}' }}"
+    index: "{{ '{{ .index }}' }}"
+    sourcetype: "{{ '{{ .sourcetype }}' }}"
     encoding:
       codec: json
+      except_fields:
+      - host
+      - index
+      - sourcetype
     tls:
       ca_file: {{ vector_ca_path }}
