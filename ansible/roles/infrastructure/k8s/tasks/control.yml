@@ -74,6 +74,6 @@
   changed_when: bootstrap_result.rc == 0
 
 - name: download kubeconfig
-  ansible.builtin.command: "sudo -u deployexec talosctl kubeconfig {{ kubeconfig_path }} --nodes {{ components.talos.primary_cluster.cluster_dns }} --endpoints {{ components.talos.primary_cluster.cluster_dns }} --talosconfig {{ talosconfig_path }}"
+  ansible.builtin.command: "talosctl kubeconfig {{ kubeconfig_path }} --nodes {{ components.talos.primary_cluster.cluster_dns }} --endpoints {{ components.talos.primary_cluster.cluster_dns }} --talosconfig {{ talosconfig_path }}"
   changed_when: false
 
