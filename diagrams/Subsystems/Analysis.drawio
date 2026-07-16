@@ -1,6 +1,6 @@
 <mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/28.1.2 Chrome/138.0.7204.243 Electron/37.4.0 Safari/537.36">
   <diagram name="Page-1" id="Z-NOALGo2KVVzfUdZQp1">
-    <mxGraphModel dx="1018" dy="2362" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="1224" dy="1739" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -8,7 +8,7 @@
           <mxGeometry height="360" width="200" x="20" y="150" as="geometry" />
         </mxCell>
         <mxCell id="J_0UaZsrQX-69BkIlMsE-11" parent="1" style="shape=table;startSize=30;container=1;collapsible=0;childLayout=tableLayout;strokeColor=default;fontSize=16;" value="Data Flows" vertex="1">
-          <mxGeometry height="430" width="830" x="10" y="530" as="geometry" />
+          <mxGeometry height="450" width="830" x="10" y="530" as="geometry" />
         </mxCell>
         <mxCell id="J_0UaZsrQX-69BkIlMsE-12" parent="J_0UaZsrQX-69BkIlMsE-11" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;strokeColor=inherit;top=0;left=0;bottom=0;right=0;collapsible=0;dropTarget=0;fillColor=none;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=16;" value="" vertex="1">
           <mxGeometry height="39" width="830" y="30" as="geometry" />
@@ -126,26 +126,26 @@
           </mxGeometry>
         </mxCell>
         <mxCell id="0wXB0LRyharVtouIbCnP-4" parent="J_0UaZsrQX-69BkIlMsE-11" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;strokeColor=inherit;top=0;left=0;bottom=0;right=0;collapsible=0;dropTarget=0;fillColor=none;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=16;" vertex="1">
-          <mxGeometry height="90" width="830" y="340" as="geometry" />
+          <mxGeometry height="110" width="830" y="340" as="geometry" />
         </mxCell>
         <mxCell id="0wXB0LRyharVtouIbCnP-5" parent="0wXB0LRyharVtouIbCnP-4" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=16;" value="5" vertex="1">
-          <mxGeometry height="90" width="60" as="geometry">
-            <mxRectangle height="90" width="60" as="alternateBounds" />
+          <mxGeometry height="110" width="60" as="geometry">
+            <mxRectangle height="110" width="60" as="alternateBounds" />
           </mxGeometry>
         </mxCell>
         <mxCell id="0wXB0LRyharVtouIbCnP-6" parent="0wXB0LRyharVtouIbCnP-4" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=16;" value="TCP/8088&lt;div&gt;TCP/9200&lt;/div&gt;" vertex="1">
-          <mxGeometry height="90" width="150" x="60" as="geometry">
-            <mxRectangle height="90" width="150" as="alternateBounds" />
+          <mxGeometry height="110" width="150" x="60" as="geometry">
+            <mxRectangle height="110" width="150" as="alternateBounds" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="0wXB0LRyharVtouIbCnP-7" parent="0wXB0LRyharVtouIbCnP-4" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=16;" value="Falco DaemonSet running on each node collects logs, correlates them with containers, and then forwards to indexing and storage systems." vertex="1">
-          <mxGeometry height="90" width="250" x="210" as="geometry">
-            <mxRectangle height="90" width="250" as="alternateBounds" />
+        <mxCell id="0wXB0LRyharVtouIbCnP-7" parent="0wXB0LRyharVtouIbCnP-4" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=16;" value="Vector DaemonSet running on each node collects logs from the node file system, correlates them with containers, and then forwards to indexing and storage systems." vertex="1">
+          <mxGeometry height="110" width="250" x="210" as="geometry">
+            <mxRectangle height="110" width="250" as="alternateBounds" />
           </mxGeometry>
         </mxCell>
         <mxCell id="0wXB0LRyharVtouIbCnP-8" parent="0wXB0LRyharVtouIbCnP-4" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=16;" value="TLS-encrypted sessions; forwarder authenticated using unique Splunk HEC tokens and Elastic API tokens per collector." vertex="1">
-          <mxGeometry height="90" width="370" x="460" as="geometry">
-            <mxRectangle height="90" width="370" as="alternateBounds" />
+          <mxGeometry height="110" width="370" x="460" as="geometry">
+            <mxRectangle height="110" width="370" as="alternateBounds" />
           </mxGeometry>
         </mxCell>
         <mxCell id="J_0UaZsrQX-69BkIlMsE-38" parent="1" style="shape=table;startSize=30;container=1;collapsible=0;childLayout=tableLayout;strokeColor=default;fontSize=16;" value="Data Analysis Subsystem" vertex="1">
@@ -174,7 +174,7 @@
             <mxRectangle height="100" width="306" as="alternateBounds" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="J_0UaZsrQX-69BkIlMsE-72" parent="1" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;spacingBottom=0;" value="Version/Date: v1.0 / 07 Jul 2026&lt;div&gt;Scope: Data Analysis Subsystem Architecture&lt;/div&gt;&lt;div&gt;Last Edited By: James Thomas&lt;br&gt;https://github.com/integrateddefense/lab_infra&lt;/div&gt;" vertex="1">
+        <mxCell id="J_0UaZsrQX-69BkIlMsE-72" parent="1" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;spacingBottom=0;" value="Version/Date: v1.1 / 15 Jul 2026&lt;div&gt;Scope: Data Analysis Subsystem Architecture&lt;/div&gt;&lt;div&gt;Last Edited By: James Thomas&lt;br&gt;https://github.com/integrateddefense/lab_infra&lt;/div&gt;" vertex="1">
           <mxGeometry height="100" width="330" x="510" y="1000" as="geometry" />
         </mxCell>
         <mxCell id="zUig-FD_n0FvGrZo26cc-1" parent="1" style="whiteSpace=wrap;html=1;aspect=fixed;align=right;verticalAlign=top;" value="K8s" vertex="1">
@@ -211,10 +211,10 @@
           <mxGeometry height="35" width="55" x="40" y="371.25" as="geometry" />
         </mxCell>
         <mxCell id="zUig-FD_n0FvGrZo26cc-15" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="K8s Applications" vertex="1">
-          <mxGeometry height="35" width="80" x="490" y="430" as="geometry" />
+          <mxGeometry height="35" width="80" x="590" y="435" as="geometry" />
         </mxCell>
-        <mxCell id="zUig-FD_n0FvGrZo26cc-16" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Falco&lt;sup&gt;1&lt;/sup&gt;" vertex="1">
-          <mxGeometry height="35" width="80" x="490" y="360" as="geometry" />
+        <mxCell id="zUig-FD_n0FvGrZo26cc-16" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Falco" vertex="1">
+          <mxGeometry height="35" width="80" x="450" y="435" as="geometry" />
         </mxCell>
         <mxCell id="zUig-FD_n0FvGrZo26cc-17" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="DCs" vertex="1">
           <mxGeometry height="35" width="55" x="40" y="417.5" as="geometry" />
@@ -306,19 +306,19 @@
             <mxPoint x="665" y="267" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="zUig-FD_n0FvGrZo26cc-35" edge="1" parent="1" source="zUig-FD_n0FvGrZo26cc-15" style="endArrow=classic;html=1;rounded=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="zUig-FD_n0FvGrZo26cc-16" value="">
+        <mxCell id="zUig-FD_n0FvGrZo26cc-35" edge="1" parent="1" source="zUig-FD_n0FvGrZo26cc-15" style="endArrow=classic;html=1;rounded=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="rOabzSd64rgTX1k0UVqI-1" value="">
           <mxGeometry height="50" relative="1" width="50" as="geometry">
             <mxPoint x="380" y="300" as="sourcePoint" />
-            <mxPoint x="695" y="307" as="targetPoint" />
+            <mxPoint x="920" y="360" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="zUig-FD_n0FvGrZo26cc-36" edge="1" parent="1" source="zUig-FD_n0FvGrZo26cc-16" style="endArrow=classic;html=1;rounded=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="zUig-FD_n0FvGrZo26cc-3" value="">
+        <mxCell id="zUig-FD_n0FvGrZo26cc-36" edge="1" parent="1" source="rOabzSd64rgTX1k0UVqI-1" style="endArrow=classic;html=1;rounded=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="zUig-FD_n0FvGrZo26cc-3" value="">
           <mxGeometry height="50" relative="1" width="50" as="geometry">
             <mxPoint x="540" y="350" as="sourcePoint" />
             <mxPoint x="855" y="357" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="zUig-FD_n0FvGrZo26cc-37" edge="1" parent="1" source="zUig-FD_n0FvGrZo26cc-16" style="endArrow=classic;html=1;rounded=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="zUig-FD_n0FvGrZo26cc-4" value="">
+        <mxCell id="zUig-FD_n0FvGrZo26cc-37" edge="1" parent="1" source="rOabzSd64rgTX1k0UVqI-1" style="endArrow=classic;html=1;rounded=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="zUig-FD_n0FvGrZo26cc-4" value="">
           <mxGeometry height="50" relative="1" width="50" as="geometry">
             <mxPoint x="620" y="420" as="sourcePoint" />
             <mxPoint x="935" y="427" as="targetPoint" />
@@ -345,9 +345,6 @@
         <mxCell id="zUig-FD_n0FvGrZo26cc-47" parent="1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fontSize=22;" value="4" vertex="1">
           <mxGeometry height="40" width="40" x="350" y="340" as="geometry" />
         </mxCell>
-        <mxCell id="zUig-FD_n0FvGrZo26cc-53" parent="1" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;spacingBottom=0;" value="&lt;sup&gt;1 &lt;/sup&gt;Includes both the Falco Daemonset and the Falcosidekick Deployment." vertex="1">
-          <mxGeometry height="100" width="330" x="10" y="970" as="geometry" />
-        </mxCell>
         <mxCell id="zUig-FD_n0FvGrZo26cc-55" parent="1" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;spacingBottom=0;fontSize=17;" value="&lt;b&gt;Network Sensor Architecture&lt;/b&gt;" vertex="1">
           <mxGeometry height="30" width="270" x="880" y="10" as="geometry" />
         </mxCell>
@@ -359,6 +356,15 @@
         </mxCell>
         <mxCell id="zUig-FD_n0FvGrZo26cc-58" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="TBD - will utilize BitDefender for antivirus and Wazuh for data collection and forwarding on top of native OS tooling (rsyslogd, windows event forwarding)" vertex="1">
           <mxGeometry height="30" width="340" x="870" y="640" as="geometry" />
+        </mxCell>
+        <mxCell id="rOabzSd64rgTX1k0UVqI-1" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Vector" vertex="1">
+          <mxGeometry height="35" width="80" x="510" y="371.25" as="geometry" />
+        </mxCell>
+        <mxCell id="rOabzSd64rgTX1k0UVqI-3" edge="1" parent="1" source="zUig-FD_n0FvGrZo26cc-16" style="endArrow=classic;html=1;rounded=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="rOabzSd64rgTX1k0UVqI-1" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="690" y="439" as="sourcePoint" />
+            <mxPoint x="610" y="410" as="targetPoint" />
+          </mxGeometry>
         </mxCell>
       </root>
     </mxGraphModel>
