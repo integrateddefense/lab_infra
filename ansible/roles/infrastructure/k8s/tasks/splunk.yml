@@ -73,5 +73,5 @@
       metadata:
         name: "vector-hec-token"
         namespace: indef-security-vector
-      data:
+      stringData:
         token: "{{ splunk.primary.pods }}"
