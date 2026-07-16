@@ -193,7 +193,7 @@
       }}
 
 - name: add falco namespace to the podsecurity exempt list
-  ansible.builtint.set_fact:
+  ansible.builtin.set_fact:
     updated_main_doc: |
       {{
         updated_main_doc | combine
