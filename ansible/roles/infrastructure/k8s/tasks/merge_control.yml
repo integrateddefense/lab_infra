@@ -224,7 +224,7 @@
                       {
                         'usernames': [],
                         'runtimeClasses': [],
-                        'namespaces': {{ components.talos.primary_cluster.security_exempt_namespaces }}
+                        'namespaces': components.talos.primary_cluster.security_exempt_namespaces
                       }
                     }
                   }
