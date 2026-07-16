@@ -56,3 +56,22 @@
         tls.crt: "{{ lookup('file',gateway_root ~ '/data_gateway.crt') | b64encode }}"
         tls.key: "{{ lookup('file',gateway_root ~ '/data_priv_key.pem') | b64encode }}"
 ## TODO - refactor above once enterprise CA is available; should pull from CA
+
+- name: load credentials
+  run_once: true
+  ansible.builtin.include_vars:
+    file: "../inventories/{{ site.segment }}/identity/group_vars/all/vault.yml"
+  no_log: true
+
+- name: deploy k8s secret for vector sink
+  kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig_path }}"
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: "vector-hec-token"
+        namespace: indef-security-vector
+      data:
+        token: "{{ splunk.primary.pods }}"
