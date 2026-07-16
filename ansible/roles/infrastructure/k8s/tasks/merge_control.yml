@@ -192,6 +192,48 @@
         )
       }}
 
+- name: add falco namespace to the podsecurity exempt list
+  ansible.builtint.set_fact:
+    updated_main_doc: |
+      {{
+        updated_main_doc | combine
+        (
+          {
+            'cluster':
+            {
+              'apiServer':
+              {
+                'admissionControl':
+                [
+                  'name': 'PodSecurity',
+                  'configuration':
+                  {
+                    'apiVersion': 'pod-security.admission.config.k8s.io/v1',
+                    'kind': 'PodSecurityConfiguration',
+                    'defaults':
+                    {
+                      'enforce': 'baseline',
+                      'enforce-version': 'latest',
+                      'audit': 'restricted',
+                      'audit-version': 'latest',
+                      'warn': 'restricted',
+                      'warn-version': 'latest'
+                    },
+                    'exemptions':
+                    {
+                      'usernames': [],
+                      'runtimeClasses': [],
+                      'namespaces': {{ components.talos.primary_cluster.security_exempt_namespaces }}
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          recursive=True
+        )
+      }}
+
 - name: build new config
   ansible.builtin.copy:
     content: "{{ [updated_main_doc,updated_hostname_doc] | map('to_nice_yaml') | join('---\n') }}"
