@@ -1,0 +1,31 @@
+# Configures the Caddy external proxies
+
+- hosts: caddy
+  gather_facts: false
+
+  pre_tasks:
+  - name: probe for connection status
+    ansible.builtin.import_role:
+      name: portable/ssh
+      tasks_from: linux_check.yml
+
+  tasks:
+  # Baseline
+  - name: Configure SSH
+    tags: ["baseline","ssh"]
+    ansible.builtin.import_role:
+      name: portable/ssh
+      tasks_from: linux.yml
+
+  - name: apply linux baseline
+    tags: ["baseline","host"]
+    ansible.builtin.import_role:
+      name: portable/baseline
+      tasks_from: linux.yml
+
+  # Services
+  - name: install caddy
+    tags: ["service","caddy","caddy/install"]
+    ansible.builtin.import_role:
+      name: infrastructure/dmz
+      tasks_from: caddy_install.yml

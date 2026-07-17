@@ -1,0 +1,19 @@
+# Tasks for installing/configuring Caddy as the external proxy
+
+- name: add dnf plugins
+  become: true
+  ansible.builtin.dnf:
+    name: dnf-plugins-core
+    state: present
+
+- name: enable caddy COPR
+  become: true
+  community.general.copr:
+    name: "@caddy/caddy"
+    state: enabled
+
+- name: install caddy
+  become: true
+  ansible.builtin.dnf:
+    name: caddy
+    state: present
