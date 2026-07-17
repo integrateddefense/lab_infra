@@ -3,6 +3,7 @@ add rule inet filter fwd_v{{ vlans.dmz.id }} oifname "{{ trunk_iface }}.{{ vlans
 
 # DMZ -> Core
 add rule inet filter fwd_v{{ vlans.dmz.id }} oifname "{{ trunk_iface }}.{{ vlans.core.id }}" tcp dport { 443 } accept
+add rule inet filter fwd_v{{ vlans.dmz.id }} oifname "{{ trunk_iface }}.{{ vlans.core.id }}" ip daddr {{ components.identity.rodcs.ip }} udp dport { 53 } accept
 
 # Default rule for the DMZ VLAN
 add rule inet filter fwd_v{{ vlans.dmz.id }} drop
