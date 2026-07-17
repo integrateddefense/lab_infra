@@ -9,6 +9,21 @@
     group: caddy
     mode: 0644
     state: touch
+  changed_when: false
+
+- name: setup cert directories
+  become: true
+  loop:
+  - /etc/caddy/certs/
+  - /etc/caddy/synced-certs/
+  loop_control:
+    label: "Creating directory {{ item }}"
+  ansible.builtin.file:
+    state: directory
+    path: "{{ item }}"
+    owner: caddy
+    group: caddy
+    mode: 770
 
 - name: render caddy configuration
   become: true
@@ -16,7 +31,7 @@
     src: templates/caddyfile.j2
     dest: /etc/caddy/Caddyfile
     mode: 0750
-    owner: root
+    owner: caddy
     group: caddy
   register: config
 
