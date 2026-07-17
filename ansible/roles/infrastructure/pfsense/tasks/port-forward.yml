@@ -1,5 +1,14 @@
 # Port forwarding configs
 
-- name: "Configure Port Forwarding"
-  debug:
-    msg: "Not Implemented Yet"
+- name: "Forward external 443 to Caddy"
+  become: true
+  pfsensible.core.pfsense_nat_port_forward:
+    descr: "Externally-available Web Services via Caddy Proxy"
+    interface: wan ## make sure it matches the interface name set in host_vars/pconsnsfw01.yml
+    source: any
+    destination: "WAN address:443"
+    protocol: tcp
+    ipprotocol: inet
+    target: "{{ dmz_components.caddy.vip }}:443"
+    associated_rule: pass
+    state: present
