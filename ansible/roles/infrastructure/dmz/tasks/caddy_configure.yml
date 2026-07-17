@@ -8,7 +8,7 @@
     owner: caddy
     group: caddy
     mode: 0644
-    state: file
+    state: touch
 
 - name: render caddy configuration
   become: true
