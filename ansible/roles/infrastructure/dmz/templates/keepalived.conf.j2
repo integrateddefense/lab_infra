@@ -15,8 +15,8 @@ vrrp_instance caddy {
   garp_master_refresh 10
   garp_master_delay 1
   virtual_ipaddress { {{ dmz_components.caddy.vip_cidr }} dev {{ iface }} }
-  unicast_src_ip {{ dmz_components.caddy.nodes[node_index] }}
+  unicast_src_ip {{ dmz_components.caddy.nodes[node_index].ip }}
   unicast_peer {
-    {{ (dmz_components.caddy.nodes[0:node_index] + dmz_components.caddy.nodes[node_index+1:]) | join('\n') }}
+    {{ ((dmz_components.caddy.nodes[0:node_index] | map(attribute="ip")) + (dmz_components.caddy.nodes[node_index+1:] | map(attribute="ip"))) | join('\n') }}
   }
 }
