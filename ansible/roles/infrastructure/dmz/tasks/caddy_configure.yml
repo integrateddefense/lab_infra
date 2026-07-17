@@ -8,6 +8,7 @@
     owner: caddy
     group: caddy
     mode: 0644
+    state: present
 
 - name: render caddy configuration
   become: true
