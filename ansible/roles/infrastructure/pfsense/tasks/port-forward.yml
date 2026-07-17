@@ -6,7 +6,7 @@
     descr: "Externally-available Web Services via Caddy Proxy"
     interface: wan ## make sure it matches the interface name set in host_vars/pconsnsfw01.yml
     source: any
-    destination: "WAN address:443"
+    destination: "IP:wan:443"
     protocol: tcp
     ipprotocol: inet
     target: "{{ dmz_components.caddy.vip }}:443"
