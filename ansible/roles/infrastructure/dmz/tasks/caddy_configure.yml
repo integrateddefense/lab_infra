@@ -1,3 +1,14 @@
+- name: setup log files
+  become: true
+  loop: "{{ monitored_paths | selectattr('path','search','/var/log/caddy') }}"
+  loop_control:
+    label: "Touching {{ item.path }}"
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    owner: caddy
+    group: caddy
+    mode: 0644
+
 - name: render caddy configuration
   become: true
   ansible.builtin.template:
