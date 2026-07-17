@@ -273,7 +273,7 @@
       vm_start: true
       ## To configure the service, see playbooks/code.yml
 
-  - name: create Code/Runner subsystem VMs
+  - name: create data analysis subsystem VMs
     tags: ["vms","services","analysis","syslog","analysis/syslog"]
     run_once: true
     ansible.builtin.include_role:
@@ -299,4 +299,32 @@
       vm_cores: "{{ analysis.syslog.cores }}"
       vm_mem: "{{ analysis.syslog.mem }}"
       vm_vid: "{{ analysis.syslog.vid }}"
+      vm_start: true
+
+  - name: create Code/Runner subsystem VMs
+    tags: ["vms","services","caddy","external/caddy"]
+    run_once: true
+    ansible.builtin.include_role:
+      name: portable/vm
+      apply:
+        tags: ["vms","services","caddy","external/caddy"]
+    loop: "{{ (groups['compute_nodes'] | sort | list)[0:(external.caddy.name | length)] }}"
+    loop_control:
+      loop_var: server
+      index_var: iteration
+      label: "Creating Code VM on {{ server }}"
+    vars:
+      hypervisor_target: "{{ server }}"
+      template_name: "{{ templates.alma9.name }}"
+      template_id: "{{ templates.alma9.id }}"
+      template_storage: "{{ templates.alma9.storage.type }}"
+      template_storage_size: "{{ external.caddy.size }}"
+      vm_name: "{{ external.caddy.name[iteration] }}"
+      vm_id: "{{ external.caddy.id[iteration] }}"
+      vm_description: "{{ external.caddy.description[iteration] }}"
+      vm_storage: "{{ external.caddy.storage }}"
+      vm_sockets: "{{ external.caddy.sockets }}"
+      vm_cores: "{{ external.caddy.cores }}"
+      vm_mem: "{{ external.caddy.mem }}"
+      vm_vid: "{{ external.caddy.vid }}"
       vm_start: true
