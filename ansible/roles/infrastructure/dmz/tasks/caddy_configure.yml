@@ -1,0 +1,8 @@
+- name: render caddy configuration
+  become: true
+  ansible.builtin.template:
+    src: templates/caddyfile.j2
+    dest: /etc/caddy/Caddyfile
+    mode: 0750
+    owner: root
+    group: caddy

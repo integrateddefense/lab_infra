@@ -1,0 +1,21 @@
+{
+  email {{ contact_email }}
+  storage file_system /etc/caddy/certs
+  log {
+    output file /var/log/caddy.log
+  }
+}
+
+(logging) {
+  log {
+    output file /var/log/caddy-access.log
+  }
+}
+
+observer.indef.space {
+{% if cert_type == "passive" %}
+  tls {{ cert_path }} {{ key_path }}
+{% endif %}
+  import logging
+  reverse_proxy observer.primary.ops.indef.space
+}
