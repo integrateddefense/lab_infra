@@ -318,7 +318,7 @@
       template_name: "{{ templates.alma9.name }}"
       template_id: "{{ templates.alma9.id }}"
       template_storage: "{{ templates.alma9.storage.type }}"
-      template_storage_size: "{{ external.caddy.size }}"
+      template_storage_size: "{{ templates.alma9.storage.size }}"
       vm_name: "{{ external.caddy.name[iteration] }}"
       vm_id: "{{ external.caddy.id[iteration] }}"
       vm_description: "{{ external.caddy.description[iteration] }}"
