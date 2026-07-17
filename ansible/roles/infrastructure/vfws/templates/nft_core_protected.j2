@@ -4,7 +4,7 @@ add rule inet filter fwd_v{{ vlans.core_protected.id }} oifname "{{ trunk_iface 
 ## Talos/K8s Rules
 add rule inet filter fwd_v{{ vlans.core_protected.id }} oifname "{{ trunk_iface }}.{{ vlans.core.id }}" tcp dport { 4240,10250 } accept
 add rule inet filter fwd_v{{ vlans.core_protected.id }} oifname "{{ trunk_iface }}.{{ vlans.core.id }}" udp dport { 4240,8472 } accept
-add rule inet filter fwd_v{{ vlans.core_protected.id }} ip saddr { {{ components.talos.primary_cluster.control_plane | map(attribute="ip.service") | join(", ") }} } oifname "{{ trunk_iface }}.{{ vlans.core.id }}" ip daddr { {{ components.talos.primary_cluster.data_plane | map(attribute="ip.service") | join(", ") }} } icmp accept
+add rule inet filter fwd_v{{ vlans.core_protected.id }} ip saddr { {{ components.talos.primary_cluster.control_plane | map(attribute="ip.service") | join(", ") }} } oifname "{{ trunk_iface }}.{{ vlans.core.id }}" ip daddr { {{ components.talos.primary_cluster.data_plane | map(attribute="ip.service") | join(", ") }} } icmp { echo-request, echo-reply } accept
 
 # Core_Protected -> Transit DMZ
 add rule inet filter fwd_v{{ vlans.core_protected.id }} oifname "{{ trunk_iface }}.{{ vlans.transit.dmz.id }}" tcp dport { 443 } accept
