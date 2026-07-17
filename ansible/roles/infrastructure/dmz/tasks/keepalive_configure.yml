@@ -1,0 +1,36 @@
+- name: get interface data
+  vars:
+    gather_subset: ansible_interfaces
+  ansible.builtin.gather_facts:
+
+- name: identify interface name
+  ansible.builtin.set_fact:
+    iface: >-
+      {{
+        ansible_interfaces
+        | map('regex_replace','^(.*)$','ansible_\1')
+        | map('extract',hostvars[inventory_hostname])
+        | rejectattr('device','equalto','lo')
+        | selectattr('ipv4','defined')
+        | rejectattr('device','search','\.')
+        | map(attribute='device')
+        | first
+      }}
+
+- name: deploy keepalived configuration
+  become: true
+  ansible.builtin.template:
+    src: templates/keepalived.conf.j2
+    dest: /etc/keepalived/keepalived.conf
+    owner: root
+    group: root
+    mode: '0644'
+  vars:
+    node_index: "{{ (ansible_hostname | regex_search('[0-9]+$') | int) - 1 }}"
+
+- name: enable keepalived
+  become: true
+  ansible.builtin.systemd_service:
+    name: keepalived
+    state: started
+    enabled: true

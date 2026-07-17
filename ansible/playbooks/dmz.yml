@@ -30,3 +30,15 @@
     ansible.builtin.import_role:
       name: infrastructure/dmz
       tasks_from: caddy_install.yml
+
+  - name: configure keepalived
+    tags: ["service","keepalive"]
+    ansible.builtin.import_role:
+      name: infrastructure/dmz
+      tasks_from: keepalive_configure.yml
+
+  - name: configure caddy
+    tags: ["service","caddy","caddy/configure"]
+    ansible.builtin.import_role:
+      name: infrastructure/dmz
+      tasks_from: caddy_configure.yml

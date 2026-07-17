@@ -1,0 +1,22 @@
+global_defs {
+  vrrp_version 3
+  router_id {{ inventory_hostname }}
+  
+}
+
+vrrp_instance caddy {
+  state BACKUP
+  priority {{ (10-node_index)*10 }}
+  interface {{ iface }}
+  virtual_router_id 31
+  preempt_delay 30
+  advert_int 1
+  garp_master_repeat 5
+  garp_master_refresh 10
+  garp_master_delay 1
+  virtual_ipaddress { {{ dmz_components.caddy.vip_cidr }} dev {{ iface }} }
+  unicast_src_ip {{ dmz_components.caddy.nodes[node_index] }}
+  unicast_peer {
+    {{ (dmz_components.caddy.nodes[0:node_index] + dmz_components.caddy.nodes[node_index+1:]) | join('\n') }}
+  }
+}
