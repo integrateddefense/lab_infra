@@ -6,3 +6,12 @@
     mode: 0750
     owner: root
     group: caddy
+  register: config
+
+- name: reload caddy
+  become: true
+  when: config.changed
+  ansible.builtin.systemd_service:
+    name: caddy
+    state: reloaded
+    enabled: true
