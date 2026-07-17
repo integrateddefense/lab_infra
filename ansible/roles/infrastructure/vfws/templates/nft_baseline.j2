@@ -45,7 +45,7 @@ table inet filter {
 {% endfor %}
 		iifname "{{ mgmt_iface }}" jump fwd_v{{ vlans.mgmt.id }}
 
-		log prefix "nft-fwd-drop: " counter drop
+		log prefix "{{ nft_prefix }}" counter drop
 	}
 
 	chain output {
