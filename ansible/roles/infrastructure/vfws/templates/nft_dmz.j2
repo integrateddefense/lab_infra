@@ -1,9 +1,10 @@
 # DMZ -> Transit DMZ
-add rule inet filter fwd_v{{ vlans.dmz.id }} oifname "{{ trunk_iface }}.{{ vlans.transit.dmz.id }}" tcp dport { 443 } accept
+## NOTE - allowing port 80 is a stop gap for DNF; DNF does not offer HTTPS-only functionality or HTTPS mirrors
+add rule inet filter fwd_v{{ vlans.dmz.id }} oifname "{{ trunk_iface }}.{{ vlans.transit.dmz.id }}" tcp dport { 80,443 } accept
 
 # DMZ -> Core
 add rule inet filter fwd_v{{ vlans.dmz.id }} oifname "{{ trunk_iface }}.{{ vlans.core.id }}" tcp dport { 443 } accept
-add rule inet filter fwd_v{{ vlans.dmz.id }} oifname "{{ trunk_iface }}.{{ vlans.core.id }}" ip daddr {{ components.identity.rodcs.ip }} udp dport { 53 } accept
+add rule inet filter fwd_v{{ vlans.dmz.id }} oifname "{{ trunk_iface }}.{{ vlans.core.id }}" ip daddr {{ components.identity.rodcs.ip }} udp dport { 53,123 } accept
 
 # Default rule for the DMZ VLAN
 add rule inet filter fwd_v{{ vlans.dmz.id }} log prefix "{{ nft_prefix }}" drop
