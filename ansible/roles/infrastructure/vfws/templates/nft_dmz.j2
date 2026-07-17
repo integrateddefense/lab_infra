@@ -6,4 +6,4 @@ add rule inet filter fwd_v{{ vlans.dmz.id }} oifname "{{ trunk_iface }}.{{ vlans
 add rule inet filter fwd_v{{ vlans.dmz.id }} oifname "{{ trunk_iface }}.{{ vlans.core.id }}" ip daddr {{ components.identity.rodcs.ip }} udp dport { 53 } accept
 
 # Default rule for the DMZ VLAN
-add rule inet filter fwd_v{{ vlans.dmz.id }} drop
+add rule inet filter fwd_v{{ vlans.dmz.id }} log prefix "{{ nft_prefix }}" drop

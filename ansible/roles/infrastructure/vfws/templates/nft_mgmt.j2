@@ -24,4 +24,4 @@ add rule inet filter fwd_v{{ vlans.mgmt.id }} oifname "{{ trunk_iface }}.{{ vlan
 add rule inet filter fwd_v{{ vlans.mgmt.id }} oifname "{{ trunk_iface }}.{{ vlans.user.id }}" ip protocol icmp accept
 
 # Default rule for the Management VLAN
-add rule inet filter fwd_v{{ vlans.mgmt.id }} drop
+add rule inet filter fwd_v{{ vlans.mgmt.id }} log prefix "{{ nft_prefix }}" drop

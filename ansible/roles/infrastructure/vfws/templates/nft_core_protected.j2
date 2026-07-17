@@ -10,4 +10,4 @@ add rule inet filter fwd_v{{ vlans.core_protected.id }} oifname "{{ trunk_iface 
 add rule inet filter fwd_v{{ vlans.core_protected.id }} oifname "{{ trunk_iface }}.{{ vlans.transit.dmz.id }}" udp dport { 53,123 } accept
 
 # Default rule for the Core Protected VLAN
-add rule inet filter fwd_v{{ vlans.core_protected.id }} drop
+add rule inet filter fwd_v{{ vlans.core_protected.id }} log prefix "{{ nft_prefix }}" drop

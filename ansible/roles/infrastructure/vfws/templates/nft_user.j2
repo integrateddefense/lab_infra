@@ -17,4 +17,4 @@ add rule inet filter fwd_v{{ vlans.user.id }} oifname "{{ trunk_iface }}.{{ vlan
 add rule inet filter fwd_v{{ vlans.user.id }} oifname "{{ trunk_iface }}.{{ vlans.dmz.id }}" tcp dport { 443 } accept
 
 # Default rule for the User VLAN
-add rule inet filter fwd_v{{ vlans.user.id }} log prefix "nft-fwd_v{{ vlans.user.id }}: " counter drop
+add rule inet filter fwd_v{{ vlans.user.id }} log prefix "{{ nft_prefix }}" counter drop
