@@ -17,5 +17,5 @@ observer.indef.space {
   tls {{ node_b_path }}/observer.indef.space.crt {{ node_b_path }}/observer.indef.space.key
 {% endif %}
   import logging
-  reverse_proxy observer.primary.ops.indef.space
+  reverse_proxy https://observer.primary.ops.indef.space
 }
