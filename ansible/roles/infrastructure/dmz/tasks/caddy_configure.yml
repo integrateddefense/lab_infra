@@ -23,7 +23,7 @@
     path: "{{ item }}"
     owner: caddy
     group: caddy
-    mode: 770
+    mode: 0770
 
 - name: render caddy configuration
   become: true
