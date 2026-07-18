@@ -13,24 +13,19 @@
 
 - name: setup cert directories
   become: true
-  loop:
-  - /etc/caddy/certs/
-  - /etc/caddy/synced-certs/
-  loop_control:
-    label: "Creating directory {{ item }}"
   ansible.builtin.file:
     state: directory
-    path: "{{ item }}"
+    path: "{{ node_a_path if cert_type == 'active' else node_b_path }}"
     owner: caddy
     group: caddy
-    mode: 0770
+    mode: '0770'
 
 - name: render caddy configuration
   become: true
   ansible.builtin.template:
     src: templates/caddyfile.j2
     dest: /etc/caddy/Caddyfile
-    mode: 0750
+    mode: '0750'
     owner: caddy
     group: caddy
   register: config
