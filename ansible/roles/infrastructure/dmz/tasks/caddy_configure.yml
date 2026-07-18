@@ -20,6 +20,17 @@
     group: caddy
     mode: '0770'
 
+## TODO - replace with enterprise Root CA once available
+- name: copy root CA
+  become: true
+  ansible.builtin.copy:
+    src: "{{ gateway_root}}/gateway.crt"
+    dest: /var/lib/caddy/internal-ca.pem
+    owner: caddy
+    group: caddy
+    mode: '0644'
+  register: ca
+
 - name: render caddy configuration
   become: true
   ansible.builtin.template:
@@ -32,7 +43,7 @@
 
 - name: reload caddy
   become: true
-  when: config.changed
+  when: config.changed or ca.changed
   ansible.builtin.systemd_service:
     name: caddy
     state: reloaded
