@@ -5,6 +5,9 @@ ruleset(name="forward_to_collector"){
   if $syslogfacility-text == 'local7' and ($msg contains 'type=CRYPTO_KEY_USER' or $msg contains 'type=CRYPTO_SESSION' or $msg contains 'type=CRED_DISP' or $msg contains 'type=CRED_ACQ' or $msg contains 'type=CRED_REFR' or $msg contains 'type=BPF' or $msg contains 'type=EOE') then {
     stop
   }
+  if $msg contains "Server listening on " then {
+    stop
+  }
 {% elif item.filter is defined %}
 {{ item.filter | default('') | indent(2) }}
 {% endif %}
